@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useSyncExternalStore } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// 1. Define flexible Types for local strings or API payload objects
 export interface AnnouncementItem {
   id?: string | number;
   text: string;
@@ -11,15 +10,13 @@ export interface AnnouncementItem {
 }
 
 interface AnnouncementBarProps {
-  // Accepts either an array of strings or structured objects from your DB/API
   items?: (string | AnnouncementItem)[];
 }
 
-// Default static fallback items until the backend is fully connected
 const DEFAULT_ANNOUNCEMENTS: AnnouncementItem[] = [
-  { id: 1, text: 'Free Delivery on All Orders Above £75' },
-  { id: 2, text: 'Sign up today and get 10% off your first purchase' },
-  { id: 3, text: 'New Fall Collection is live — Shop the latest shoes & bags' },
+  { id: 1, text: 'Students Enjoy 15% Off Full-Priced Items' },
+  { id: 2, text: 'Free Delivery on All Orders Above £75' },
+  { id: 3, text: 'Sign up today and get 10% off your first purchase' },
 ];
 
 const subscribe = (callback: () => void) => {
@@ -37,7 +34,6 @@ export default function AnnouncementBar({ items }: AnnouncementBarProps) {
   const [index, setIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Normalize incoming props into a structured AnnouncementItem format
   const announcements: AnnouncementItem[] = React.useMemo(() => {
     if (!items || items.length === 0) return DEFAULT_ANNOUNCEMENTS;
 
@@ -54,7 +50,6 @@ export default function AnnouncementBar({ items }: AnnouncementBarProps) {
     getServerSnapshot
   );
 
-  // Auto-scroll timer using dynamic announcements length
   useEffect(() => {
     if (isHovered || isDismissed || announcements.length === 0) return;
 
@@ -70,7 +65,6 @@ export default function AnnouncementBar({ items }: AnnouncementBarProps) {
     window.dispatchEvent(new Event('session-storage'));
   };
 
-  // Gracefully render nothing if dismissed or no active items in DB
   if (isDismissed || announcements.length === 0) {
     return null;
   }
@@ -79,7 +73,12 @@ export default function AnnouncementBar({ items }: AnnouncementBarProps) {
 
   return (
     <div
-      className="bg-foreground text-background relative flex h-9 w-full items-center justify-between px-4 text-xs font-medium tracking-luxury"
+      /* Styled to match screenshot: 
+         - bg-[#f4f4f4]: Off-white background
+         - text-black: High contrast dark text
+         - border-b border-black/10 shadow-sm: Soft bottom shadow/line separator
+      */
+      className="relative flex h-9 w-full items-center justify-between bg-[#f4f4f4] px-4 text-[11px] font-medium tracking-wide text-black border-b border-black/5 shadow-xs z-50"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -91,7 +90,7 @@ export default function AnnouncementBar({ items }: AnnouncementBarProps) {
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: '0%', opacity: 1 }}
             exit={{ y: '-100%', opacity: 0 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="absolute flex items-center justify-center text-center"
           >
             {currentItem.link ? (
@@ -108,16 +107,16 @@ export default function AnnouncementBar({ items }: AnnouncementBarProps) {
         </AnimatePresence>
       </div>
 
-      {/* Close (X) Button */}
+      {/* Close (X) Button - Fixed contrasting text colors */}
       <button
         onClick={handleDismiss}
         aria-label="Close Announcement Bar"
-        className="text-background/70 hover:text-background absolute right-4 top-1/2 -translate-y-1/2 p-1 transition-colors focus:outline-none"
+        className="absolute right-4 top-1/2 -translate-y-1/2 p-1 text-black/40 hover:text-black transition-colors focus:outline-none"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          width="14"
-          height="14"
+          width="12"
+          height="12"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
+import Header from "@/components/layout/Header";
 
 
 
@@ -36,7 +37,7 @@ export default function RootLayout({
         <AnnouncementBar/>
 
         {/* 2. Main Navigation Header */}
-
+        <Header/>
         {/* 3. Main Page Content (flex-1 pushes footer to bottom) */}
         <main className="flex-1">
           {children}
