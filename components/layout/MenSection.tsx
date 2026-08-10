@@ -5,6 +5,8 @@ import ProductCard from "../product/ProductCard";
 export default async function MenSection() {
   const products = await getProducts();
 
+  console.log(products);
+  
 
   return (
     <Container>
@@ -21,8 +23,14 @@ export default async function MenSection() {
         </p>
 
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {products.products.map((product) => (
-            <ProductCard key={product.id} product={product} />
+          {products.map((product) => (
+            <ProductCard key={product.id}
+        product={{
+          id: String(product.id),
+          title: product.title,
+          price: `$${product.price}`,
+          imageSrc: product.thumbnail,
+        }} />
           ))}
         </div>
       </div>

@@ -1,6 +1,6 @@
-'use client';
 
-import React from 'react';
+'use client'
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Award, Clock, ChevronUp } from 'lucide-react';
@@ -8,7 +8,7 @@ import { Award, Clock, ChevronUp } from 'lucide-react';
 export interface Product {
   id: string;
   title: string;
-  colorName: string;
+  colorName?: string;
   price: string;
   multibuyPrice?: string;
   imageSrc: string;
@@ -20,7 +20,11 @@ export interface Product {
   href?: string;
 }
 
-export default function ProductCard({ product }: { product: Product }) {
+export default function ProductCard({
+  product,
+}: {
+  product: Product;
+}) {
   const {
     id,
     title,
@@ -37,69 +41,77 @@ export default function ProductCard({ product }: { product: Product }) {
   } = product;
 
   return (
-    <div className="group relative flex w-full flex-col overflow-hidden bg-white">
-      {/* Product Image Container */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-[#e8e6e3]">
-        <Link href={href} className="block h-full w-full cursor-pointer">
-          <Image
-            src={imageSrc}
-            alt={`${title} - ${colorName}`}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
-            priority
-          />
-        </Link>
+    <div className="group cursor-pointer">
+      
+      <div className="relative aspect-[3/4] overflow-hidden bg-card">
+        <Image
+          src={imageSrc}
+          alt={colorName ? `${title} - ${colorName}` : title}
+          fill
+          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+        />
 
-        {/* Top Left Badge: NEW */}
+      
         {isNew && (
           <div className="absolute top-0 left-0 bg-[#001d4a] px-3 py-1 text-[11px] font-bold tracking-widest text-white uppercase">
             NEW
           </div>
         )}
 
-        {/* Bottom Left Overlay: Selling Fast Banner */}
+        
         {sellingFastCount > 0 && (
           <div className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-xs bg-[#ff5252] px-2.5 py-1 text-[11px] font-semibold text-white shadow-xs">
             <Clock className="h-3.5 w-3.5 stroke-[2.2]" />
-            <span>Selling Fast! Sold {sellingFastCount} times in the last 48hrs</span>
+
+            <span>
+              Selling Fast! Sold {sellingFastCount} times in the last 48hrs
+            </span>
           </div>
         )}
 
-        {/* Bottom Right Overlay: Color Options Pill */}
+        
         {colorCount > 0 && (
-          <div className="absolute bottom-3 right-3 flex items-center gap-0.5 rounded-xs bg-white/90 px-2 py-0.5 text-[11px] font-medium text-neutral-800 shadow-xs backdrop-blur-xs cursor-pointer hover:bg-white">
+          <div className="absolute right-3 bottom-3 flex cursor-pointer items-center gap-0.5 rounded-xs bg-white/90 px-2 py-0.5 text-[11px] font-medium text-neutral-800 shadow-xs backdrop-blur-xs hover:bg-white">
             <span>{colorCount} Colours</span>
+
             <ChevronUp className="h-3 w-3 text-neutral-600" />
           </div>
         )}
       </div>
 
-      {/* Product Information */}
+      
       <div className="flex flex-col pt-3 pb-1 text-left">
-        {/* Bestseller Badge Line */}
+        
         {bestsellerRank && bestsellerRank > 0 && (
           <div className="flex items-center gap-1.5 text-xs font-semibold text-[#a88238]">
             <Award className="h-4 w-4 fill-[#a88238]/15 stroke-[1.75]" />
+
             <span>
               Top {bestsellerRank} Bestseller{' '}
-              <span className="font-normal text-neutral-500">in {categoryName}</span>
+              <span className="font-normal text-neutral-500">
+                in {categoryName}
+              </span>
             </span>
           </div>
         )}
 
-        {/* Product Title */}
+        
         <h3 className="mt-1.5 text-sm font-medium text-neutral-900 group-hover:underline">
           <Link href={href} className="cursor-pointer">
-            {title} - {colorName}
+            {title}
+            {colorName && ` - ${colorName}`}
           </Link>
         </h3>
 
-        {/* Pricing */}
+        
         <div className="mt-1 flex flex-col">
-          <span className="text-sm font-bold text-neutral-900">{price}</span>
+          <span className="text-sm font-bold text-neutral-900">
+            {price}
+          </span>
+
           {multibuyPrice && (
-            <span className="text-xs text-neutral-500 font-normal">
+            <span className="text-xs font-normal text-neutral-500">
               {multibuyPrice} Multibuy
             </span>
           )}
@@ -108,3 +120,4 @@ export default function ProductCard({ product }: { product: Product }) {
     </div>
   );
 }
+

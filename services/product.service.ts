@@ -7,5 +7,7 @@ export async function getProducts() {
     throw new Error("Failed to fetch products data");
   }
 
-  return res.json();
+   const data = await res.json();
+
+  return data.products;
 }
