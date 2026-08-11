@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Jost } from "next/font/google";
 import "./globals.css";
+
 import AnnouncementBar from "@/components/layout/AnnouncementBar";
 import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 
-
-
+const jost = Jost({
+  subsets: ["latin"],
+  variable: "--font-jost",
+});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,21 +34,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${jost.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        {/* 1. Auto-scrolling Announcement Bar at the top */}
-        <AnnouncementBar/>
+        <AnnouncementBar />
+        <Header />
 
-        {/* 2. Main Navigation Header */}
-        <Header/>
-        {/* 3. Main Page Content (flex-1 pushes footer to bottom) */}
         <main className="flex-1">
           {children}
         </main>
 
-        {/* 4. Global Footer */}
-        
+        <Footer />
       </body>
     </html>
   );

@@ -1,0 +1,21 @@
+import FooterTop from "../localUI/FooterTop";
+import Container from "./Container";
+
+
+export default function Footer() {
+  return (
+    <footer role="contentinfo" className="border-t border-gray-200 bg-foreground">
+      <Container>
+        {/* Row 1: brand + links side by side */}
+        <div className="flex flex-col gap-10 md:flex-row md:justify-between">
+          <FooterTop/>
+        </div>
+
+        {/* Row 2: legal bar, full width, separated by divider */}
+        <div className="mt-10 border-t border-gray-200 pt-6">
+          
+        </div>
+      </Container>
+    </footer>
+  );
+}

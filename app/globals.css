@@ -11,17 +11,15 @@
 }
 
 @theme inline {
+  --font-sans: var(--font-jost), Arial, Helvetica, sans-serif;
+
+  --font-mono: var(--font-geist-mono);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  
-  /* --- Added: Mapping custom variables to Tailwind utility classes --- */
   --color-card: var(--card);
   --color-muted: var(--muted);
   --color-border: var(--border);
-
-  /* Fonts injected via next/font in app/layout.tsx */
-  --font-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
