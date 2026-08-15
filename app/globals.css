@@ -20,6 +20,7 @@
   --color-card: var(--card);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-brand: #4f46e5;
 }
 
 @media (prefers-color-scheme: dark) {

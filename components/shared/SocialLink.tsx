@@ -55,7 +55,7 @@ export default function SocialLinks() {
             rounded-full
             bg-black text-white
             transition-all duration-300
-            hover:bg-white hover:text-black
+            hover:bg-muted hover:text-black
           "
         >
           <Icon size={17} />
