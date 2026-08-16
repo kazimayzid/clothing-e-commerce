@@ -6,7 +6,7 @@ import Container from "./Container";
 
 export default function Footer() {
   return (
-    <footer role="contentinfo" className="border-t border-gray-200 bg-foreground pt-8">
+    <footer role="contentinfo" className="border-t border-muted/50 bg-foreground pt-8">
       <Container>
         {/* Row 1: brand + links side by side */}
         <div className="flex flex-col gap-10 md:flex-row md:justify-between">
@@ -15,7 +15,7 @@ export default function Footer() {
         </div>
 
         {/* Row 2: legal bar, full width, separated by divider */}
-        <div className="mt-10 border-t border-gray-200 pt-6">
+        <div className="mt-10 border-t border-0 border-muted/50 pb-5">
           <FooterBottom/>
         </div>
       </Container>
