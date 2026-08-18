@@ -1,4 +1,4 @@
-// types/product.ts
+export type Gender = 'men' | 'women' | 'unisex' | 'kids';
 
 export interface ColorOption {
   name: string;
@@ -12,8 +12,9 @@ export interface Product {
   slug: string;
   price: string;
   multibuyPrice?: string;
-  
-  // Categorization & Related Items Fields
+
+  // Gender & Categorization
+  gender: Gender;
   categoryId: string;
   categoryName: string;
   tags?: string[];
@@ -39,3 +40,21 @@ export interface Product {
   sellingFastCount?: number;
   colorCount?: number;
 }
+
+// Lightweight DTO for catalog grid product cards
+export type ProductCardDTO = Pick<
+  Product,
+  | 'id'
+  | 'title'
+  | 'slug'
+  | 'price'
+  | 'multibuyPrice'
+  | 'gender'
+  | 'imageSrc'
+  | 'colorName'
+  | 'colorCount'
+  | 'isNew'
+  | 'bestsellerRank'
+  | 'sellingFastCount'
+  | 'categoryName'
+>;
