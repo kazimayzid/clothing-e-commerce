@@ -5,12 +5,15 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const queryGender = searchParams.get("gender");
   const querySearch = searchParams.get("search");
+  const queryCategory = searchParams.get("category")
+
 
   let products = mockProducts20;
 
   if (queryGender) {
+    const allowedGenders = [queryGender.toLowerCase(), "unisex"];
     products = products.filter((product) =>
-      product.gender.includes(queryGender),
+      allowedGenders.includes(product.gender.toLowerCase()),
     );
   }
 
@@ -22,6 +25,10 @@ export async function GET(request: NextRequest) {
           tag.toLowerCase().includes(querySearch.toLowerCase()),
         ),
     );
+  }
+
+  if (queryCategory) {
+    products = products.filter((product) => product.categoryName.toLowerCase().includes(queryCategory.toLowerCase()))
   }
 
   return Response.json(products);
