@@ -17,8 +17,15 @@ export interface Product {
   categoryName?: string;
   sellingFastCount?: number;
   colorCount?: number;
-  href?: string;
 }
+function createSlug(title: string) {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-');
+}
+
 
 export default function ProductCard({
   product,
@@ -37,13 +44,17 @@ export default function ProductCard({
     categoryName = 'Polos',
     sellingFastCount = 0,
     colorCount = 0,
-    href = `/product/${id}`,
   } = product;
+
+
+  const slug = createSlug(title);
+
+  const productHref = `/product/${id}/${slug}`;
 
   return (
     <div className="group cursor-pointer">
       
-      <div className="relative aspect-[3/4] overflow-hidden bg-card">
+      <Link href={productHref} className="relative block aspect-[3/4] overflow-hidden bg-card">
         <Image
           src={imageSrc}
           alt={colorName ? `${title} - ${colorName}` : title}
@@ -78,7 +89,7 @@ export default function ProductCard({
             <ChevronUp className="h-3 w-3 text-neutral-600" />
           </div>
         )}
-      </div>
+      </Link>
 
       
       <div className="flex flex-col pt-3 pb-1 text-left">
@@ -98,7 +109,7 @@ export default function ProductCard({
 
         
         <h3 className="mt-1.5 text-sm font-medium text-neutral-900 group-hover:underline">
-          <Link href={href} className="cursor-pointer">
+          <Link href={productHref} className="cursor-pointer">
             {title}
             {colorName && ` - ${colorName}`}
           </Link>
