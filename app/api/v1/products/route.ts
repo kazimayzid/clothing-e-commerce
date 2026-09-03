@@ -1,4 +1,6 @@
 import { mockProducts20 } from "@/Data/mockProducts";
+import type { ProductCardDTO } from "@/types/product";
+import { number } from "framer-motion";
 import type { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -31,5 +33,21 @@ export async function GET(request: NextRequest) {
     products = products.filter((product) => product.categoryName.toLowerCase().includes(queryCategory.toLowerCase()))
   }
 
-  return Response.json(products);
+  const mappedDTOs: ProductCardDTO[] = products.map((product) => ({
+    id: product.id,
+    title: product.title,
+    slug: product.slug,
+    price:  product.price - 100,
+    multibuyPrice: product.multibuyPrice,
+    gender: product.gender,
+    imageSrc: product.imageSrc,
+    colorName: product.colorName,
+    colorCount: product.colorCount,
+    isNew: product.isNew,
+    bestsellerRank: product.bestsellerRank,
+    sellingFastCount: product.sellingFastCount,
+    categoryName: product.categoryName,
+  }));
+
+  return Response.json(mappedDTOs);
 }

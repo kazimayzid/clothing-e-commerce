@@ -58,3 +58,30 @@ export type ProductCardDTO = Pick<
   | 'sellingFastCount'
   | 'categoryName'
 >;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
