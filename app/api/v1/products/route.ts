@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     id: product.id,
     title: product.title,
     slug: product.slug,
-    price:  product.price - 100,
+    price:  product.price,
     multibuyPrice: product.multibuyPrice,
     gender: product.gender,
     imageSrc: product.imageSrc,

@@ -2,10 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Jost } from "next/font/google";
 import "./globals.css";
 
-import AnnouncementBar from "@/components/layout/AnnouncementBar";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-
 const jost = Jost({
   subsets: ["latin"],
   variable: "--font-jost",
@@ -37,14 +33,13 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${jost.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        <AnnouncementBar />
-        <Header />
+        
+        
 
         <main className="flex-1">
           {children}
         </main>
 
-        <Footer />
       </body>
     </html>
   );

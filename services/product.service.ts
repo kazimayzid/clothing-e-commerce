@@ -1,6 +1,6 @@
 export async function getProducts() {
   const res = await fetch(
-    "https://dummyjson.com/products/category/mens-shirts",
+    "http://localhost:3000/api/v1/products",
   );
   
   if (!res.ok) {
@@ -8,6 +8,5 @@ export async function getProducts() {
   }
 
    const data = await res.json();
-
-  return data.products;
+  return data;
 }

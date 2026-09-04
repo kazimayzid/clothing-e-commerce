@@ -5,8 +5,6 @@ import ProductCard from "../product/ProductCard";
 export default async function MenSection() {
   const products = await getProducts();
 
-  console.log(products);
-  
 
   return (
     <Container>
@@ -29,7 +27,7 @@ export default async function MenSection() {
           id: String(product.id),
           title: product.title,
           price: `$${product.price}`,
-          imageSrc: product.thumbnail,
+          imageSrc: product.imageSrc,
         }} />
           ))}
         </div>

@@ -49,7 +49,7 @@ export default function ProductCard({
 
   const slug = createSlug(title);
 
-  const productHref = `/product/${id}/${slug}`;
+  const productHref = `/products/${slug}`;
 
   return (
     <div className="group cursor-pointer">
