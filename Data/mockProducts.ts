@@ -32,7 +32,6 @@ export const mockProducts20: Product[] = [
     isNew: true,
     bestsellerRank: 10,
     sellingFastCount: 94,
-    colorCount: 15,
   },
   {
     id: 'prod-102',
@@ -62,8 +61,7 @@ export const mockProducts20: Product[] = [
     reviewCount: 120,
     isNew: true,
     bestsellerRank: 2,
-    sellingFastCount: 120,
-    colorCount: 8,
+    sellingFastCount: 120
   },
   {
     id: 'prod-103',
@@ -91,8 +89,7 @@ export const mockProducts20: Product[] = [
     rating: 4.7,
     reviewCount: 88,
     isNew: false,
-    bestsellerRank: 1,
-    colorCount: 6,
+    bestsellerRank: 1
   },
   {
     id: 'prod-104',
@@ -120,8 +117,7 @@ export const mockProducts20: Product[] = [
     rating: 4.6,
     reviewCount: 42,
     isNew: true,
-    sellingFastCount: 45,
-    colorCount: 4,
+    sellingFastCount: 45
   },
   {
     id: 'prod-105',
@@ -151,7 +147,6 @@ export const mockProducts20: Product[] = [
     reviewCount: 164,
     isNew: false,
     bestsellerRank: 5,
-    colorCount: 12,
   },
   {
     id: 'prod-106',
@@ -180,8 +175,7 @@ export const mockProducts20: Product[] = [
     reviewCount: 78,
     isNew: false,
     bestsellerRank: 4,
-    sellingFastCount: 62,
-    colorCount: 3,
+    sellingFastCount: 62
   },
   {
     id: 'prod-107',
@@ -209,8 +203,7 @@ export const mockProducts20: Product[] = [
     stockCount: 22,
     rating: 4.5,
     reviewCount: 31,
-    isNew: true,
-    colorCount: 5,
+    isNew: true
   },
   {
     id: 'prod-108',
@@ -235,8 +228,7 @@ export const mockProducts20: Product[] = [
     rating: 4.9,
     reviewCount: 52,
     isNew: false,
-    bestsellerRank: 8,
-    colorCount: 2,
+    bestsellerRank: 8
   },
   {
     id: 'prod-109',
@@ -264,8 +256,7 @@ export const mockProducts20: Product[] = [
     rating: 4.7,
     reviewCount: 64,
     isNew: true,
-    sellingFastCount: 38,
-    colorCount: 2,
+    sellingFastCount: 38
   },
   {
     id: 'prod-110',
@@ -296,7 +287,6 @@ export const mockProducts20: Product[] = [
     reviewCount: 210,
     isNew: false,
     bestsellerRank: 3,
-    colorCount: 10,
   },
   {
     id: 'prod-111',
@@ -323,8 +313,7 @@ export const mockProducts20: Product[] = [
     stockCount: 14,
     rating: 4.8,
     reviewCount: 39,
-    isNew: false,
-    colorCount: 3,
+    isNew: false
   },
   {
     id: 'prod-112',
@@ -352,8 +341,7 @@ export const mockProducts20: Product[] = [
     rating: 4.7,
     reviewCount: 47,
     isNew: true,
-    sellingFastCount: 50,
-    colorCount: 2,
+    sellingFastCount: 50
   },
   {
     id: 'prod-113',
@@ -382,8 +370,7 @@ export const mockProducts20: Product[] = [
     rating: 4.9,
     reviewCount: 185,
     isNew: false,
-    bestsellerRank: 6,
-    colorCount: 7,
+    bestsellerRank: 6
   },
   {
     id: 'prod-114',
@@ -410,8 +397,7 @@ export const mockProducts20: Product[] = [
     stockCount: 80,
     rating: 4.8,
     reviewCount: 95,
-    isNew: false,
-    colorCount: 2,
+    isNew: false
   },
   {
     id: 'prod-115',
@@ -439,8 +425,7 @@ export const mockProducts20: Product[] = [
     rating: 4.9,
     reviewCount: 73,
     isNew: true,
-    sellingFastCount: 82,
-    colorCount: 5,
+    sellingFastCount: 82
   },
   {
     id: 'prod-116',
@@ -465,8 +450,7 @@ export const mockProducts20: Product[] = [
     rating: 4.6,
     reviewCount: 29,
     isNew: false,
-    bestsellerRank: 9,
-    colorCount: 3,
+    bestsellerRank: 9
   },
   {
     id: 'prod-117',
@@ -494,8 +478,7 @@ export const mockProducts20: Product[] = [
     stockCount: 110,
     rating: 4.7,
     reviewCount: 140,
-    isNew: false,
-    colorCount: 6,
+    isNew: false
   },
   {
     id: 'prod-118',
@@ -523,8 +506,7 @@ export const mockProducts20: Product[] = [
     rating: 5.0,
     reviewCount: 48,
     isNew: true,
-    bestsellerRank: 7,
-    colorCount: 4,
+    bestsellerRank: 7
   },
   {
     id: 'prod-119',
@@ -551,8 +533,7 @@ export const mockProducts20: Product[] = [
     stockCount: 24,
     rating: 4.8,
     reviewCount: 61,
-    isNew: false,
-    colorCount: 5,
+    isNew: false
   },
   {
     id: 'prod-120',
@@ -580,7 +561,6 @@ export const mockProducts20: Product[] = [
     stockCount: 95,
     rating: 4.9,
     reviewCount: 112,
-    isNew: false,
-    colorCount: 6,
+    isNew: false
   },
 ];

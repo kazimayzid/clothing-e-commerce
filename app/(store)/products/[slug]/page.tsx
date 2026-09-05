@@ -1,3 +1,6 @@
+import ProductGallery from "@/components/shared/ProductGallery";
+import { getProductDetails } from "@/services/productDetails.service";
+import type { ProductDetailDTO } from "@/types/productDetails";
 
 interface PageProps {
     params: Promise<{slug: string}>
@@ -5,5 +8,11 @@ interface PageProps {
 
 export default async function ProductDetailPage({params}: PageProps) {
     const {slug} = await params
-    return 
+    const product: ProductDetailDTO | undefined = await getProductDetails(slug);
+
+    return (
+        <>
+          {product && <ProductGallery images={product.images} title={product.title} />}
+        </>
+    )
 }

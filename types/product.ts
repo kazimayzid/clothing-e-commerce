@@ -38,7 +38,6 @@ export interface Product {
   isNew?: boolean;
   bestsellerRank?: number;
   sellingFastCount?: number;
-  colorCount?: number;
 }
 
 // Lightweight DTO for catalog grid product cards
@@ -52,7 +51,6 @@ export type ProductCardDTO = Pick<
   | 'gender'
   | 'imageSrc'
   | 'colorName'
-  | 'colorCount'
   | 'isNew'
   | 'bestsellerRank'
   | 'sellingFastCount'

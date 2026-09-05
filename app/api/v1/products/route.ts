@@ -42,7 +42,6 @@ export async function GET(request: NextRequest) {
     gender: product.gender,
     imageSrc: product.imageSrc,
     colorName: product.colorName,
-    colorCount: product.colorCount,
     isNew: product.isNew,
     bestsellerRank: product.bestsellerRank,
     sellingFastCount: product.sellingFastCount,
