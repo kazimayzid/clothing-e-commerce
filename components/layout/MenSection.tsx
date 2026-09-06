@@ -1,6 +1,11 @@
 import { getProducts } from "@/services/product.service";
 import Container from "./Container";
 import ProductCard from "../product/ProductCard";
+import type { Product } from "@/types/product";
+
+interface MenSectionProps {
+  products: Product[];
+}
 
 export default async function MenSection() {
   const products = await getProducts();
