@@ -3,11 +3,7 @@ import type { Product } from "./product";
 export type ProductDetailData = Product;
 export type ProductDetailDTO = Omit<Product, "imageSrc">;
 
-export interface SizeOption {
-  id: string;
-  label: string;
-  isPopular?: boolean;
-}
+
 
 export interface ReviewItem {
   id: string;

@@ -4,31 +4,52 @@ import { useState } from "react";
 import Image from "next/image";
 
 interface ProductGalleryProps {
-  images: string[];
+  images?: string[];
   title: string;
+  discount?: string;
 }
 
-export default function ProductGallery({ images, title }: ProductGalleryProps) {
+export default function ProductGallery({
+  images = [],
+  title,
+  discount,
+}: ProductGalleryProps) {
   const [selectedIdx, setSelectedIdx] = useState(0);
 
+  // কোনো image না থাকলে
+  if (images.length === 0) {
+    return (
+      <div className="flex h-[400px] items-center justify-center border border-neutral-200 bg-neutral-100">
+        <span className="text-sm text-neutral-500">
+          No image available
+        </span>
+      </div>
+    );
+  }
+
+  const selectedImage = images[selectedIdx] ?? images[0];
+
   return (
-    <div className="flex flex-col-reverse md:flex-row gap-4">
+    <div className="flex flex-col gap-4 lg:flex-row">
       {/* Thumbnails */}
-      <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible flex-shrink-0 w-full md:w-24">
+      <div className="order-2 flex w-full gap-3 overflow-x-auto pb-1 lg:order-1 lg:w-24 lg:flex-col lg:overflow-visible">
         {images.map((img, idx) => (
           <button
-            key={idx}
+            key={`${img}-${idx}`}
+            type="button"
             onClick={() => setSelectedIdx(idx)}
-            className={`w-20 h-24 md:w-24 md:h-32 flex-shrink-0 relative overflow-hidden transition-all border ${
+            aria-label={`View image ${idx + 1}`}
+            className={`relative h-20 w-20 flex-shrink-0 overflow-hidden border transition-all duration-300 sm:h-24 sm:w-24 ${
               selectedIdx === idx
-                ? "border-black ring-1 ring-black"
-                : "border-neutral-200 opacity-70 hover:opacity-100"
+                ? "border-black ring-1 ring-black opacity-100"
+                : "border-neutral-200 opacity-60 hover:border-neutral-500 hover:opacity-100"
             }`}
           >
             <Image
               src={img}
               alt={`${title} thumbnail ${idx + 1}`}
               fill
+              sizes="96px"
               className="object-cover"
             />
           </button>
@@ -36,21 +57,36 @@ export default function ProductGallery({ images, title }: ProductGalleryProps) {
       </div>
 
       {/* Main Image */}
-      <div className="flex-grow w-full h-[500px] md:h-[700px] bg-neutral-50 relative overflow-hidden border border-neutral-200 group">
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
-          <span className="bg-black text-white text-[11px] uppercase tracking-wider font-semibold px-2.5 py-1">
+      <div className="group relative order-1 h-[400px] w-full overflow-hidden border border-neutral-200 bg-neutral-100 sm:h-[480px] lg:order-2 lg:h-[560px]">
+        {/* Badges */}
+        <div className="absolute left-4 top-4 z-10 flex flex-col items-start gap-2">
+          <span className="bg-black px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white">
             Limited Batch
           </span>
-          <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[11px] font-semibold px-2 py-0.5 rounded-sm">
-            24% OFF
-          </span>
+
+          {discount && (
+            <span className="border border-amber-300 bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-amber-900">
+              {discount}% OFF
+            </span>
+          )}
         </div>
+
+        {/* Image Counter */}
+        {images.length > 1 && (
+          <div className="absolute bottom-4 right-4 z-10 bg-black/70 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
+            {selectedIdx + 1} / {images.length}
+          </div>
+        )}
+
+        {/* Main Image */}
         <Image
-          src={images[selectedIdx] || images[0]}
+          key={selectedImage}
+          src={selectedImage}
           alt={title}
           fill
-          priority
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
+          priority={selectedIdx === 0}
+          sizes="(max-width: 1024px) 100vw, 50vw"
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
         />
       </div>
     </div>

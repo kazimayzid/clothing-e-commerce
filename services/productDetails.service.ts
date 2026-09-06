@@ -7,5 +7,7 @@ export async function getProductDetails(slug: string): Promise<Product | undefin
 		throw new Error("Failed to fetch product details");
 	}
 
-	return (await res.json()) as Product | undefined;
+	const response: { data?: Product } = await res.json();
+	
+	return response.data;
 }
