@@ -19,7 +19,7 @@ export default function ProductGallery({
   // কোনো image না থাকলে
   if (images.length === 0) {
     return (
-      <div className="flex h-[400px] items-center justify-center border border-neutral-200 bg-neutral-100">
+      <div className="flex h-100 items-center justify-center border border-neutral-200 bg-neutral-100">
         <span className="text-sm text-neutral-500">
           No image available
         </span>
@@ -39,7 +39,7 @@ export default function ProductGallery({
             type="button"
             onClick={() => setSelectedIdx(idx)}
             aria-label={`View image ${idx + 1}`}
-            className={`relative h-20 w-20 flex-shrink-0 overflow-hidden border transition-all duration-300 sm:h-24 sm:w-24 ${
+            className={`relative h-20 w-20 shrink-0 overflow-hidden border transition-all duration-300 sm:h-24 sm:w-24 ${
               selectedIdx === idx
                 ? "border-black ring-1 ring-black opacity-100"
                 : "border-neutral-200 opacity-60 hover:border-neutral-500 hover:opacity-100"
@@ -57,7 +57,7 @@ export default function ProductGallery({
       </div>
 
       {/* Main Image */}
-      <div className="group relative order-1 h-[400px] w-full overflow-hidden border border-neutral-200 bg-neutral-100 sm:h-[480px] lg:order-2 lg:h-[560px]">
+      <div className="group relative order-1 h-100 w-full overflow-hidden border border-neutral-200 bg-neutral-100 sm:h-120 lg:order-2 lg:h-140">
         {/* Badges */}
         <div className="absolute left-4 top-4 z-10 flex flex-col items-start gap-2">
           <span className="bg-black px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-white">

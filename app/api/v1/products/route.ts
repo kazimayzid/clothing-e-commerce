@@ -1,6 +1,5 @@
 import { mockProducts20 } from "@/Data/mockProducts";
 import type { ProductCardDTO } from "@/types/product";
-import { number } from "framer-motion";
 import type { NextRequest } from "next/server";
 
 export async function GET(request: NextRequest) {

@@ -33,7 +33,6 @@ export default function ProductCard({
   product: Product;
 }) {
   const {
-    id,
     title,
     colorName,
     price,

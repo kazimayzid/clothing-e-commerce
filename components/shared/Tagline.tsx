@@ -1,7 +1,3 @@
-type TaglineProps = {
-    className?: string
-}
-
 export default function Tagline() {
     return (
         <>
