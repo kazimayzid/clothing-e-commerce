@@ -3,6 +3,10 @@
 
 import type { ColorOption } from "@/types/product";
 import { useState } from "react";
+import Breadcrumbs from "../shared/Breadcrumbs";
+import Ratings from "../shared/Ratings";
+import PricingBox from "./PricingBox";
+import ColorPicker from "./ColorPicker";
 
 interface ProductDetailsProps {
   title?: string;
@@ -54,111 +58,26 @@ export default function ProductDetails({
   return (
     <div className="flex flex-col">
       {/* Category / Breadcrumbs & Badge */}
-      <div className="flex items-center justify-between mb-2">
-        <nav className="text-xs text-neutral-500 font-medium">
-          Women / Bags /{" "}
-          <span className="text-black font-semibold">Totes</span>
-        </nav>
-
-        <span className="bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
-          Top Seller
-        </span>
-      </div>
-
+      
+     <Breadcrumbs/>
       {/* Product Title */}
       <h1 className="text-3xl md:text-4xl font-serif text-black mb-2 tracking-tight">
         {title ?? "Product Name"}
       </h1>
 
       {/* Ratings */}
-      <div className="flex items-center gap-2 mb-4 text-sm">
-        <span className="text-amber-500 font-bold">★ ★ ★ ★ ★</span>
-
-        <a
-          href="#reviews-section"
-          className="text-black font-medium hover:underline"
-        >
-          {(rating ?? 0).toFixed(1)}{" "}
-          <span className="text-neutral-500 font-normal">
-            ({reviewCount ?? 0} reviews)
-          </span>
-        </a>
-
-        <span className="text-neutral-300">|</span>
-
-        <span className="text-xs text-emerald-700 font-medium">
-          98% Recommend
-        </span>
-      </div>
+      <Ratings rating={rating ?? 0} reviewCount={reviewCount ?? 0}/>
 
       {/* Pricing Box */}
-      <div className="bg-neutral-50 p-3 border border-neutral-200 mb-4 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-baseline gap-2.5">
-          <span className="text-2xl md:text-3xl font-bold text-black">
-            $
-            {numericPrice.toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
-          </span>
-
-          {numericOriginalPrice !== undefined &&
-            numericOriginalPrice > numericPrice && (
-              <span className="text-neutral-400 line-through text-sm">
-                $
-                {numericOriginalPrice.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })}
-              </span>
-            )}
-        </div>
-
-        {numericOriginalPrice !== undefined &&
-          numericOriginalPrice > numericPrice && (
-            <span className="bg-red-50 text-red-700 border border-red-200 text-xs font-bold px-2.5 py-1 tracking-wide uppercase">
-              SAVE $
-              {(numericOriginalPrice - numericPrice).toLocaleString("en-US", {
-                maximumFractionDigits: 2,
-              })}
-            </span>
-          )}
-      </div>
-
+      <PricingBox numericOriginalPrice={numericOriginalPrice ?? 0} numericPrice={numericPrice}/>
       {/* Description */}
       <p className="text-neutral-600 text-sm leading-relaxed mb-4">
         {description ?? "No description available."}
       </p>
 
       {/* Color Picker */}
-      {colors.length > 0 && (
-        <div className="mb-4">
-          <p className="text-xs uppercase tracking-wider font-semibold text-black mb-2">
-            Color:{" "}
-            <span className="text-neutral-500 font-normal">
-              {selectedColor?.name ?? "Not selected"}
-            </span>
-          </p>
-
-          <div className="flex gap-2">
-            {colors.map((color) => (
-              <button
-                key={color.hexCode}
-                type="button"
-                onClick={() => setSelectedColor(color)}
-                style={{ backgroundColor: color.hexCode }}
-                aria-label={`Select ${color.name}`}
-                className={`w-8 h-8 rounded-full border transition-all ${
-                  selectedColor?.hexCode === color.hexCode
-                    ? "ring-2 ring-offset-2 ring-black"
-                    : "border-neutral-300 opacity-75 hover:opacity-100"
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
+      
+<ColorPicker colors={colors}/>
       {/* Size Picker */}
       {sizes.length > 0 && (
         <div className="mb-4">
