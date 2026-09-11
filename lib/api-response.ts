@@ -16,13 +16,20 @@ export interface ApiResponse<T = unknown> {
 }
 
 export class ResponseBuilder {
-  static success<T>(data: T, statusCode = 200, meta?: ApiResponse['meta']) {
-    return NextResponse.json<ApiResponse<T>>(
-      { success: true, data, meta },
-      { status: statusCode }
-    );
-  }
-
+ static success<T>(
+  data: T,
+  statusCode = 200,
+  meta?: ApiResponse["meta"]
+) {
+  return NextResponse.json<ApiResponse<T>>(
+    {
+      success: true,
+      data,
+      ...(meta && { meta }),
+    },
+    { status: statusCode }
+  );
+}
   static error(message: string, statusCode = 400, code = 'BAD_REQUEST', details?: unknown) {
     return NextResponse.json<ApiResponse>(
       {

@@ -1,4 +1,7 @@
 import { mockProducts20 } from "@/Data/mockProducts";
+import { ResponseBuilder } from "@/lib/api-response";
+import { calculateSimilarityScore } from "@/services/relatedProduct.service";
+
 
 export async function GET(
   request: Request,
@@ -11,69 +14,27 @@ export async function GET(
   );
 
   if (!product) {
-    return Response.json(
-      {
-        success: false,
-        message: "Product not found",
-      },
-      { status: 404 }
+    return ResponseBuilder.error(
+      "Product not found",
+      404,
+      "PRODUCT_NOT_FOUND"
     );
   }
 
-  // Current product বাদ
   const candidates = mockProducts20.filter(
     (item) => item.id !== product.id
   );
 
-  const scoredProducts = candidates.map((candidate) => {
-    let score = 0;
+  const scoredProducts = candidates.map((candidate) => ({
+    product: candidate,
+    score: calculateSimilarityScore(product, candidate),
+  }));
 
-    // Category match → 50 points
-    if (
-      candidate.categoryName.toLowerCase() ===
-      product.categoryName.toLowerCase()
-    ) {
-      score += 50;
-    }
-
-    // Gender match → 20 points
-    if (
-      candidate.gender.toLowerCase() ===
-        product.gender.toLowerCase() ||
-      candidate.gender.toLowerCase() === "unisex"
-    ) {
-      score += 20;
-    }
-
-    // Tags match → 10 points per matching tag
-    const currentTags = product.tags ?? [];
-    const candidateTags = candidate.tags ?? [];
-
-    const matchedTags = candidateTags.filter((tag) =>
-      currentTags.some(
-        (currentTag) =>
-          currentTag.toLowerCase() === tag.toLowerCase()
-      )
-    );
-
-    score += Math.min(matchedTags.length * 10, 30);
-
-    return {
-      product: candidate,
-      score,
-    };
-  });
-
-  // Highest score first
   scoredProducts.sort((a, b) => b.score - a.score);
 
-  // Top 4 related products
   const relatedProducts = scoredProducts
     .slice(0, 4)
     .map(({ product }) => product);
 
-  return Response.json({
-    success: true,
-    data: relatedProducts,
-  });
+  return ResponseBuilder.success(relatedProducts);
 }
