@@ -107,7 +107,7 @@ export default function ProductCard({
         )}
 
         
-        <h3 className="mt-1.5 text-sm font-medium text-neutral-900 group-hover:underline">
+        <h3 className="mt-1.5 text-foreground/80 font-jost group-hover:underline">
           <Link href={productHref} className="cursor-pointer">
             {title}
             {colorName && ` - ${colorName}`}

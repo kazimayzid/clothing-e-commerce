@@ -1,6 +1,7 @@
 
 import Container from "@/components/layout/Container";
 import ProductDetails from "@/components/localUI/ProductDetails";
+import RelatedProducts from "@/components/localUI/RelatedProducts";
 import ProductGallery from "@/components/shared/ProductGallery";
 import { getProductDetails } from "@/services/productDetails.service";
 import type { ProductDetailDTO } from "@/types/productDetails";
@@ -43,6 +44,12 @@ export default async function ProductDetailPage({
           sizes={product.sizes}
         />
       </div>
+
+      <hr className="text-foreground/20"/>
+
+      <h1 className="pt-2 text-2xl font-medium text-foreground/80">You may also like...</h1>
+
+      <RelatedProducts slug={slug}/>
     </Container>
   );
 }

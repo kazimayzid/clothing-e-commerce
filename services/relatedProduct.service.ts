@@ -1,5 +1,6 @@
 import type { Product } from "@/types/product";
 
+
 export function calculateSimilarityScore(
   product: Product,
   candidate: Product
@@ -37,4 +38,19 @@ export function calculateSimilarityScore(
   score += Math.min(matchedTags.length * 10, 30);
 
   return score;
+}
+
+
+export async function getRelatedProduct(
+  slug: string
+): Promise<{ success: boolean; data: Product[] }> {
+  const res = await fetch(
+    `http://localhost:3000/api/v1/products/${slug}/related`
+  );
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch related products");
+  }
+
+  return res.json();
 }
