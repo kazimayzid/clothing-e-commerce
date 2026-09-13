@@ -9,7 +9,7 @@ export interface NavItem {
 }
 
 const DEFAULT_NAV_ITEMS: NavItem[] = [
-  { label: 'Home', href: '/home' },
+  { label: 'Home', href: '/' },
   { label: 'SHOP', href: '/shop' },
   { label: 'ABOUT', href: '/about' },
   { label: 'CONTACT', href: '/contact' },

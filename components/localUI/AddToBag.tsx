@@ -12,7 +12,7 @@ export default function AddToBag({
   return (
     <Button
       type="button"
-      className="bg-[#0F172A] hover:bg-black text-white"
+      className="bg-[#0F172A] hover:bg-black text-white cursor-pointer"
     >
       Add to Bag — $
       {(numericPrice * quantity).toLocaleString("en-US", {
