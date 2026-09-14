@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { ArrowLeft, ArrowRight, Lock } from "lucide-react";
-import CartItemRow from "@/components/cart/CartItemRow";
 import { CartItem } from "@/types/cart";
+import YourBag from "@/components/cart/YourBag";
+import { ArrowRight, Lock } from "lucide-react";
 
 const INITIAL_CART: CartItem[] = [
   {
@@ -52,7 +51,7 @@ export default function CartPage() {
   };
 
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
 
   const handleCheckoutSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,50 +63,8 @@ export default function CartPage() {
   return (
     <main className="flex-grow w-full max-w-7xl mx-auto px-4 md:px-8 py-8 md:py-16 flex flex-col lg:flex-row gap-8 lg:gap-12">
       {/* Left Side: Your Bag */}
-      <section className="w-full lg:w-7/12 xl:w-2/3 flex flex-col gap-6">
-        <header>
-          <h1 className="font-serif text-3xl md:text-4xl text-neutral-900 tracking-tight">
-            Your Bag
-          </h1>
-          <p className="text-sm text-neutral-500 mt-1">
-            {itemCount} {itemCount === 1 ? "item" : "items"} in your cart.
-          </p>
-        </header>
-
-        {items.length === 0 ? (
-          <div className="py-12 border-t border-neutral-200 text-center flex flex-col items-center">
-            <p className="text-neutral-500 text-base mb-4">Your bag is currently empty.</p>
-            <Link
-              href="/products"
-              className="bg-neutral-900 text-white px-6 py-3 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800 transition-colors"
-            >
-              Explore Products
-            </Link>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-6 border-t border-neutral-200 pt-6">
-            {items.map((item) => (
-              <CartItemRow
-                key={item.id}
-                item={item}
-                onUpdateQuantity={handleUpdateQuantity}
-                onRemove={handleRemove}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="mt-4 border-t border-neutral-200 pt-6">
-          <Link
-            href="/products"
-            className="text-xs uppercase tracking-wider font-semibold text-neutral-900 hover:text-neutral-600 transition-colors flex items-center gap-2 w-fit underline underline-offset-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Continue Shopping</span>
-          </Link>
-        </div>
-      </section>
-
+      
+   <YourBag items={items}  onRemove={handleRemove} onUpdateQuantity={handleUpdateQuantity}/>
       {/* Right Side: Order Summary & Checkout */}
       <section className="w-full lg:w-5/12 xl:w-1/3 relative">
         <div className="bg-neutral-50/70 border border-neutral-200 rounded-lg p-6 md:p-8 shadow-sm sticky top-28">
