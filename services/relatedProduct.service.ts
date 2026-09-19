@@ -44,8 +44,14 @@ export function calculateSimilarityScore(
 export async function getRelatedProduct(
   slug: string
 ): Promise<{ success: boolean; data: Product[] }> {
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
+  if (!baseUrl) {
+    throw new Error("NEXT_PUBLIC_BASE_URL is not configured");
+  }
+
   const res = await fetch(
-    `http://localhost:3000/api/v1/products/${slug}/related`
+    `${baseUrl}/api/v1/products/${slug}/related`
   );
 
   if (!res.ok) {
