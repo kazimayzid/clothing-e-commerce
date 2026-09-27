@@ -9,6 +9,7 @@ import BundleDeals from "./BundleDeals";
 import ProductActions from "./ProductActions";
 
 interface ProductDetailsProps {
+  images?: string
   title?: string;
   price?: string;
   originalPrice?: number;
@@ -20,6 +21,7 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({
+  images,
   title,
   price,
   originalPrice,

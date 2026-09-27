@@ -35,6 +35,7 @@ export default async function ProductDetailPage({
         />
 
         <ProductDetails
+          images={product.images}
           title={product.title}
           price={product.price}
           rating={product.rating}

@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { CartItem } from "@/types/cart";
 import YourBag from "@/components/cart/YourBag";
 import OrderSummary from "@/components/cart/OrderSummary";
+import { CartContext } from "@/contexts/cartContext";
+
+
 
 const INITIAL_CART: CartItem[] = [
   {
@@ -29,6 +32,10 @@ const INITIAL_CART: CartItem[] = [
 ];
 
 export default function CartPage() {
+
+
+  const cartData = useContext(CartContext)
+
   const [items, setItems] = useState<CartItem[]>(INITIAL_CART);
 
 
