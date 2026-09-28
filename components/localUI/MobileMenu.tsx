@@ -15,7 +15,7 @@ import Logo from "../shared/Logo";
 
 const menuItems = [
   { label: "Home", href: "/", icon: Home },
-  { label: "Shop", href: "/products", icon: ShoppingBag },
+  { label: "Shop", href: "/shop", icon: ShoppingBag },
   { label: "Categories", href: "/categories", icon: LayoutGrid },
   { label: "My Orders", href: "/orders", icon: Package },
   { label: "Account", href: "/account", icon: UserRound },
