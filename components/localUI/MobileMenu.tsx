@@ -3,121 +3,33 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+
 import {
   Menu,
   X,
-  Home,
-  ShoppingBag,
-  Package,
-  UserRound,
   ChevronDown,
-  type LucideIcon,
 } from "lucide-react";
 
 import Logo from "../shared/Logo";
 
-/* --------------------------------
-   Types
---------------------------------- */
+import {
+  NAV_ITEMS,
+  type NavItem,
+} from "@/Data/navItems";
 
-type MenuItem = {
-  label: string;
-  href?: string;
-  icon?: LucideIcon;
-  children?: MenuItem[];
-};
-
-/* --------------------------------
-   Menu Data
---------------------------------- */
-
-const menuItems: MenuItem[] = [
-  {
-    label: "Home",
-    href: "/",
-    icon: Home,
-  },
-
-  {
-    label: "Shop",
-    href: "/shop",
-    icon: ShoppingBag,
-
-    children: [
-      {
-        label: "Men",
-        children: [
-          {
-            label: "Pant",
-            href: "/shop?category=pant",
-          },
-          {
-            label: "Shirt",
-            href: "/shop?category=shirt",
-          },
-          {
-            label: "T-shirt",
-            href: "/shop?category=t-shirt",
-          },
-        ],
-      },
-
-      {
-        label: "Women",
-        children: [
-          {
-            label: "Dress",
-            href: "/shop?category=dress",
-          },
-          {
-            label: "Tops",
-            href: "/shop?category=tops",
-          },
-        ],
-      },
-
-      {
-        label: "Accessories",
-        children: [
-          {
-            label: "Bags",
-            href: "/shop?category=bags",
-          },
-          {
-            label: "Wallets",
-            href: "/shop?category=wallets",
-          },
-        ],
-      },
-    ],
-  },
-
-  {
-    label: "My Orders",
-    href: "/orders",
-    icon: Package,
-  },
-
-  {
-    label: "Account",
-    href: "/account",
-    icon: UserRound,
-  },
-];
-
-/* --------------------------------
-   Props
---------------------------------- */
+// ---------------------------------
+// Props
+// ---------------------------------
 
 type NestedMenuProps = {
-  items: MenuItem[];
+  items: NavItem[];
   closeMenu: () => void;
   level?: number;
 };
 
-/* --------------------------------
-   Reusable Nested Menu
---------------------------------- */
+// ---------------------------------
+// Reusable Nested Menu
+// ---------------------------------
 
 function NestedMenu({
   items,
@@ -144,12 +56,12 @@ function NestedMenu({
   );
 }
 
-/* --------------------------------
-   Recursive Menu Item
---------------------------------- */
+// ---------------------------------
+// Recursive Menu Item
+// ---------------------------------
 
 type NestedMenuItemProps = {
-  item: MenuItem;
+  item: NavItem;
   closeMenu: () => void;
   level: number;
 };
@@ -163,9 +75,9 @@ function NestedMenuItem({
 
   const hasChildren = Boolean(item.children?.length);
 
-  /* --------------------------------
-     Leaf item
-  --------------------------------- */
+  // ---------------------------------
+  // Leaf Item
+  // ---------------------------------
 
   if (!hasChildren) {
     return (
@@ -179,9 +91,9 @@ function NestedMenuItem({
     );
   }
 
-  /* --------------------------------
-     Parent item
-  --------------------------------- */
+  // ---------------------------------
+  // Parent Item
+  // ---------------------------------
 
   return (
     <div>
@@ -206,7 +118,9 @@ function NestedMenuItem({
 
         <button
           type="button"
-          onClick={() => setIsExpanded((prev) => !prev)}
+          onClick={() =>
+            setIsExpanded((prev) => !prev)
+          }
           aria-label={`Toggle ${item.label}`}
           aria-expanded={isExpanded}
           className="cursor-pointer px-3 py-2.5"
@@ -234,9 +148,9 @@ function NestedMenuItem({
   );
 }
 
-/* --------------------------------
-   Mobile Menu
---------------------------------- */
+// ---------------------------------
+// Mobile Menu
+// ---------------------------------
 
 export default function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
@@ -245,12 +159,14 @@ export default function MobileMenu() {
     setIsOpen(false);
   };
 
-  /* --------------------------------
-     Lock Body Scroll
-  --------------------------------- */
+  // ---------------------------------
+  // Lock Body Scroll
+  // ---------------------------------
 
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "unset";
+    document.body.style.overflow = isOpen
+      ? "hidden"
+      : "unset";
 
     return () => {
       document.body.style.overflow = "unset";
@@ -293,7 +209,9 @@ export default function MobileMenu() {
         aria-label="Mobile navigation"
         aria-hidden={!isOpen}
         className={`fixed top-0 left-0 z-[999] flex h-[100dvh] w-[85%] max-w-sm flex-col bg-white text-black shadow-xl transition-transform duration-300 ease-in-out md:hidden ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+          isOpen
+            ? "translate-x-0"
+            : "-translate-x-full"
         }`}
       >
         {/* Header */}
@@ -321,14 +239,14 @@ export default function MobileMenu() {
 
         <nav className="flex-1 overflow-y-auto px-4 py-5">
           <ul className="space-y-2">
-            {menuItems.map((item) => {
+            {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
 
-              /* --------------------------------
-                 Items without children
-              --------------------------------- */
+              /*
+               * Items without children
+               */
 
-              if (!item.children) {
+              if (!item.children?.length) {
                 return (
                   <li key={item.label}>
                     <Link
@@ -349,9 +267,9 @@ export default function MobileMenu() {
                 );
               }
 
-              /* --------------------------------
-                 Shop / Parent Menu
-              --------------------------------- */
+              /*
+               * Parent Menu
+               */
 
               return (
                 <li key={item.label}>
@@ -369,7 +287,8 @@ export default function MobileMenu() {
 
         <div className="border-t border-neutral-200 px-5 py-5">
           <p className="text-xs text-neutral-500">
-            © {new Date().getFullYear()} Velvetgear. All rights reserved.
+            © {new Date().getFullYear()} Velvetgear.
+            All rights reserved.
           </p>
         </div>
       </aside>
@@ -377,12 +296,12 @@ export default function MobileMenu() {
   );
 }
 
-/* --------------------------------
-   Parent Menu Item
---------------------------------- */
+// ---------------------------------
+// Parent Menu Item
+// ---------------------------------
 
 type ParentMenuItemProps = {
-  item: MenuItem;
+  item: NavItem;
   closeMenu: () => void;
 };
 
@@ -390,7 +309,8 @@ function ParentMenuItem({
   item,
   closeMenu,
 }: ParentMenuItemProps) {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] =
+    useState(false);
 
   const Icon = item.icon;
 
@@ -418,7 +338,9 @@ function ParentMenuItem({
 
         <button
           type="button"
-          onClick={() => setIsExpanded((prev) => !prev)}
+          onClick={() =>
+            setIsExpanded((prev) => !prev)
+          }
           aria-label={`Toggle ${item.label} categories`}
           aria-expanded={isExpanded}
           className="cursor-pointer px-4 py-3"
