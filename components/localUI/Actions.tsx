@@ -1,4 +1,5 @@
 import FavoriteButton from "../shared/FavaouriteButton";
+import UserButton from "../shared/UserButton";
 import CartButton from "./Cart";
 import SearchBar from "./Search";
 
@@ -8,6 +9,7 @@ export default function Actions() {
         <SearchBar/>
         <FavoriteButton/>
         <CartButton/>
+        <UserButton/>
         </div>
         
     )

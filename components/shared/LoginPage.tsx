@@ -1,13 +1,15 @@
 "use client";
-
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Loader2 } from "lucide-react";
 import { loginSchema, LoginInput } from "@/lib/validations/auth";
-
-export default function LoginPage() {
+import AuthSwitchLink from "./AuthSwitchLink";
+type Props = {
+  children?: ReactNode;
+};
+export default function LoginPage({children}: Props) {
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -33,11 +35,9 @@ export default function LoginPage() {
       setServerError("Invalid email or password. Please try again.");
     }
   };
-
   return (
     <main className="min-h-screen w-full flex items-center justify-center bg-neutral-50 px-4 py-12 font-sans">
       <div className="w-full max-w-md bg-white border border-neutral-200 rounded-lg shadow-sm p-8 md:p-10 font-sans">
-        
         {/* Brand / Header */}
         <div className="flex flex-col items-center text-center mb-8">
           <Link
@@ -60,7 +60,11 @@ export default function LoginPage() {
         )}
 
         {/* Login Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-5"
+          noValidate
+        >
           {/* Email Field */}
           <div>
             <label
@@ -131,7 +135,11 @@ export default function LoginPage() {
                 className="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-700 transition-colors"
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
+                ) : (
+                  <Eye className="w-4 h-4" />
+                )}
               </button>
             </div>
             {errors.password && (
@@ -178,29 +186,12 @@ export default function LoginPage() {
         </form>
 
         {/* Divider */}
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-neutral-200"></div>
-          </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="bg-white px-2 text-neutral-400 tracking-luxury text-[10px]">
-              Or
-            </span>
-          </div>
-        </div>
+       
 
-        {/* Alternative Action */}
         <div className="text-center">
-          <p className="text-xs text-neutral-500">
-            Don&apos;t have an account?{" "}
-            <Link
-              href="/register"
-              className="font-semibold text-neutral-900 hover:underline underline-offset-4"
-            >
-              Create an account
-            </Link>
-          </p>
+         {children}
         </div>
+       
       </div>
     </main>
   );
