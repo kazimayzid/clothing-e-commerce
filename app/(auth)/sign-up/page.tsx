@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ShoppingBag, Eye } from "lucide-react";
+import { ShoppingBag, Eye, EyeOff } from "lucide-react";
 
 import AuthSwitchLink from "@/components/shared/AuthSwitchLink";
 import { authClient } from "@/lib/auth-client";
@@ -14,6 +13,8 @@ export default function SignUpPage() {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -25,9 +26,7 @@ export default function SignUpPage() {
     const name = String(formData.get("name") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
-    const confirmPassword = String(
-      formData.get("confirmPassword") ?? ""
-    );
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
 
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
@@ -66,7 +65,6 @@ export default function SignUpPage() {
           className="mb-8 flex items-center justify-center gap-2"
         >
           <ShoppingBag className="size-6" strokeWidth={1.5} />
-
           <span className="text-xl font-semibold tracking-[0.18em]">
             YOUR BRAND
           </span>
@@ -77,7 +75,6 @@ export default function SignUpPage() {
           <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
             Create your account
           </h1>
-
           <p className="mt-2 text-sm leading-6 text-neutral-500">
             Join us for a more personalized shopping experience.
           </p>
@@ -92,7 +89,6 @@ export default function SignUpPage() {
             >
               Full name
             </label>
-
             <input
               id="name"
               name="name"
@@ -112,7 +108,6 @@ export default function SignUpPage() {
             >
               Email address
             </label>
-
             <input
               id="email"
               name="email"
@@ -120,6 +115,7 @@ export default function SignUpPage() {
               autoComplete="email"
               placeholder="you@example.com"
               required
+              maxLength={254}
               className="h-11 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
             />
           </div>
@@ -131,12 +127,11 @@ export default function SignUpPage() {
             >
               Password
             </label>
-
             <div className="relative">
               <input
                 id="password"
                 name="password"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
                 placeholder="Create a password"
                 required
@@ -144,9 +139,23 @@ export default function SignUpPage() {
                 maxLength={128}
                 className="h-11 w-full rounded-lg border border-neutral-300 px-3 pr-10 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
               />
-
-              <Eye className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+              <button
+                type="button"
+                onClick={() => setShowPassword((previous) => !previous)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 transition hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+              >
+                {showPassword ? (
+                  <EyeOff className="size-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="size-4" aria-hidden="true" />
+                )}
+              </button>
             </div>
+            <p className="mt-1.5 text-xs text-neutral-500">
+              Use at least 8 characters.
+            </p>
           </div>
 
           <div>
@@ -156,18 +165,38 @@ export default function SignUpPage() {
             >
               Confirm password
             </label>
-
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              autoComplete="new-password"
-              placeholder="Confirm your password"
-              required
-              minLength={8}
-              maxLength={128}
-              className="h-11 w-full rounded-lg border border-neutral-300 px-3 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
-            />
+            <div className="relative">
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                autoComplete="new-password"
+                placeholder="Confirm your password"
+                required
+                minLength={8}
+                maxLength={128}
+                className="h-11 w-full rounded-lg border border-neutral-300 px-3 pr-10 text-sm outline-none placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setShowConfirmPassword((previous) => !previous)
+                }
+                aria-label={
+                  showConfirmPassword
+                    ? "Hide confirm password"
+                    : "Show confirm password"
+                }
+                aria-pressed={showConfirmPassword}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 transition hover:text-neutral-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 focus-visible:ring-offset-2"
+              >
+                {showConfirmPassword ? (
+                  <EyeOff className="size-4" aria-hidden="true" />
+                ) : (
+                  <Eye className="size-4" aria-hidden="true" />
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Terms */}
@@ -179,7 +208,6 @@ export default function SignUpPage() {
               required
               className="mt-0.5 size-4 accent-neutral-900"
             />
-
             <label
               htmlFor="terms"
               className="text-sm leading-5 text-neutral-600"
