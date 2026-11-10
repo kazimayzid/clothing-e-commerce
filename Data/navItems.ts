@@ -74,16 +74,4 @@ export const NAV_ITEMS: NavItem[] = [
       },
     ],
   },
-
-  {
-    label: "My Orders",
-    href: "/orders",
-    icon: Package,
-  },
-
-  {
-    label: "Account",
-    href: "/account",
-    icon: UserRound,
-  },
 ];

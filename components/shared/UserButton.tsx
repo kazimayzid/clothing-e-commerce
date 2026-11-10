@@ -3,11 +3,15 @@ import { prisma } from "@/lib/prisma";
 
 import UserButtonClient from "@/components/shared/UserButtonClient";
 
-export default async function UserButton() {
+type Props = {
+  variant?: "desktop" | "mobile";
+};
+
+export default async function UserButton({ variant = "desktop" }: Props) {
   const session = await getCurrentSession();
 
   if (!session) {
-    return <UserButtonClient />;
+    return <UserButtonClient variant={variant} />;
   }
 
   const user = await prisma.user.findUnique({
@@ -34,5 +38,5 @@ export default async function UserButton() {
       ? user.name || session.user.name
       : undefined;
 
-  return <UserButtonClient customerName={customerName} />;
+  return <UserButtonClient customerName={customerName} variant={variant} />;
 }

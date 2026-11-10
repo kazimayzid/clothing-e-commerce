@@ -72,7 +72,7 @@ export default function ProductDetails({
 
       {/* Quantity & CTA */}
       <div className="flex flex-col gap-2.5">
-        <ProductActions numericPrice={numericPrice} />
+        <ProductActions numericPrice={numericPrice} title={title} />
       </div>
     </div>
   );

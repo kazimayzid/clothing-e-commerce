@@ -1,8 +1,9 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import {
   Menu,
@@ -152,8 +153,9 @@ function NestedMenuItem({
 // Mobile Menu
 // ---------------------------------
 
-export default function MobileMenu() {
+export default function MobileMenu({ actions }: { actions?: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   const closeMenu = () => {
     setIsOpen(false);
@@ -172,6 +174,10 @@ export default function MobileMenu() {
       document.body.style.overflow = "unset";
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   return (
     <>
@@ -282,6 +288,21 @@ export default function MobileMenu() {
             })}
           </ul>
         </nav>
+
+        {actions && (
+          <div className="border-t border-neutral-200 px-5 py-4">
+            <p className="mb-3 text-xs font-semibold tracking-wide text-neutral-500 uppercase">
+              Your account
+            </p>
+            <div
+              onClick={(event) => {
+                if ((event.target as HTMLElement).closest("a")) closeMenu();
+              }}
+            >
+              {actions}
+            </div>
+          </div>
+        )}
 
         {/* Footer */}
 
