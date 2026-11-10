@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -19,16 +20,23 @@ import { authClient } from "@/lib/auth-client";
 type Props = {
   children?: ReactNode;
   callbackURL?: string;
+  audience: "customer" | "internal";
   heading?: string;
   description?: string;
+  variant?: "page" | "modal";
+  onSuccess?: () => void;
 };
 
 export default function LoginPage({
   children,
   callbackURL = "/",
+  audience,
   heading = "Welcome Back",
   description = "Enter your credentials to access your account",
+  variant = "page",
+  onSuccess,
 }: Props) {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -47,21 +55,59 @@ export default function LoginPage({
 
   const onSubmit = async (data: LoginInput) => {
     setServerError(null);
+    let signInSucceeded = false;
 
     try {
       const { error } = await authClient.signIn.email({
         email: data.email.trim(),
         password: data.password,
         rememberMe: data.rememberMe,
-        callbackURL,
       });
 
       if (error) {
         setServerError(
           "Invalid email or password. Please try again."
         );
+        return;
       }
+
+      signInSucceeded = true;
+
+      const eligibilityResponse = await fetch("/api/auth/login-eligibility", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "same-origin",
+        cache: "no-store",
+        body: JSON.stringify({ audience }),
+      });
+
+      const eligibility = eligibilityResponse.ok
+        ? ((await eligibilityResponse.json()) as { allowed?: boolean })
+        : null;
+
+      if (!eligibility?.allowed) {
+        await authClient.signOut();
+        setServerError("Invalid email or password. Please try again.");
+        return;
+      }
+
+      router.replace(callbackURL);
+      router.refresh();
+      onSuccess?.();
     } catch {
+      if (signInSucceeded) {
+        try {
+          await authClient.signOut();
+        } catch {
+          // Keep the generic login error even if sign-out also fails.
+        }
+
+        setServerError("Invalid email or password. Please try again.");
+        return;
+      }
+
       setServerError(
         "Unable to sign in right now. Please try again."
       );
@@ -69,8 +115,20 @@ export default function LoginPage({
   };
 
   return (
-    <main className="flex min-h-screen w-full items-center justify-center bg-neutral-50 px-4 py-12 font-sans">
-      <div className="w-full max-w-md rounded-lg border border-neutral-200 bg-white p-8 shadow-sm md:p-10">
+    <main
+      className={
+        variant === "modal"
+          ? "w-full bg-white px-4 py-8 font-sans"
+          : "flex min-h-screen w-full items-center justify-center bg-neutral-50 px-4 py-12 font-sans"
+      }
+    >
+      <div
+        className={
+          variant === "modal"
+            ? "mx-auto w-full max-w-md p-4 sm:p-6"
+            : "w-full max-w-md rounded-lg border border-neutral-200 bg-white p-8 shadow-sm md:p-10"
+        }
+      >
         {/* Brand / Header */}
         <div className="mb-8 flex flex-col items-center text-center">
           <Link

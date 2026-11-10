@@ -4,7 +4,7 @@ import LoginPage from "@/components/shared/LoginPage";
 
 export default function UserLoginPage() {
   return (
-    <LoginPage callbackURL="/">
+    <LoginPage audience="customer" callbackURL="/account">
       <AuthSwitchLink
         message="Don't have an account?"
         linkText="Create an account"
