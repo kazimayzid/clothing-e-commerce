@@ -23,7 +23,11 @@ export async function requireUser() {
   return session;
 }
 
-const getUserAccess = cache(async (userId: string) => {
+const getUserAccess = cache(async (
+  userId: string,
+  resource: string,
+  action: string,
+) => {
   return prisma.user.findUnique({
     where: { id: userId },
     select: {
@@ -34,6 +38,11 @@ const getUserAccess = cache(async (userId: string) => {
             select: {
               slug: true,
               permissions: {
+                where: {
+                  permission: {
+                    is: { resource, action },
+                  },
+                },
                 select: {
                   permission: {
                     select: {
@@ -51,12 +60,28 @@ const getUserAccess = cache(async (userId: string) => {
   });
 });
 
+const getCustomerAccess = cache(async (userId: string) => {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      isActive: true,
+      roles: {
+        select: {
+          role: {
+            select: { slug: true },
+          },
+        },
+      },
+    },
+  });
+});
+
 export async function requireCustomer() {
   const session = await getCurrentSession();
 
   if (!session) redirect("/sign-in");
 
-  const access = await getUserAccess(session.user.id);
+  const access = await getCustomerAccess(session.user.id);
   const isCustomer = access?.roles.some(
     ({ role }) => role.slug === "user",
   );
@@ -76,7 +101,10 @@ export async function requirePermission(resource: string, action: string) {
 
   if (!session) redirect("/admin/login");
 
-  const access = await getUserAccess(session.user.id);
+  const access = await getUserAccess(session.user.id, resource, action);
+  const isInternal = access?.roles.some(
+    ({ role }) => role.slug === "admin" || role.slug === "staff",
+  );
   const allowed = access?.roles.some(({ role }) =>
     role.permissions.some(
       ({ permission }) =>
@@ -84,7 +112,11 @@ export async function requirePermission(resource: string, action: string) {
     ),
   );
 
-  if (!access?.isActive || !allowed) {
+  if (!access?.isActive || !isInternal) {
+    redirect("/admin/login");
+  }
+
+  if (!allowed) {
     redirect("/");
   }
 

@@ -1,5 +1,27 @@
 import { getBannerData } from "@/services/banner.service";
 
+export function HeroBannerFallback() {
+  return (
+    <div className="relative flex h-[70vh] min-h-[420px] max-h-[750px] w-full items-center justify-center overflow-hidden bg-neutral-900 px-4 text-center text-white sm:h-[80vh] sm:px-6 lg:px-8">
+      <div className="absolute inset-0 bg-gradient-to-b from-neutral-800 to-black" />
+      <div className="relative z-10 flex max-w-2xl flex-col items-center">
+        <span className="text-[10px] font-semibold tracking-[0.25em] text-neutral-200 uppercase sm:text-xs">
+          Summer 2026
+        </span>
+        <h1 className="mt-3 text-3xl leading-tight font-bold tracking-tight uppercase sm:text-5xl md:text-6xl lg:text-7xl">
+          New Collection
+        </h1>
+        <p className="mt-3 max-w-md text-xs font-medium tracking-wide text-neutral-200 sm:mt-4 sm:text-base">
+          Discover our latest luxury styles, crafted for contemporary elegance.
+        </p>
+        <span className="mt-6 bg-white px-8 py-3.5 text-xs font-semibold tracking-[0.2em] text-black uppercase sm:mt-8">
+          Shop Now
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default async function HeroBanner() {
   const bannerData = await getBannerData();
   const video = bannerData?.videos?.[5];

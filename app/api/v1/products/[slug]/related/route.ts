@@ -1,6 +1,6 @@
 import { mockProducts20 } from "@/Data/mockProducts";
 import { ResponseBuilder } from "@/lib/api-response";
-import { calculateSimilarityScore } from "@/services/relatedProduct.service";
+import { getRelatedProducts } from "@/services/relatedProduct.service";
 
 
 export async function GET(
@@ -21,20 +21,7 @@ export async function GET(
     );
   }
 
-  const candidates = mockProducts20.filter(
-    (item) => item.id !== product.id
-  );
-
-  const scoredProducts = candidates.map((candidate) => ({
-    product: candidate,
-    score: calculateSimilarityScore(product, candidate),
-  }));
-
-  scoredProducts.sort((a, b) => b.score - a.score);
-
-  const relatedProducts = scoredProducts
-    .slice(0, 4)
-    .map(({ product }) => product);
+  const relatedProducts = getRelatedProducts(slug);
 
   return ResponseBuilder.success(relatedProducts);
 }

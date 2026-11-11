@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getCurrentSession } from "@/lib/dal";
 import { prisma } from "@/lib/prisma";
 
@@ -7,15 +8,9 @@ type Props = {
   variant?: "desktop" | "mobile";
 };
 
-export default async function UserButton({ variant = "desktop" }: Props) {
-  const session = await getCurrentSession();
-
-  if (!session) {
-    return <UserButtonClient variant={variant} />;
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+const getNavbarUser = cache(async (userId: string) =>
+  prisma.user.findUnique({
+    where: { id: userId },
     select: {
       name: true,
       isActive: true,
@@ -27,7 +22,17 @@ export default async function UserButton({ variant = "desktop" }: Props) {
         },
       },
     },
-  });
+  }),
+);
+
+export default async function UserButton({ variant = "desktop" }: Props) {
+  const session = await getCurrentSession();
+
+  if (!session) {
+    return <UserButtonClient variant={variant} />;
+  }
+
+  const user = await getNavbarUser(session.user.id);
 
   const roleSlugs = user?.roles.map(({ role }) => role.slug) ?? [];
   const hasCustomerRole = roleSlugs.includes("user");

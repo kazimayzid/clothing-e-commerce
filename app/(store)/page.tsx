@@ -1,10 +1,13 @@
-import HeroBanner from "@/components/layout/HeroBanner";
+import { Suspense } from "react";
+import HeroBanner, { HeroBannerFallback } from "@/components/layout/HeroBanner";
 import MenSection from "@/components/layout/MenSection";
 
 export default function Home() {
   return (
     <div>
-      <HeroBanner />
+      <Suspense fallback={<HeroBannerFallback />}>
+        <HeroBanner />
+      </Suspense>
       <MenSection />
     </div>
   );

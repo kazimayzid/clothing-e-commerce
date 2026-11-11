@@ -1,4 +1,5 @@
 import type { Product } from "@/types/product";
+import { mockProducts20 } from "@/Data/mockProducts";
 
 
 export function calculateSimilarityScore(
@@ -41,22 +42,24 @@ export function calculateSimilarityScore(
 }
 
 
+export function getRelatedProducts(slug: string): Product[] {
+  const product = mockProducts20.find((item) => item.slug === slug);
+
+  if (!product) return [];
+
+  return mockProducts20
+    .filter((candidate) => candidate.id !== product.id)
+    .map((candidate) => ({
+      product: candidate,
+      score: calculateSimilarityScore(product, candidate),
+    }))
+    .sort((first, second) => second.score - first.score)
+    .slice(0, 4)
+    .map(({ product: relatedProduct }) => relatedProduct);
+}
+
 export async function getRelatedProduct(
   slug: string
 ): Promise<{ success: boolean; data: Product[] }> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-
-  if (!baseUrl) {
-    throw new Error("NEXT_PUBLIC_BASE_URL is not configured");
-  }
-
-  const res = await fetch(
-    `${baseUrl}/api/v1/products/${slug}/related`
-  );
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch related products");
-  }
-
-  return res.json();
+  return { success: true, data: getRelatedProducts(slug) };
 }

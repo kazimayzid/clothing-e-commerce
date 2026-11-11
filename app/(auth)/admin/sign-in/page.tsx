@@ -1,6 +1,6 @@
 import LoginPage from "@/components/shared/LoginPage";
 
-export default function AdminLoginPage() {
+export default function AdminSigninPage() {
   return (
     <LoginPage
       audience="internal"
