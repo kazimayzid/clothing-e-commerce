@@ -99,7 +99,7 @@ export async function requireCustomer() {
 export async function requirePermission(resource: string, action: string) {
   const session = await getCurrentSession();
 
-  if (!session) redirect("/admin/login");
+  if (!session) redirect("/admin/sign-in");
 
   const access = await getUserAccess(session.user.id, resource, action);
   const isInternal = access?.roles.some(
@@ -113,7 +113,7 @@ export async function requirePermission(resource: string, action: string) {
   );
 
   if (!access?.isActive || !isInternal) {
-    redirect("/admin/login");
+    redirect("/admin/sign-in");
   }
 
   if (!allowed) {

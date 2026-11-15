@@ -9,9 +9,12 @@ import BundleDeals from "./BundleDeals";
 import ProductActions from "./ProductActions";
 
 interface ProductDetailsProps {
-  images?: string
-  title?: string;
-  price?: string;
+  id: string;
+  slug: string;
+  imageSrc: string;
+  variant: string;
+  title: string;
+  price: string;
   originalPrice?: number;
   rating?: number;
   reviewCount?: number;
@@ -21,7 +24,10 @@ interface ProductDetailsProps {
 }
 
 export default function ProductDetails({
-  images,
+  id,
+  slug,
+  imageSrc,
+  variant,
   title,
   price,
   originalPrice,
@@ -72,7 +78,14 @@ export default function ProductDetails({
 
       {/* Quantity & CTA */}
       <div className="flex flex-col gap-2.5">
-        <ProductActions numericPrice={numericPrice} title={title} />
+        <ProductActions
+          id={id}
+          slug={slug}
+          numericPrice={numericPrice}
+          title={title}
+          imageSrc={imageSrc}
+          variant={variant}
+        />
       </div>
     </div>
   );

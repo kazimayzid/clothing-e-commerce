@@ -33,7 +33,7 @@ export default function YourBag({
             Your bag is currently empty.
           </p>
           <Link
-            href="/products"
+            href="/shop"
             className="bg-neutral-900 text-white px-6 py-3 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800 transition-colors"
           >
             Explore Products
@@ -54,7 +54,7 @@ export default function YourBag({
 
       <div className="mt-4 border-t border-neutral-200 pt-6">
         <Link
-          href="/products"
+          href="/shop"
           className="text-xs uppercase tracking-wider font-semibold text-neutral-900 hover:text-neutral-600 transition-colors flex items-center gap-2 w-fit underline underline-offset-4"
         >
           <ArrowLeft className="w-4 h-4" />

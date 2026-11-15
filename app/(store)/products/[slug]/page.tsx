@@ -35,7 +35,10 @@ export default async function ProductDetailPage({
         />
 
         <ProductDetails
-          images={product.images}
+          id={product.id}
+          slug={product.slug}
+          imageSrc={product.images[0] ?? ""}
+          variant={product.colorName}
           title={product.title}
           price={product.price}
           rating={product.rating}

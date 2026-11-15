@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import Button from "../shared/Button";
+import { saveCartItem, type StoredCartEntry } from "@/contexts/actionStorage";
 
-export default function BuyNow() {
+export default function BuyNow({ item }: { item: StoredCartEntry }) {
   const router = useRouter();
 
   const handleBuyNow = () => {
-    // আগে cart-এ product add করার logic
-    // তারপর cart page-এ যাও
+    saveCartItem(item);
     router.push("/cart");
   };
 
