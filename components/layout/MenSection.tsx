@@ -25,6 +25,7 @@ export default async function MenSection() {
             <ProductCard key={product.id}
         product={{
           id: String(product.id),
+          slug: product.slug,
           title: product.title,
           price: `$${product.price}`,
           imageSrc: product.imageSrc,

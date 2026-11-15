@@ -4,9 +4,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Award, Clock, ChevronUp } from 'lucide-react';
+import ProductCardWishlistButton from './ProductCardWishlistButton';
 
 export interface Product {
   id: string;
+  slug?: string;
   title: string;
   colorName?: string;
   price: string;
@@ -34,6 +36,8 @@ export default function ProductCard({
 }) {
   const {
     title,
+    id,
+    slug: productSlug,
     colorName,
     price,
     multibuyPrice,
@@ -46,21 +50,23 @@ export default function ProductCard({
   } = product;
 
 
-  const slug = createSlug(title);
+  const slug = productSlug ?? createSlug(title);
 
   const productHref = `/products/${slug}`;
+  const numericPrice = Number(price.replace(/[^\d.]/g, "")) || 0;
 
   return (
     <div className="group cursor-pointer">
       
-      <Link href={productHref} className="relative block aspect-[3/4] overflow-hidden bg-card">
-        <Image
-          src={imageSrc}
-          alt={colorName ? `${title} - ${colorName}` : title}
-          fill
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-          className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
-        />
+      <div className="relative aspect-[3/4] overflow-hidden bg-card">
+        <Link href={productHref} className="absolute inset-0 block">
+          <Image
+            src={imageSrc}
+            alt={colorName ? `${title} - ${colorName}` : title}
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          />
 
       
         {isNew && (
@@ -88,7 +94,18 @@ export default function ProductCard({
             <ChevronUp className="h-3 w-3 text-neutral-600" />
           </div>
         )}
-      </Link>
+        </Link>
+
+        <ProductCardWishlistButton
+          item={{
+            id,
+            slug,
+            title,
+            price: numericPrice,
+            imageSrc,
+          }}
+        />
+      </div>
 
       
       <div className="flex flex-col pt-3 pb-1 text-left">

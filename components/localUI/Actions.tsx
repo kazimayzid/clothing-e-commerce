@@ -5,16 +5,12 @@ import SearchBar from "./Search";
 
 export default function Actions() {
   return (
-    <div className="flex items-center">
-      <div className="hidden items-center gap-[15px] md:flex">
-        <SearchBar />
-        <FavoriteButton />
-        <CartButton />
+    <div className="flex items-center gap-1 md:gap-[15px]">
+      <SearchBar />
+      <FavoriteButton />
+      <CartButton />
+      <div className="hidden md:block">
         <UserButton />
-      </div>
-      <div className="flex items-center gap-1 md:hidden">
-        <SearchBar />
-        <CartButton />
       </div>
     </div>
   );

@@ -6,9 +6,12 @@ import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, Heart, ShoppingBag, Trash2, X } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   getWishlistItems,
+  publishWishlistFeedback,
+  subscribeToWishlistFeedback,
   removeWishlistItem,
   saveWishlistItems,
   saveCartItem,
@@ -62,6 +65,24 @@ export default function FavoriteButton() {
     syncWishlist();
     return subscribeToActionChanges(syncWishlist);
   }, []);
+
+  useEffect(
+    () =>
+      subscribeToWishlistFeedback((feedback) => {
+        toast(feedback.message, {
+          duration: 3200,
+          ...(feedback.canViewWishlist
+            ? {
+                action: {
+                  label: "View Wishlist",
+                  onClick: openDrawer,
+                },
+              }
+            : {}),
+        });
+      }),
+    [openDrawer],
+  );
 
   useEffect(() => {
     const hasLegacyItems = items.some(
@@ -169,6 +190,11 @@ export default function FavoriteButton() {
       variant: "Standard",
     });
     removeWishlistItem(item.id);
+  }
+
+  function handleRemoveWishlistItem(id: string) {
+    removeWishlistItem(id);
+    publishWishlistFeedback(false);
   }
 
   function moveItemToBag(item: StoredWishlistEntry) {
@@ -284,7 +310,7 @@ export default function FavoriteButton() {
 
                       <button
                         type="button"
-                        onClick={() => removeWishlistItem(item.id)}
+                        onClick={() => handleRemoveWishlistItem(item.id)}
                         aria-label={`Remove ${item.title} from wishlist`}
                         className="shrink-0 rounded-full p-1.5 text-neutral-400 transition hover:bg-neutral-100 hover:text-red-600"
                       >

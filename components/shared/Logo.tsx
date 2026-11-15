@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 type LogoProps = {
   size?: number;
   iconBg?: string;
@@ -18,7 +20,7 @@ export default function Logo({
   showText = true,
 }: LogoProps) {
   return (
-    <div className={`inline-flex items-center gap-2 ${className}`}>
+    <Link href={"/"} className={`inline-flex items-center gap-2 ${className}`}>
       <svg
         width={size}
         height={size}
@@ -44,6 +46,6 @@ export default function Logo({
           Brand
         </span>
       )}
-    </div>
+    </Link>
   );
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Jost } from "next/font/google";
 import "./globals.css";
+import SonnerToaster from "@/components/providers/SonnerToaster";
 
 const jost = Jost({
   subsets: ["latin"],
@@ -33,8 +34,7 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} ${jost.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
-        
-        
+        <SonnerToaster />
 
         <main className="flex-1">
           {children}
