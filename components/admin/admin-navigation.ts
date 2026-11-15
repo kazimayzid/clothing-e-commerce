@@ -1,0 +1,71 @@
+import {
+  Activity,
+  BarChart3,
+  Boxes,
+  FileBarChart2,
+  Heart,
+  LayoutDashboard,
+  Megaphone,
+  Package,
+  ReceiptText,
+  RefreshCcw,
+  Settings2,
+  Truck,
+  UserRoundCog,
+  UsersRound,
+  ShoppingBag,
+} from "lucide-react";
+
+export const adminNavigation = [
+  {
+    label: "OVERVIEW",
+    items: [
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Overview of your store's performance." },
+      { id: "analytics", label: "Analytics", icon: BarChart3, description: "Explore trends across your store." },
+      { id: "sales-reports", label: "Sales & Reports", icon: FileBarChart2, description: "Review sales performance and reports." },
+    ],
+  },
+  {
+    label: "STORE MANAGEMENT",
+    items: [
+      { id: "orders", label: "Orders", icon: ShoppingBag, description: "Review and organize customer orders." },
+      { id: "products", label: "Products", icon: Package, description: "Manage the products in your storefront." },
+      { id: "inventory", label: "Inventory", icon: Boxes, description: "Keep track of stock levels and availability." },
+      { id: "customers", label: "Customers", icon: UsersRound, description: "View customer profiles and activity." },
+      { id: "wishlist", label: "Wishlist", icon: Heart, description: "See products customers have saved." },
+    ],
+  },
+  {
+    label: "BUSINESS",
+    items: [
+      { id: "marketing", label: "Marketing", icon: Megaphone, description: "Plan campaigns and customer offers." },
+      { id: "returns-refunds", label: "Returns & Refunds", icon: RefreshCcw, description: "Review return and refund requests." },
+      { id: "shipping-delivery", label: "Shipping & Delivery", icon: Truck, description: "Monitor shipping and delivery operations." },
+      { id: "expenses", label: "Expenses", icon: ReceiptText, description: "Organize business expenses and costs." },
+    ],
+  },
+  {
+    label: "SYSTEM",
+    items: [
+      { id: "admin-users", label: "Admin Users", icon: UserRoundCog, description: "Manage dashboard team access." },
+      { id: "settings", label: "Settings", icon: Settings2, description: "Configure store and dashboard preferences." },
+      { id: "activity-logs", label: "Activity Logs", icon: Activity, description: "Review recent changes across the store." },
+    ],
+  },
+] as const;
+
+export type AdminPageKey = (typeof adminNavigation)[number]["items"][number]["id"];
+
+export function isAdminPageKey(value: string | undefined): value is AdminPageKey {
+  return adminNavigation.some((group) =>
+    group.items.some((item) => item.id === value),
+  );
+}
+
+export function getAdminPage(value: AdminPageKey) {
+  for (const group of adminNavigation) {
+    const page = group.items.find((item) => item.id === value);
+    if (page) return page;
+  }
+  return adminNavigation[0].items[0];
+}
