@@ -47,7 +47,7 @@ export default function ProductActions({
 
       <BuyNow item={cartItem} />
 
-      <Wishlist title={title} />
+      <Wishlist item={{ id, slug, title, price: numericPrice, imageSrc }} />
     </div>
   );
 }

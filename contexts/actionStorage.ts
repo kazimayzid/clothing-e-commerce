@@ -2,7 +2,13 @@ import type { CartItem } from "@/types/cart";
 
 export type StoredCartEntry = Omit<CartItem, "variant" | "imageSrc"> &
   Partial<Pick<CartItem, "variant" | "imageSrc">>;
-export type StoredWishlistEntry = { id: string; title: string };
+export type StoredWishlistEntry = {
+  id: string;
+  title: string;
+  slug?: string;
+  price?: number;
+  imageSrc?: string;
+};
 
 const CART_KEY = "store-cart-items";
 const WISHLIST_KEY = "store-wishlist-items";
@@ -32,7 +38,11 @@ export function getCartItems() {
 }
 
 export function getWishlistItems() {
-  return read<StoredWishlistEntry>(WISHLIST_KEY);
+  return read<StoredWishlistEntry>(WISHLIST_KEY).map((item) => ({
+    ...item,
+    price: Number(item.price ?? 0),
+    imageSrc: item.imageSrc || LEGACY_CART_IMAGE,
+  }));
 }
 
 export function saveCartItem(item: StoredCartEntry) {
@@ -90,6 +100,24 @@ export function toggleWishlistItem(item: StoredWishlistEntry) {
   );
   publishChange();
   return !exists;
+}
+
+export function removeWishlistItem(id: string) {
+  localStorage.setItem(
+    WISHLIST_KEY,
+    JSON.stringify(getWishlistItems().filter((entry) => entry.id !== id)),
+  );
+  publishChange();
+}
+
+export function clearWishlist() {
+  localStorage.setItem(WISHLIST_KEY, "[]");
+  publishChange();
+}
+
+export function saveWishlistItems(items: StoredWishlistEntry[]) {
+  localStorage.setItem(WISHLIST_KEY, JSON.stringify(items));
+  publishChange();
 }
 
 export function subscribeToActionChanges(listener: () => void) {
