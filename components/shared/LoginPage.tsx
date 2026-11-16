@@ -16,6 +16,7 @@ import {
 
 import { loginSchema, type LoginInput } from "@/lib/validations/auth";
 import { authClient } from "@/lib/auth-client";
+import Logo from "./Logo";
 
 type Props = {
   children?: ReactNode;
@@ -135,7 +136,7 @@ export default function LoginPage({
             href="/"
             className="mb-2 text-2xl font-bold tracking-luxury text-neutral-900"
           >
-            CHARLES &amp; KEITH
+            <Logo/>
           </Link>
 
           <h1 className="text-xl font-bold text-neutral-900">

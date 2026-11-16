@@ -4,6 +4,7 @@ import {
   Boxes,
   FileBarChart2,
   Heart,
+  KeyRound,
   LayoutDashboard,
   Megaphone,
   Package,
@@ -47,7 +48,8 @@ export const adminNavigation = [
   {
     label: "SYSTEM",
     items: [
-      { id: "admin-users", label: "Admin Users", icon: UserRoundCog, description: "Manage dashboard team access." },
+      { id: "admin-users", label: "Admin Users", icon: UserRoundCog, description: "Manage administrators, staff accounts, roles, and access to your store.", requiredPermission: "users:read" },
+      { id: "roles-permissions", label: "Roles & Permissions", icon: KeyRound, description: "Control what administrators and staff members can access and manage.", requiredPermission: "roles:manage" },
       { id: "settings", label: "Settings", icon: Settings2, description: "Configure store and dashboard preferences." },
       { id: "activity-logs", label: "Activity Logs", icon: Activity, description: "Review recent changes across the store." },
     ],

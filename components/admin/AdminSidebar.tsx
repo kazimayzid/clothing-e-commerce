@@ -9,6 +9,7 @@ import { getAdminInitials } from "@/components/admin/admin-utils";
 type Props = {
   activeView: AdminPageKey;
   adminName: string;
+  permissionKeys: string[];
   onNavigate?: () => void;
   mobile?: boolean;
 };
@@ -16,6 +17,7 @@ type Props = {
 export default function AdminSidebar({
   activeView,
   adminName,
+  permissionKeys,
   onNavigate,
   mobile = false,
 }: Props) {
@@ -53,13 +55,18 @@ export default function AdminSidebar({
       </div>
 
       <nav aria-label="Admin navigation" className="flex-1 overflow-y-auto px-3 py-5">
-        {adminNavigation.map((group) => (
+        {adminNavigation.map((group) => {
+          const visibleItems = group.items.filter((item) =>
+            !("requiredPermission" in item) || permissionKeys.includes(item.requiredPermission),
+          );
+          if (!visibleItems.length) return null;
+          return (
           <div key={group.label} className="mb-6 last:mb-0">
             <p className="mb-2 px-3 text-[10px] font-semibold tracking-[0.16em] text-stone-400">
               {group.label}
             </p>
             <div className="space-y-1">
-              {group.items.map((item) => {
+              {visibleItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeView === item.id;
                 return (
@@ -84,7 +91,8 @@ export default function AdminSidebar({
               })}
             </div>
           </div>
-        ))}
+        );
+        })}
       </nav>
 
       <div className="border-t border-stone-200 p-3">

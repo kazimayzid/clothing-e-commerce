@@ -7,15 +7,35 @@ import AdminModulePlaceholder from "@/components/admin/AdminModulePlaceholder";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
+import AdminUsersManagement from "@/components/admin/management/AdminUsersManagement";
+import RolesPermissionsManagement from "@/components/admin/management/RolesPermissionsManagement";
+import type { AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
 import { getAdminPage, type AdminPageKey } from "@/components/admin/admin-navigation";
 import { getAdminInitials } from "@/components/admin/admin-utils";
 
 type Props = {
   activeView: AdminPageKey;
   adminName: string;
+  currentUserId: string;
+  permissionKeys: string[];
+  roles?: AdminRoleSummary[];
+  permissionCatalog?: AdminPermission[];
+  managedUsers?: ManagedAdminUser[];
+  canAssignRoles: boolean;
+  canViewUsers: boolean;
 };
 
-export default function AdminDashboardShell({ activeView, adminName }: Props) {
+export default function AdminDashboardShell({
+  activeView,
+  adminName,
+  currentUserId,
+  permissionKeys,
+  roles,
+  permissionCatalog,
+  managedUsers,
+  canAssignRoles,
+  canViewUsers,
+}: Props) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const page = getAdminPage(activeView);
   const isDashboard = activeView === "dashboard";
@@ -23,7 +43,7 @@ export default function AdminDashboardShell({ activeView, adminName }: Props) {
   return (
     <div className="min-h-screen bg-[#fafaf9] text-stone-900">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[258px] border-r border-stone-200 lg:block">
-        <AdminSidebar activeView={activeView} adminName={adminName} />
+        <AdminSidebar activeView={activeView} adminName={adminName} permissionKeys={permissionKeys} />
       </aside>
 
       {mobileNavOpen && (
@@ -38,6 +58,7 @@ export default function AdminDashboardShell({ activeView, adminName }: Props) {
             <AdminSidebar
               activeView={activeView}
               adminName={adminName}
+              permissionKeys={permissionKeys}
               mobile
               onNavigate={() => setMobileNavOpen(false)}
             />
@@ -85,7 +106,27 @@ export default function AdminDashboardShell({ activeView, adminName }: Props) {
             description={page.description}
             showDashboardActions={isDashboard}
           />
-          {isDashboard ? <DashboardOverview /> : <AdminModulePlaceholder pageKey={activeView} />}
+          {isDashboard ? (
+            <DashboardOverview />
+          ) : activeView === "admin-users" ? (
+            <AdminUsersManagement
+              initialUsers={managedUsers ?? []}
+              roles={roles ?? []}
+              canAssignRoles={canAssignRoles}
+              currentUserId={currentUserId}
+            />
+          ) : activeView === "roles-permissions" ? (
+            <RolesPermissionsManagement
+              initialRoles={roles ?? []}
+              permissionCatalog={permissionCatalog ?? []}
+              initialUsers={managedUsers ?? []}
+              canViewUsers={canViewUsers}
+              canAssignRoles={canAssignRoles}
+              currentUserId={currentUserId}
+            />
+          ) : (
+            <AdminModulePlaceholder pageKey={activeView} />
+          )}
           <footer className="mt-8 border-t border-stone-200 pt-4 text-[10px] text-stone-400">
             LuneCraft Admin · Design preview
           </footer>
