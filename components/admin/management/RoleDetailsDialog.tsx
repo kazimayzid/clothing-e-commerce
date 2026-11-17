@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { toast } from "sonner";
 import AdminDialog from "@/components/admin/management/AdminDialog";
 import PermissionMatrix from "@/components/admin/management/PermissionMatrix";
 import { formatAdminDate } from "@/components/admin/admin-utils";
@@ -15,7 +14,7 @@ type Props = {
   canAssignRoles: boolean;
   currentUserId: string;
   onClose: () => void;
-  onSaveAssignments: (userIds: string[]) => void;
+  onSaveAssignments: (userIds: string[]) => Promise<void>;
 };
 
 const tabs = ["Overview", "Permissions", "Assigned Users"] as const;
@@ -32,11 +31,11 @@ export default function RoleDetailsDialog({
   onSaveAssignments,
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
-  const roleIsProtected = role.slug === "admin";
+  const roleIsProtected = role.isSuperAdmin;
   const initialUserIds = users.filter((user) => user.roles.some((userRole) => userRole.id === role.id)).map(({ id }) => id);
   const [selectedUserIds, setSelectedUserIds] = useState(initialUserIds);
   const [isEditingAssignments, setIsEditingAssignments] = useState(false);
-  const isSystemRole = ["admin", "staff", "user"].includes(role.slug);
+  const isSystemRole = role.isSuperAdmin || ["staff"].includes(role.slug);
   const rolePermissions = useMemo(() => new Set(role.permissions.map(({ id }) => id)), [role.permissions]);
 
   function toggleUser(userId: string) {
@@ -45,10 +44,13 @@ export default function RoleDetailsDialog({
       : [...current, userId]);
   }
 
-  function saveAssignments() {
-    onSaveAssignments(selectedUserIds);
-    toast.info("Prototype only — role assignments have not been saved to the database.");
-    setIsEditingAssignments(false);
+  async function saveAssignments() {
+    try {
+      await onSaveAssignments(selectedUserIds);
+      setIsEditingAssignments(false);
+    } catch {
+      // The parent reports the server error through the dashboard toast.
+    }
   }
 
   return (
@@ -114,7 +116,7 @@ export default function RoleDetailsDialog({
               </div>
             )}
             {isEditingAssignments && canViewUsers && canAssignRoles && !roleIsProtected && (
-              <div className="mt-4 flex items-center justify-between gap-3"><p className="text-[10px] text-stone-400">Prototype only. Your own role assignment is locked.</p><button type="button" onClick={saveAssignments} className="rounded-md bg-stone-900 px-4 py-2.5 text-xs font-medium text-white hover:bg-stone-700">Save preview</button></div>
+              <div className="mt-4 flex items-center justify-between gap-3"><p className="text-[10px] text-stone-400">Your own role assignment is locked.</p><button type="button" onClick={() => void saveAssignments()} className="rounded-md bg-stone-900 px-4 py-2.5 text-xs font-medium text-white hover:bg-stone-700">Save assignments</button></div>
             )}
           </div>
         )}

@@ -1,24 +1,28 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import { MailPlus } from "lucide-react";
+import { toast } from "sonner";
 
 import AdminDialog from "@/components/admin/management/AdminDialog";
-import type { AdminRoleSummary } from "@/components/admin/management/management-types";
+import type { AdminInvitationSummary, AdminRoleSummary } from "@/components/admin/management/management-types";
 
 export default function AdminInviteDialog({
   roles,
   onClose,
+  onCreated,
 }: {
   roles: AdminRoleSummary[];
   onClose: () => void;
+  onCreated: (invitation: AdminInvitationSummary) => void;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const assignableRoles = roles.filter(
-    ({ slug }) => slug !== "admin" && slug !== "user",
+    ({ isSuperAdmin, scope }) => scope === "ADMIN" && !isSuperAdmin,
   );
 
   function toggleRole(roleId: string) {
@@ -29,20 +33,58 @@ export default function AdminInviteDialog({
     );
   }
 
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      const response = await fetch("/api/v1/admin/invitations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, roleIds: selectedRoleIds }),
+      });
+      const data = await response.json();
+      if (data.invitation) onCreated(data.invitation);
+      if (data.invitation && !data.emailAcceptedByProvider) {
+        const deliveryMessage = data.error || "Invitation saved, but Resend did not accept the email request. Use Resend to retry after fixing configuration.";
+        toast.error(deliveryMessage);
+        onClose();
+        return;
+      }
+      if (!response.ok) throw new Error(data.error || "Unable to send invitation.");
+      if (data.deliveryStatus === "UNCONFIRMED") {
+        toast.success("Resend accepted the invitation request; delivery is not confirmed yet.");
+        onClose();
+        return;
+      }
+      toast.success("Resend accepted the invitation request; delivery is not confirmed yet.");
+      onClose();
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "Unable to send invitation.";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <AdminDialog
       title="Invite admin or staff"
-      description="Choose from existing database roles. The invitation workflow is not configured yet."
+      description="Invite a teammate using existing ADMIN-scoped roles. The invite expires in seven days."
       onClose={onClose}
       size="lg"
     >
-      <form onSubmit={(event) => event.preventDefault()} className="space-y-5 p-5 sm:p-6">
+      <form onSubmit={submit} className="space-y-5 p-5 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-xs font-medium text-stone-700">
             Full name
             <input
               value={name}
               onChange={(event) => setName(event.target.value)}
+              required
+              minLength={2}
+              maxLength={200}
               autoComplete="name"
               className="mt-2 h-10 w-full rounded-md border border-stone-200 px-3 text-sm font-normal outline-none focus:border-stone-500"
               placeholder="Team member name"
@@ -57,6 +99,8 @@ export default function AdminInviteDialog({
               autoComplete="email"
               className="mt-2 h-10 w-full rounded-md border border-stone-200 px-3 text-sm font-normal outline-none focus:border-stone-500"
               placeholder="name@example.com"
+              required
+              maxLength={320}
             />
           </label>
         </div>
@@ -101,27 +145,16 @@ export default function AdminInviteDialog({
           </p>
         </fieldset>
 
-        <label className="block text-xs font-medium text-stone-700">
-          Invitation message <span className="font-normal text-stone-400">(optional)</span>
-          <textarea
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            rows={3}
-            maxLength={500}
-            className="mt-2 w-full resize-y rounded-md border border-stone-200 px-3 py-2.5 text-sm font-normal outline-none focus:border-stone-500"
-            placeholder="Add a short note for the invitee."
-          />
-        </label>
-
         <div className="flex items-start gap-3 rounded-md border border-stone-200 bg-stone-50 p-3.5">
           <MailPlus className="mt-0.5 size-4 shrink-0 text-stone-500" />
           <p className="text-[11px] leading-5 text-stone-600">
-            Better Auth is configured for sign-in and public customer sign-up, but this project has no invitation endpoint or email delivery flow. No account or email will be created from this preview.
+            The recipient will create or use an account through Better Auth and must verify the invited email before accepting. Email delivery uses Resend.
           </p>
         </div>
 
+        {error && <p role="alert" className="rounded-md bg-red-50 px-3 py-2 text-xs text-red-700">{error}</p>}
         <div className="flex flex-col-reverse gap-3 border-t border-stone-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[10px] text-stone-400">Account status: invitation flow unavailable</p>
+          <p className="text-[10px] text-stone-400">Only the protected Super Admin can send invitations.</p>
           <div className="flex justify-end gap-2">
             <button
               type="button"
@@ -131,12 +164,11 @@ export default function AdminInviteDialog({
               Close
             </button>
             <button
-              type="button"
-              disabled
-              className="h-9 cursor-not-allowed rounded-md bg-stone-300 px-4 text-xs font-medium text-white"
-              title="Invitation workflow is not configured"
+              type="submit"
+              disabled={loading || !name.trim() || !email.trim() || selectedRoleIds.length === 0}
+              className="h-9 rounded-md bg-stone-900 px-4 text-xs font-medium text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:bg-stone-300"
             >
-              Send Invitation
+              {loading ? "Sending..." : "Send Invitation"}
             </button>
           </div>
         </div>

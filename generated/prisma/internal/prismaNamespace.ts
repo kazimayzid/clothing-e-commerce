@@ -403,6 +403,8 @@ export const ModelName = {
   Verification: 'Verification',
   Role: 'Role',
   Permission: 'Permission',
+  AdminInvitation: 'AdminInvitation',
+  AdminInvitationRole: 'AdminInvitationRole',
   UserRole: 'UserRole',
   RolePermission: 'RolePermission'
 } as const
@@ -420,7 +422,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "role" | "permission" | "userRole" | "rolePermission"
+    modelProps: "user" | "session" | "account" | "verification" | "role" | "permission" | "adminInvitation" | "adminInvitationRole" | "userRole" | "rolePermission"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -868,6 +870,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AdminInvitation: {
+      payload: Prisma.$AdminInvitationPayload<ExtArgs>
+      fields: Prisma.AdminInvitationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdminInvitationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdminInvitationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload>
+        }
+        findFirst: {
+          args: Prisma.AdminInvitationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdminInvitationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload>
+        }
+        findMany: {
+          args: Prisma.AdminInvitationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload>[]
+        }
+        create: {
+          args: Prisma.AdminInvitationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload>
+        }
+        createMany: {
+          args: Prisma.AdminInvitationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AdminInvitationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload>[]
+        }
+        delete: {
+          args: Prisma.AdminInvitationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload>
+        }
+        update: {
+          args: Prisma.AdminInvitationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload>
+        }
+        deleteMany: {
+          args: Prisma.AdminInvitationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdminInvitationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AdminInvitationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload>[]
+        }
+        upsert: {
+          args: Prisma.AdminInvitationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationPayload>
+        }
+        aggregate: {
+          args: Prisma.AdminInvitationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdminInvitation>
+        }
+        groupBy: {
+          args: Prisma.AdminInvitationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminInvitationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdminInvitationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminInvitationCountAggregateOutputType> | number
+        }
+      }
+    }
+    AdminInvitationRole: {
+      payload: Prisma.$AdminInvitationRolePayload<ExtArgs>
+      fields: Prisma.AdminInvitationRoleFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdminInvitationRoleFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdminInvitationRoleFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload>
+        }
+        findFirst: {
+          args: Prisma.AdminInvitationRoleFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdminInvitationRoleFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload>
+        }
+        findMany: {
+          args: Prisma.AdminInvitationRoleFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload>[]
+        }
+        create: {
+          args: Prisma.AdminInvitationRoleCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload>
+        }
+        createMany: {
+          args: Prisma.AdminInvitationRoleCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AdminInvitationRoleCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload>[]
+        }
+        delete: {
+          args: Prisma.AdminInvitationRoleDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload>
+        }
+        update: {
+          args: Prisma.AdminInvitationRoleUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload>
+        }
+        deleteMany: {
+          args: Prisma.AdminInvitationRoleDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdminInvitationRoleUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AdminInvitationRoleUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload>[]
+        }
+        upsert: {
+          args: Prisma.AdminInvitationRoleUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminInvitationRolePayload>
+        }
+        aggregate: {
+          args: Prisma.AdminInvitationRoleAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdminInvitationRole>
+        }
+        groupBy: {
+          args: Prisma.AdminInvitationRoleGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminInvitationRoleGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdminInvitationRoleCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminInvitationRoleCountAggregateOutputType> | number
+        }
+      }
+    }
     UserRole: {
       payload: Prisma.$UserRolePayload<ExtArgs>
       fields: Prisma.UserRoleFieldRefs
@@ -1119,6 +1269,8 @@ export const RoleScalarFieldEnum = {
   name: 'name',
   slug: 'slug',
   description: 'description',
+  scope: 'scope',
+  isSuperAdmin: 'isSuperAdmin',
   createdAt: 'createdAt'
 } as const
 
@@ -1129,10 +1281,42 @@ export const PermissionScalarFieldEnum = {
   id: 'id',
   name: 'name',
   resource: 'resource',
-  action: 'action'
+  action: 'action',
+  description: 'description'
 } as const
 
 export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
+
+
+export const AdminInvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  tokenHash: 'tokenHash',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  sentAt: 'sentAt',
+  emailStatus: 'emailStatus',
+  providerEmailId: 'providerEmailId',
+  emailAttemptedAt: 'emailAttemptedAt',
+  lastEmailError: 'lastEmailError',
+  acceptedAt: 'acceptedAt',
+  revokedAt: 'revokedAt',
+  invitedById: 'invitedById',
+  acceptedUserId: 'acceptedUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AdminInvitationScalarFieldEnum = (typeof AdminInvitationScalarFieldEnum)[keyof typeof AdminInvitationScalarFieldEnum]
+
+
+export const AdminInvitationRoleScalarFieldEnum = {
+  invitationId: 'invitationId',
+  roleId: 'roleId'
+} as const
+
+export type AdminInvitationRoleScalarFieldEnum = (typeof AdminInvitationRoleScalarFieldEnum)[keyof typeof AdminInvitationRoleScalarFieldEnum]
 
 
 export const UserRoleScalarFieldEnum = {
@@ -1213,6 +1397,48 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'RoleScope'
+ */
+export type EnumRoleScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RoleScope'>
+    
+
+
+/**
+ * Reference to a field of type 'RoleScope[]'
+ */
+export type ListEnumRoleScopeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RoleScope[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AdminInvitationStatus'
+ */
+export type EnumAdminInvitationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AdminInvitationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AdminInvitationStatus[]'
+ */
+export type ListEnumAdminInvitationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AdminInvitationStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AdminInvitationEmailStatus'
+ */
+export type EnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AdminInvitationEmailStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AdminInvitationEmailStatus[]'
+ */
+export type ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AdminInvitationEmailStatus[]'>
     
 
 
@@ -1386,6 +1612,8 @@ export type GlobalOmitConfig = {
   verification?: Prisma.VerificationOmit
   role?: Prisma.RoleOmit
   permission?: Prisma.PermissionOmit
+  adminInvitation?: Prisma.AdminInvitationOmit
+  adminInvitationRole?: Prisma.AdminInvitationRoleOmit
   userRole?: Prisma.UserRoleOmit
   rolePermission?: Prisma.RolePermissionOmit
 }

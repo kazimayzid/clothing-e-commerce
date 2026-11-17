@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 
 import AdminDialog from "@/components/admin/management/AdminDialog";
 import type {
@@ -25,11 +24,11 @@ export default function AdminRoleAssignmentDialog({
   onSave,
 }: Props) {
   const assignableRoles = roles.filter(
-    ({ slug }) => slug !== "admin" && slug !== "user",
+    ({ isSuperAdmin }) => !isSuperAdmin,
   );
   const [selectedRoleIds, setSelectedRoleIds] = useState(() =>
     user.roles
-      .filter(({ slug }) => slug !== "admin" && slug !== "user")
+      .filter(({ isSuperAdmin }) => !isSuperAdmin)
       .map(({ id }) => id),
   );
   const isSelf = user.id === currentUserId;
@@ -44,7 +43,6 @@ export default function AdminRoleAssignmentDialog({
 
   function handleSave() {
     onSave(selectedRoleIds);
-    toast.info("Prototype only — role assignments have not been saved to the database.");
     onClose();
   }
 
@@ -109,7 +107,7 @@ export default function AdminRoleAssignmentDialog({
           </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {user.roles
-              .filter(({ slug }) => slug === "admin" || slug === "user")
+              .filter(({ isSuperAdmin }) => isSuperAdmin)
               .map((role) => (
                 <span
                   key={role.id}
@@ -118,7 +116,7 @@ export default function AdminRoleAssignmentDialog({
                   {role.name} · locked
                 </span>
               ))}
-            {!user.roles.some(({ slug }) => slug === "admin" || slug === "user") && (
+            {!user.roles.some(({ isSuperAdmin }) => isSuperAdmin) && (
               <span className="text-[11px] text-stone-400">No protected system roles</span>
             )}
           </div>
@@ -147,9 +145,7 @@ export default function AdminRoleAssignmentDialog({
             Save preview
           </button>
         </div>
-        <p className="text-right text-[10px] text-stone-400">
-          Prototype only; no role assignment is persisted.
-        </p>
+          <p className="text-right text-[10px] text-stone-400">Role assignments are saved through the protected admin API.</p>
       </div>
     </AdminDialog>
   );

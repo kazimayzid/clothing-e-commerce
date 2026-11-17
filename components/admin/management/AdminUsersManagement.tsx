@@ -17,6 +17,7 @@ import AdminUserDetailsDialog from "@/components/admin/management/AdminUserDetai
 import ManagementStatCard from "@/components/admin/management/ManagementStatCard";
 import { formatAdminDate } from "@/components/admin/admin-utils";
 import type {
+  AdminInvitationSummary,
   AdminRoleSummary,
   ManagedAdminUser,
 } from "@/components/admin/management/management-types";
@@ -25,6 +26,10 @@ type Props = {
   initialUsers: ManagedAdminUser[];
   roles: AdminRoleSummary[];
   canAssignRoles: boolean;
+  canInvite: boolean;
+  canDeactivateUsers: boolean;
+  canRevokeSessions: boolean;
+  initialInvitations: AdminInvitationSummary[];
   currentUserId: string;
 };
 
@@ -32,9 +37,14 @@ export default function AdminUsersManagement({
   initialUsers,
   roles,
   canAssignRoles,
+  canInvite,
+  canDeactivateUsers,
+  canRevokeSessions,
+  initialInvitations,
   currentUserId,
 }: Props) {
   const [users, setUsers] = useState(initialUsers);
+  const [invitations, setInvitations] = useState(initialInvitations);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -67,31 +77,48 @@ export default function AdminUsersManagement({
 
   function saveUserRoles(userId: string, selectedRoleIds: string[]) {
     const selected = new Set(selectedRoleIds);
-    const assignableRoles = roles.filter(
-      ({ slug }) => slug !== "admin" && slug !== "user",
-    );
+    void (async () => {
+      try {
+        const response = await fetch(`/api/v1/admin/users/${userId}/roles`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ roleIds: [...selected] }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Unable to save role assignments.");
+        const assignableRoles = roles.filter(({ isSuperAdmin }) => !isSuperAdmin);
+        setUsers((current) => current.map((user) => {
+          if (user.id !== userId) return user;
+          const protectedRoles = user.roles.filter(({ isSuperAdmin }) => isSuperAdmin);
+          const selectedRoles = assignableRoles.filter(({ id }) => selected.has(id)).map(({ id, name, slug, permissions, isSuperAdmin }) => ({ id, name, slug, permissions, isSuperAdmin }));
+          return { ...user, roles: [...protectedRoles, ...selectedRoles] };
+        }));
+        toast.success("Role assignments saved");
+      } catch (cause) {
+        toast.error(cause instanceof Error ? cause.message : "Unable to save role assignments.");
+      }
+    })();
+  }
 
-    setUsers((current) =>
-      current.map((user) => {
-        if (user.id !== userId) return user;
+  async function updateUserStatus(userId: string, isActive: boolean) {
+    try {
+      const response = await fetch(`/api/v1/admin/users/${userId}/status`, {
+        method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ isActive }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to update account status.");
+      setUsers((current) => current.map((user) => user.id === userId ? { ...user, isActive } : user));
+      toast.success(isActive ? "Account activated" : "Account deactivated; sessions revoked");
+    } catch (cause) { toast.error(cause instanceof Error ? cause.message : "Unable to update account status."); }
+  }
 
-        const protectedRoles = user.roles.filter(
-          ({ slug }) => slug === "admin" || slug === "user",
-        );
-        const selectedRoles = assignableRoles
-          .filter(({ id }) => selected.has(id))
-          .map(({ id, name, slug, permissions }) => ({
-            id,
-            name,
-            slug,
-            permissions,
-          }));
-
-        return { ...user, roles: [...protectedRoles, ...selectedRoles] };
-      }),
-    );
-
-    toast.info("Prototype only — role assignments have not been saved to the database.");
+  async function revokeUserSessions(userId: string) {
+    try {
+      const response = await fetch(`/api/v1/admin/users/${userId}/revoke-sessions`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to revoke sessions.");
+      toast.success(`${data.revoked} session${data.revoked === 1 ? "" : "s"} revoked`);
+    } catch (cause) { toast.error(cause instanceof Error ? cause.message : "Unable to revoke sessions."); }
   }
 
   return (
@@ -132,7 +159,7 @@ export default function AdminUsersManagement({
                 Users with the existing Admin or Staff role
               </p>
             </div>
-            {canAssignRoles && (
+            {canInvite && (
               <button
                 type="button"
                 onClick={() => setInviteOpen(true)}
@@ -278,6 +305,14 @@ export default function AdminUsersManagement({
                             Edit roles
                           </button>
                         )}
+                        {canDeactivateUsers && user.id !== currentUserId && (
+                          <button type="button" onClick={(event) => { void updateUserStatus(user.id, !user.isActive); event.currentTarget.closest("details")?.removeAttribute("open"); }} className="w-full rounded px-3 py-2 text-left text-[11px] text-stone-700 hover:bg-stone-50">
+                            {user.isActive ? "Deactivate account" : "Activate account"}
+                          </button>
+                        )}
+                        {canRevokeSessions && user.id !== currentUserId && (
+                          <button type="button" onClick={(event) => { void revokeUserSessions(user.id); event.currentTarget.closest("details")?.removeAttribute("open"); }} className="w-full rounded px-3 py-2 text-left text-[11px] text-stone-700 hover:bg-stone-50">Revoke sessions</button>
+                        )}
                       </div>
                     </details>
                   </td>
@@ -302,8 +337,39 @@ export default function AdminUsersManagement({
         </div>
       </section>
 
+      {canInvite && (
+        <section className="overflow-hidden rounded-lg border border-stone-200 bg-white">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="font-serif text-lg text-stone-900">Team invitations</h2>
+            <p className="mt-1 text-[11px] text-stone-500">Invitation status and email delivery history</p>
+          </div>
+          <div className="divide-y divide-stone-100">
+            {invitations.map((invitation) => (
+              <div key={invitation.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-medium text-stone-800">{invitation.name} · {invitation.email}</p>
+                  <p className="mt-1 text-[10px] text-stone-500">{invitation.roles.map(({ name }) => name).join(", ")} · {invitation.emailStatus === "ACCEPTED_BY_PROVIDER" ? "Resend accepted · delivery unconfirmed" : invitation.emailStatus === "FAILED" ? "Email request failed" : invitation.emailStatus === "UNKNOWN" ? "Provider result unknown · check logs" : invitation.emailStatus === "SENDING" ? "Email request in progress" : "Email not attempted"}</p>
+                  {invitation.providerEmailId && <p className="mt-1 font-mono text-[9px] text-stone-400">Resend ID: {invitation.providerEmailId}</p>}
+                  {invitation.lastEmailError && <p className="mt-1 text-[10px] text-red-700">{invitation.lastEmailError}</p>}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="rounded-full border border-stone-200 px-2.5 py-1 text-[10px] text-stone-600">{invitation.status.toLowerCase()}</span>
+                  {invitation.status === "PENDING" && (
+                    <>
+                      <button type="button" onClick={() => void invitationAction(invitation.id, "resend")} className="text-[10px] font-medium text-stone-700 underline">Resend</button>
+                      <button type="button" onClick={() => void invitationAction(invitation.id, "revoke")} className="text-[10px] font-medium text-red-700 underline">Revoke</button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+            {invitations.length === 0 && <p className="px-5 py-8 text-center text-xs text-stone-500">No invitations yet.</p>}
+          </div>
+        </section>
+      )}
+
       {inviteOpen && (
-        <AdminInviteDialog roles={roles} onClose={() => setInviteOpen(false)} />
+        <AdminInviteDialog roles={roles} onClose={() => setInviteOpen(false)} onCreated={(invite) => setInvitations((current) => [invite, ...current.filter(({ id }) => id !== invite.id)])} />
       )}
       {detailsUser && (
         <AdminUserDetailsDialog
@@ -322,4 +388,17 @@ export default function AdminUsersManagement({
       )}
     </div>
   );
+
+  async function invitationAction(id: string, action: "resend" | "revoke") {
+    try {
+      const response = await fetch(`/api/v1/admin/invitations/${id}/${action}`, { method: "POST" });
+      const data = await response.json();
+      if (data.invitation) setInvitations((current) => current.map((invitation) => invitation.id === id ? data.invitation : invitation));
+      if (!response.ok) throw new Error(data.error || `Unable to ${action} invitation.`);
+      if (action === "revoke") setInvitations((current) => current.map((invitation) => invitation.id === id ? { ...invitation, status: "REVOKED" } : invitation));
+      toast.success(action === "revoke" ? "Invitation revoked" : "Resend accepted the request; delivery is unconfirmed.");
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : `Unable to ${action} invitation.`);
+    }
+  }
 }

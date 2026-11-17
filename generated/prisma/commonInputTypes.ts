@@ -160,6 +160,13 @@ export type UuidFilter<$PrismaModel = never> = {
   not?: Prisma.NestedUuidFilter<$PrismaModel> | string
 }
 
+export type EnumRoleScopeFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoleScope | Prisma.EnumRoleScopeFieldRefInput<$PrismaModel>
+  in?: $Enums.RoleScope[] | Prisma.ListEnumRoleScopeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RoleScope[] | Prisma.ListEnumRoleScopeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRoleScopeFilter<$PrismaModel> | $Enums.RoleScope
+}
+
 export type UuidWithAggregatesFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -173,6 +180,50 @@ export type UuidWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedStringFilter<$PrismaModel>
   _max?: Prisma.NestedStringFilter<$PrismaModel>
+}
+
+export type EnumRoleScopeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoleScope | Prisma.EnumRoleScopeFieldRefInput<$PrismaModel>
+  in?: $Enums.RoleScope[] | Prisma.ListEnumRoleScopeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RoleScope[] | Prisma.ListEnumRoleScopeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRoleScopeWithAggregatesFilter<$PrismaModel> | $Enums.RoleScope
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRoleScopeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRoleScopeFilter<$PrismaModel>
+}
+
+export type EnumAdminInvitationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdminInvitationStatus | Prisma.EnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AdminInvitationStatus[] | Prisma.ListEnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AdminInvitationStatus[] | Prisma.ListEnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAdminInvitationStatusFilter<$PrismaModel> | $Enums.AdminInvitationStatus
+}
+
+export type EnumAdminInvitationEmailStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdminInvitationEmailStatus | Prisma.EnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AdminInvitationEmailStatus[] | Prisma.ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AdminInvitationEmailStatus[] | Prisma.ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAdminInvitationEmailStatusFilter<$PrismaModel> | $Enums.AdminInvitationEmailStatus
+}
+
+export type EnumAdminInvitationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdminInvitationStatus | Prisma.EnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AdminInvitationStatus[] | Prisma.ListEnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AdminInvitationStatus[] | Prisma.ListEnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAdminInvitationStatusWithAggregatesFilter<$PrismaModel> | $Enums.AdminInvitationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAdminInvitationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAdminInvitationStatusFilter<$PrismaModel>
+}
+
+export type EnumAdminInvitationEmailStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdminInvitationEmailStatus | Prisma.EnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AdminInvitationEmailStatus[] | Prisma.ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AdminInvitationEmailStatus[] | Prisma.ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAdminInvitationEmailStatusWithAggregatesFilter<$PrismaModel> | $Enums.AdminInvitationEmailStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAdminInvitationEmailStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAdminInvitationEmailStatusFilter<$PrismaModel>
 }
 
 export type NestedStringFilter<$PrismaModel = never> = {
@@ -333,6 +384,13 @@ export type NestedUuidFilter<$PrismaModel = never> = {
   not?: Prisma.NestedUuidFilter<$PrismaModel> | string
 }
 
+export type NestedEnumRoleScopeFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoleScope | Prisma.EnumRoleScopeFieldRefInput<$PrismaModel>
+  in?: $Enums.RoleScope[] | Prisma.ListEnumRoleScopeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RoleScope[] | Prisma.ListEnumRoleScopeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRoleScopeFilter<$PrismaModel> | $Enums.RoleScope
+}
+
 export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -345,6 +403,50 @@ export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedStringFilter<$PrismaModel>
   _max?: Prisma.NestedStringFilter<$PrismaModel>
+}
+
+export type NestedEnumRoleScopeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.RoleScope | Prisma.EnumRoleScopeFieldRefInput<$PrismaModel>
+  in?: $Enums.RoleScope[] | Prisma.ListEnumRoleScopeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.RoleScope[] | Prisma.ListEnumRoleScopeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumRoleScopeWithAggregatesFilter<$PrismaModel> | $Enums.RoleScope
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumRoleScopeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumRoleScopeFilter<$PrismaModel>
+}
+
+export type NestedEnumAdminInvitationStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdminInvitationStatus | Prisma.EnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AdminInvitationStatus[] | Prisma.ListEnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AdminInvitationStatus[] | Prisma.ListEnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAdminInvitationStatusFilter<$PrismaModel> | $Enums.AdminInvitationStatus
+}
+
+export type NestedEnumAdminInvitationEmailStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdminInvitationEmailStatus | Prisma.EnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AdminInvitationEmailStatus[] | Prisma.ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AdminInvitationEmailStatus[] | Prisma.ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAdminInvitationEmailStatusFilter<$PrismaModel> | $Enums.AdminInvitationEmailStatus
+}
+
+export type NestedEnumAdminInvitationStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdminInvitationStatus | Prisma.EnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AdminInvitationStatus[] | Prisma.ListEnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AdminInvitationStatus[] | Prisma.ListEnumAdminInvitationStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAdminInvitationStatusWithAggregatesFilter<$PrismaModel> | $Enums.AdminInvitationStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAdminInvitationStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAdminInvitationStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumAdminInvitationEmailStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AdminInvitationEmailStatus | Prisma.EnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AdminInvitationEmailStatus[] | Prisma.ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AdminInvitationEmailStatus[] | Prisma.ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAdminInvitationEmailStatusWithAggregatesFilter<$PrismaModel> | $Enums.AdminInvitationEmailStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAdminInvitationEmailStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAdminInvitationEmailStatusFilter<$PrismaModel>
 }
 
 

@@ -1,41 +1,30 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import type { AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
+import type { AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
+import { getAdminAccessContext } from "@/lib/admin-access";
+import { ADMIN_PERMISSION_CATALOG } from "@/lib/admin-permission-catalog";
 
-function mapPermission(permission: { id: string; name: string; resource: string; action: string }): AdminPermission {
-  return { id: permission.id, name: permission.name, resource: permission.resource, action: permission.action };
+function mapPermission(permission: { id: string; name: string; resource: string; action: string; description?: string | null }): AdminPermission {
+  return { id: permission.id, name: permission.name, resource: permission.resource, action: permission.action, description: permission.description };
 }
 
 export async function getUserPermissionKeys(userId: string) {
-  const assignments = await prisma.userRole.findMany({
-    where: { userId },
-    select: {
-      role: {
-        select: {
-          permissions: {
-            select: { permission: { select: { resource: true, action: true } } },
-          },
-        },
-      },
-    },
-  });
-
-  return [...new Set(assignments.flatMap(({ role }) =>
-    role.permissions.map(({ permission }) => `${permission.resource}:${permission.action}`),
-  ))];
+  const access = await getAdminAccessContext(userId);
+  return [...(access?.permissions ?? [])];
 }
 
 export async function getAdminRoleData(): Promise<{ roles: AdminRoleSummary[]; permissionCatalog: AdminPermission[] }> {
   const [roles, permissions] = await Promise.all([
     prisma.role.findMany({
+      where: { scope: "ADMIN" },
       orderBy: { name: "asc" },
       include: {
-        permissions: { select: { permission: { select: { id: true, name: true, resource: true, action: true } } } },
+        permissions: { where: { permission: { OR: ADMIN_PERMISSION_CATALOG.map(({ resource, action }) => ({ resource, action })) } }, select: { permission: { select: { id: true, name: true, resource: true, action: true, description: true } } } },
         _count: { select: { users: true } },
       },
     }),
-    prisma.permission.findMany({ orderBy: [{ resource: "asc" }, { action: "asc" }] }),
+    prisma.permission.findMany({ where: { OR: ADMIN_PERMISSION_CATALOG.map(({ resource, action }) => ({ resource, action })) }, orderBy: [{ resource: "asc" }, { action: "asc" }] }),
   ]);
 
   return {
@@ -43,6 +32,8 @@ export async function getAdminRoleData(): Promise<{ roles: AdminRoleSummary[]; p
       id: role.id,
       name: role.name,
       slug: role.slug,
+      scope: "ADMIN" as const,
+      isSuperAdmin: role.isSuperAdmin,
       description: role.description,
       createdAt: role.createdAt.toISOString(),
       assignedUserCount: role._count.users,
@@ -55,7 +46,7 @@ export async function getAdminRoleData(): Promise<{ roles: AdminRoleSummary[]; p
 export async function getManagedAdminUsers(): Promise<ManagedAdminUser[]> {
   const users = await prisma.user.findMany({
     where: {
-      roles: { some: { role: { slug: { in: ["admin", "staff"] } } } },
+      roles: { some: { role: { scope: "ADMIN" } } },
     },
     orderBy: { createdAt: "desc" },
     select: {
@@ -65,13 +56,15 @@ export async function getManagedAdminUsers(): Promise<ManagedAdminUser[]> {
       isActive: true,
       createdAt: true,
       roles: {
+        where: { role: { scope: "ADMIN" } },
         select: {
           role: {
             select: {
               id: true,
               name: true,
               slug: true,
-              permissions: { select: { permission: { select: { id: true, name: true, resource: true, action: true } } } },
+              isSuperAdmin: true,
+              permissions: { where: { permission: { OR: ADMIN_PERMISSION_CATALOG.map(({ resource, action }) => ({ resource, action })) } }, select: { permission: { select: { id: true, name: true, resource: true, action: true, description: true } } } },
             },
           },
         },
@@ -89,7 +82,32 @@ export async function getManagedAdminUsers(): Promise<ManagedAdminUser[]> {
       id: role.id,
       name: role.name,
       slug: role.slug,
+      isSuperAdmin: role.isSuperAdmin,
       permissions: role.permissions.map(({ permission }) => mapPermission(permission)),
     })),
+  }));
+}
+
+export async function getAdminInvitations(): Promise<AdminInvitationSummary[]> {
+  const now = new Date();
+  await prisma.adminInvitation.updateMany({ where: { status: "PENDING", expiresAt: { lte: now } }, data: { status: "EXPIRED" } });
+  const invitations = await prisma.adminInvitation.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 100,
+    include: { roles: { include: { role: { select: { id: true, name: true, slug: true } } } } },
+  });
+  return invitations.map((invitation) => ({
+    id: invitation.id,
+    email: invitation.email,
+    name: invitation.name,
+    status: invitation.status,
+    expiresAt: invitation.expiresAt.toISOString(),
+    sentAt: invitation.sentAt?.toISOString() ?? null,
+    emailStatus: invitation.emailStatus,
+    providerEmailId: invitation.providerEmailId,
+    emailAttemptedAt: invitation.emailAttemptedAt?.toISOString() ?? null,
+    lastEmailError: invitation.lastEmailError,
+    createdAt: invitation.createdAt.toISOString(),
+    roles: invitation.roles.map(({ role }) => role),
   }));
 }

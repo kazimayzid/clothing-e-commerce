@@ -33,20 +33,20 @@ export async function POST(request: Request) {
       roles: {
         select: {
           role: {
-            select: { slug: true },
+            select: { scope: true },
           },
         },
       },
     },
   });
 
-  const roleSlugs = user?.roles.map(({ role }) => role.slug) ?? [];
-  const isInternal = roleSlugs.includes("admin") || roleSlugs.includes("staff");
+  const roleScopes = user?.roles.map(({ role }) => role.scope) ?? [];
+  const isInternal = roleScopes.includes("ADMIN");
 
   const allowed =
     Boolean(user?.isActive) &&
     (audience === "customer"
-      ? roleSlugs.includes("user") && !isInternal
+      ? roleScopes.includes("CUSTOMER") && !isInternal
       : isInternal);
 
   return Response.json(

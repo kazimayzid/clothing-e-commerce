@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 import AdminDialog from "@/components/admin/management/AdminDialog";
 import PermissionMatrix from "@/components/admin/management/PermissionMatrix";
 import type { AdminPermission, AdminRoleSummary } from "@/components/admin/management/management-types";
@@ -18,26 +17,30 @@ type Props = {
   role?: AdminRoleSummary;
   catalog: AdminPermission[];
   onClose: () => void;
-  onSave: (draft: RoleDraft) => void;
+  onSave: (draft: RoleDraft) => Promise<void>;
+  canAssignPermissions: boolean;
 };
 
 function makeSlug(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-export default function RoleEditorDialog({ role, catalog, onClose, onSave }: Props) {
+export default function RoleEditorDialog({ role, catalog, onClose, onSave, canAssignPermissions }: Props) {
   const [name, setName] = useState(role?.name ?? "");
   const [slug, setSlug] = useState(role?.slug ?? "");
   const [description, setDescription] = useState(role?.description ?? "");
   const [permissionIds, setPermissionIds] = useState(role?.permissions.map(({ id }) => id) ?? []);
-  const protectedRole = role?.slug === "admin";
+  const [saving, setSaving] = useState(false);
+  const protectedRole = role?.isSuperAdmin === true;
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (protectedRole || !name.trim() || !slug.trim()) return;
-    onSave({ id: role?.id, name: name.trim(), slug: makeSlug(slug), description: description.trim(), permissionIds });
-    toast.info("Prototype only — role changes have not been saved to the database.");
-    onClose();
+    setSaving(true);
+    void onSave({ id: role?.id, name: name.trim(), slug: makeSlug(slug), description: description.trim(), permissionIds: canAssignPermissions ? permissionIds : (role?.permissions.map(({ id }) => id) ?? []) })
+      .then(onClose)
+      .catch(() => undefined)
+      .finally(() => setSaving(false));
   }
 
   return (
@@ -50,7 +53,7 @@ export default function RoleEditorDialog({ role, catalog, onClose, onSave }: Pro
       <form onSubmit={handleSubmit} className="space-y-5 p-5 sm:p-6">
         {protectedRole && (
           <div className="rounded-md border border-stone-200 bg-stone-50 px-4 py-3 text-xs leading-5 text-stone-600">
-            This seeded full-access role is protected and cannot be edited from this prototype.
+            This seeded full-access role is protected and cannot be edited.
           </div>
         )}
         <div className="grid gap-4 sm:grid-cols-2">
@@ -69,16 +72,16 @@ export default function RoleEditorDialog({ role, catalog, onClose, onSave }: Pro
         </label>
         <div>
           <div className="mb-3 flex items-center justify-between gap-3">
-            <div><h3 className="text-sm font-medium text-stone-800">Permission assignments</h3><p className="mt-1 text-[11px] text-stone-500">Only seeded permission definitions are available.</p></div>
+            <div><h3 className="text-sm font-medium text-stone-800">Permission assignments</h3><p className="mt-1 text-[11px] text-stone-500">Only catalog permissions can be assigned.</p></div>
             <span className="shrink-0 rounded-full bg-stone-100 px-2.5 py-1 text-[10px] font-medium text-stone-600">{permissionIds.length} selected</span>
           </div>
-          <PermissionMatrix catalog={catalog} selectedPermissionIds={permissionIds} onChange={setPermissionIds} disabled={protectedRole} />
+          <PermissionMatrix catalog={catalog} selectedPermissionIds={permissionIds} onChange={setPermissionIds} disabled={protectedRole || !canAssignPermissions} />
         </div>
         <div className="flex flex-col-reverse gap-3 border-t border-stone-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[10px] text-stone-400">UI preview only; no role changes are sent to the server.</p>
+          <p className="text-[10px] text-stone-400">Role access is checked again by the server when saved.</p>
           <div className="flex justify-end gap-2">
             <button type="button" onClick={onClose} className="h-9 rounded-md border border-stone-200 px-3.5 text-xs font-medium text-stone-600 hover:bg-stone-50">Cancel</button>
-            <button type="submit" disabled={protectedRole || !name.trim() || !slug.trim()} className="h-9 rounded-md bg-stone-900 px-4 text-xs font-medium text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-40">Save preview</button>
+            <button type="submit" disabled={saving || protectedRole || !name.trim() || !slug.trim()} className="h-9 rounded-md bg-stone-900 px-4 text-xs font-medium text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-40">{saving ? "Saving..." : "Save role"}</button>
           </div>
         </div>
       </form>

@@ -9,7 +9,30 @@
 * 🟢 You can import this file directly.
 */
 
+export const RoleScope = {
+  ADMIN: 'ADMIN',
+  CUSTOMER: 'CUSTOMER'
+} as const
+
+export type RoleScope = (typeof RoleScope)[keyof typeof RoleScope]
 
 
-// This file is empty because there are no enums in the schema.
-export {}
+export const AdminInvitationStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  EXPIRED: 'EXPIRED',
+  REVOKED: 'REVOKED'
+} as const
+
+export type AdminInvitationStatus = (typeof AdminInvitationStatus)[keyof typeof AdminInvitationStatus]
+
+
+export const AdminInvitationEmailStatus = {
+  NOT_ATTEMPTED: 'NOT_ATTEMPTED',
+  SENDING: 'SENDING',
+  ACCEPTED_BY_PROVIDER: 'ACCEPTED_BY_PROVIDER',
+  FAILED: 'FAILED',
+  UNKNOWN: 'UNKNOWN'
+} as const
+
+export type AdminInvitationEmailStatus = (typeof AdminInvitationEmailStatus)[keyof typeof AdminInvitationEmailStatus]

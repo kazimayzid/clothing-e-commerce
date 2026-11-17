@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { PrismaClient } from "../generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
+import { ADMIN_PERMISSION_CATALOG } from "../lib/admin-permission-catalog";
 
 const connectionString = process.env.DATABASE_URL;
 const initialAdminEmail = process.env.INITIAL_ADMIN_EMAIL
@@ -33,9 +34,9 @@ async function main() {
   }
 
   const roleDefinitions = [
-    { slug: "user", name: "User", description: "Regular customer account" },
-    { slug: "staff", name: "Staff", description: "Store staff account" },
-    { slug: "admin", name: "Admin", description: "Full administration access" },
+    { slug: "user", name: "User", description: "Regular customer account", scope: "CUSTOMER" as const, isSuperAdmin: false },
+    { slug: "staff", name: "Staff", description: "Store staff account", scope: "ADMIN" as const, isSuperAdmin: false },
+    { slug: "admin", name: "Admin", description: "Full administration access", scope: "ADMIN" as const, isSuperAdmin: true },
   ];
 
   for (const role of roleDefinitions) {
@@ -44,19 +45,14 @@ async function main() {
       update: {
         name: role.name,
         description: role.description,
+        scope: role.scope,
+        isSuperAdmin: role.isSuperAdmin,
       },
       create: role,
     });
   }
 
-  const permissionDefinitions = [
-    { resource: "users", action: "read", name: "View users" },
-    { resource: "users", action: "assign_role", name: "Assign user roles" },
-    { resource: "roles", action: "manage", name: "Manage roles" },
-    { resource: "products", action: "manage", name: "Manage products" },
-    { resource: "orders", action: "manage", name: "Manage orders" },
-    { resource: "dashboard", action: "access", name: "Access staff dashboard" },
-  ];
+  const permissionDefinitions = ADMIN_PERMISSION_CATALOG;
 
   const adminRole = await prisma.role.findUniqueOrThrow({
     where: { slug: "admin" },
@@ -78,7 +74,7 @@ async function main() {
           action: permissionData.action,
         },
       },
-      update: { name: permissionData.name },
+      update: { name: permissionData.name, description: permissionData.description },
       create: permissionData,
       select: { id: true },
     });

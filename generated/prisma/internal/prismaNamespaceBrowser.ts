@@ -57,6 +57,8 @@ export const ModelName = {
   Verification: 'Verification',
   Role: 'Role',
   Permission: 'Permission',
+  AdminInvitation: 'AdminInvitation',
+  AdminInvitationRole: 'AdminInvitationRole',
   UserRole: 'UserRole',
   RolePermission: 'RolePermission'
 } as const
@@ -141,6 +143,8 @@ export const RoleScalarFieldEnum = {
   name: 'name',
   slug: 'slug',
   description: 'description',
+  scope: 'scope',
+  isSuperAdmin: 'isSuperAdmin',
   createdAt: 'createdAt'
 } as const
 
@@ -151,10 +155,42 @@ export const PermissionScalarFieldEnum = {
   id: 'id',
   name: 'name',
   resource: 'resource',
-  action: 'action'
+  action: 'action',
+  description: 'description'
 } as const
 
 export type PermissionScalarFieldEnum = (typeof PermissionScalarFieldEnum)[keyof typeof PermissionScalarFieldEnum]
+
+
+export const AdminInvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  name: 'name',
+  tokenHash: 'tokenHash',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  sentAt: 'sentAt',
+  emailStatus: 'emailStatus',
+  providerEmailId: 'providerEmailId',
+  emailAttemptedAt: 'emailAttemptedAt',
+  lastEmailError: 'lastEmailError',
+  acceptedAt: 'acceptedAt',
+  revokedAt: 'revokedAt',
+  invitedById: 'invitedById',
+  acceptedUserId: 'acceptedUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AdminInvitationScalarFieldEnum = (typeof AdminInvitationScalarFieldEnum)[keyof typeof AdminInvitationScalarFieldEnum]
+
+
+export const AdminInvitationRoleScalarFieldEnum = {
+  invitationId: 'invitationId',
+  roleId: 'roleId'
+} as const
+
+export type AdminInvitationRoleScalarFieldEnum = (typeof AdminInvitationRoleScalarFieldEnum)[keyof typeof AdminInvitationRoleScalarFieldEnum]
 
 
 export const UserRoleScalarFieldEnum = {

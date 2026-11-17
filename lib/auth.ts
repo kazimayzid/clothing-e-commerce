@@ -2,6 +2,7 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
+import { isEmailConfigured, sendVerificationEmail } from "@/lib/email";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -12,12 +13,17 @@ export const auth = betterAuth({
     enabled: true,
   },
 
+  emailVerification: {
+    sendOnSignUp: isEmailConfigured(),
+    sendVerificationEmail: async ({ user, url }) => sendVerificationEmail({ user, url }),
+  },
+
   databaseHooks: {
     user: {
       create: {
         after: async (user) => {
-          const customerRole = await prisma.role.findUnique({
-            where: { slug: "user" },
+          const customerRole = await prisma.role.findFirst({
+            where: { slug: "user", scope: "CUSTOMER" },
             select: { id: true },
           });
 

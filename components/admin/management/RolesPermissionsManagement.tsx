@@ -22,10 +22,14 @@ type Props = {
   initialUsers: ManagedAdminUser[];
   canViewUsers: boolean;
   canAssignRoles: boolean;
+  canCreateRoles: boolean;
+  canUpdateRoles: boolean;
+  canDeleteRoles: boolean;
+  canAssignPermissions: boolean;
   currentUserId: string;
 };
 
-const builtInSlugs = new Set(["admin", "staff", "user"]);
+const builtInSlugs = new Set(["admin", "staff"]);
 
 export default function RolesPermissionsManagement({
   initialRoles,
@@ -33,6 +37,10 @@ export default function RolesPermissionsManagement({
   initialUsers,
   canViewUsers,
   canAssignRoles,
+  canCreateRoles,
+  canUpdateRoles,
+  canDeleteRoles,
+  canAssignPermissions,
   currentUserId,
 }: Props) {
   const [roles, setRoles] = useState(initialRoles);
@@ -55,71 +63,89 @@ export default function RolesPermissionsManagement({
   const selectedDetailsRole = roles.find(({ id }) => id === detailsRoleId) ?? null;
   const systemRoleCount = roles.filter(({ slug }) => builtInSlugs.has(slug)).length;
 
-  function saveRole(draft: RoleDraft) {
+  async function saveRole(draft: RoleDraft) {
     const existingRole = roles.find(({ id }) => id === draft.id);
-    const nextRole: AdminRoleSummary = {
-      id: draft.id ?? `prototype-${crypto.randomUUID()}`,
-      name: draft.name,
-      slug: draft.slug,
-      description: draft.description || null,
-      createdAt: existingRole?.createdAt ?? new Date().toISOString(),
-      assignedUserCount: existingRole?.assignedUserCount ?? 0,
-      permissions: permissionCatalog.filter(({ id }) => draft.permissionIds.includes(id)),
-    };
-
-    setRoles((current) =>
-      draft.id
-        ? current.map((role) => (role.id === draft.id ? nextRole : role))
-        : [nextRole, ...current],
-    );
+    try {
+      const response = await fetch(draft.id ? `/api/v1/admin/roles/${draft.id}` : "/api/v1/admin/roles", {
+        method: draft.id ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: draft.name,
+          slug: draft.slug,
+          description: draft.description,
+          permissionIds: draft.id ? undefined : (canAssignPermissions ? draft.permissionIds : []),
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to save role.");
+      const roleId = draft.id ?? data.role.id;
+      if (draft.id && canAssignPermissions) {
+        const permissionResponse = await fetch(`/api/v1/admin/roles/${roleId}/permissions`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ permissionIds: draft.permissionIds }),
+        });
+        const permissionData = await permissionResponse.json();
+        if (!permissionResponse.ok) throw new Error(permissionData.error || "Role saved, but its permission assignments could not be updated.");
+      }
+      const nextRole: AdminRoleSummary = {
+        id: roleId,
+        name: draft.name,
+        slug: draft.slug,
+        description: draft.description || null,
+        scope: "ADMIN",
+        isSuperAdmin: false,
+        createdAt: existingRole?.createdAt ?? new Date().toISOString(),
+        assignedUserCount: existingRole?.assignedUserCount ?? 0,
+        permissions: canAssignPermissions ? permissionCatalog.filter(({ id }) => draft.permissionIds.includes(id)) : (existingRole?.permissions ?? []),
+      };
+      setRoles((current) => draft.id ? current.map((role) => (role.id === draft.id ? nextRole : role)) : [nextRole, ...current]);
+      toast.success(draft.id ? "Role updated" : "Role created");
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Unable to save role.");
+      throw cause;
+    }
   }
 
-  function saveRoleAssignments(role: AdminRoleSummary, selectedUserIds: string[]) {
+  async function saveRoleAssignments(role: AdminRoleSummary, selectedUserIds: string[]) {
     const previousUserCount = users.filter((user) =>
       user.roles.some((userRole) => userRole.id === role.id),
     ).length;
     const selectedUsers = new Set(selectedUserIds);
 
-    setUsers((current) =>
-      current.map((user) => {
-        const currentlyAssigned = user.roles.some(
-          (userRole) => userRole.id === role.id,
-        );
+    try {
+      const response = await fetch(`/api/v1/admin/roles/${role.id}/users`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userIds: selectedUserIds }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to save role assignments.");
+      setUsers((current) => current.map((user) => {
+        const currentlyAssigned = user.roles.some((userRole) => userRole.id === role.id);
         const shouldBeAssigned = selectedUsers.has(user.id);
-
         if (currentlyAssigned === shouldBeAssigned) return user;
+        const nextRole = { id: role.id, name: role.name, slug: role.slug, permissions: role.permissions, isSuperAdmin: false };
+        return { ...user, roles: shouldBeAssigned ? [...user.roles, nextRole] : user.roles.filter((userRole) => userRole.id !== role.id) };
+      }));
+      const countDifference = selectedUserIds.length - previousUserCount;
+      setRoles((current) => current.map((currentRole) => currentRole.id === role.id ? { ...currentRole, assignedUserCount: Math.max(0, currentRole.assignedUserCount + countDifference) } : currentRole));
+      toast.success("Role assignments saved");
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Unable to save role assignments.");
+      throw cause;
+    }
+  }
 
-        const nextRoles = shouldBeAssigned
-          ? [
-              ...user.roles,
-              {
-                id: role.id,
-                name: role.name,
-                slug: role.slug,
-                permissions: role.permissions,
-              },
-            ]
-          : user.roles.filter((userRole) => userRole.id !== role.id);
-
-        return { ...user, roles: nextRoles };
-      }),
-    );
-
-    const countDifference = selectedUserIds.length - previousUserCount;
-    setRoles((current) =>
-      current.map((currentRole) =>
-        currentRole.id === role.id
-          ? {
-              ...currentRole,
-              assignedUserCount: Math.max(
-                0,
-                currentRole.assignedUserCount + countDifference,
-              ),
-            }
-          : currentRole,
-      ),
-    );
-    toast.info("Prototype only — role assignments have not been saved to the database.");
+  function deleteRole(role: AdminRoleSummary) {
+    void (async () => {
+      if (!window.confirm(`Delete the ${role.name} role?`)) return;
+      const response = await fetch(`/api/v1/admin/roles/${role.id}`, { method: "DELETE" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to delete role.");
+      setRoles((current) => current.filter(({ id }) => id !== role.id));
+      toast.success("Role deleted");
+    })().catch((error: unknown) => toast.error(error instanceof Error ? error.message : "Unable to delete role."));
   }
 
   return (
@@ -170,14 +196,14 @@ export default function RolesPermissionsManagement({
                 className="h-9 w-full rounded-md border border-stone-200 pl-9 pr-3 text-xs outline-none focus:border-stone-500 sm:w-48"
               />
             </label>
-            <button
+            {canCreateRoles && <button
               type="button"
               onClick={() => setEditorRole(null)}
               className="inline-flex h-9 items-center justify-center gap-2 rounded-md bg-stone-900 px-3.5 text-xs font-medium text-white hover:bg-stone-700"
             >
               <Plus className="size-3.5" />
               Create New Role
-            </button>
+            </button>}
           </div>
         </div>
 
@@ -195,7 +221,7 @@ export default function RolesPermissionsManagement({
             </thead>
             <tbody className="divide-y divide-stone-100">
               {filteredRoles.map((role) => {
-                const isProtected = role.slug === "admin";
+                const isProtected = role.isSuperAdmin;
                 const isSystem = builtInSlugs.has(role.slug);
                 const assignedToCurrentUser = users.some(
                   (user) =>
@@ -238,7 +264,7 @@ export default function RolesPermissionsManagement({
                         >
                           Details
                         </button>
-                        {!isProtected && !assignedToCurrentUser && (
+                        {!isProtected && !assignedToCurrentUser && canUpdateRoles && (
                           <button
                             type="button"
                             onClick={() => setEditorRole(role)}
@@ -246,6 +272,9 @@ export default function RolesPermissionsManagement({
                           >
                             Edit
                           </button>
+                        )}
+                        {!isProtected && role.assignedUserCount === 0 && canDeleteRoles && (
+                          <button type="button" onClick={() => deleteRole(role)} className="font-medium text-red-600 hover:text-red-800">Delete</button>
                         )}
                         {assignedToCurrentUser && (
                           <span className="text-[10px] text-stone-400">
@@ -268,7 +297,7 @@ export default function RolesPermissionsManagement({
           </table>
         </div>
         <div className="border-t border-stone-100 px-5 py-3 text-[10px] text-stone-400">
-          Role edits in this screen are local previews and are not persisted.
+          Role changes are validated against the server permission catalog.
         </div>
       </section>
 
@@ -279,6 +308,7 @@ export default function RolesPermissionsManagement({
           catalog={permissionCatalog}
           onClose={() => setEditorRole(undefined)}
           onSave={saveRole}
+          canAssignPermissions={canAssignPermissions}
         />
       )}
       {selectedDetailsRole && (
@@ -290,9 +320,7 @@ export default function RolesPermissionsManagement({
           canAssignRoles={canAssignRoles}
           currentUserId={currentUserId}
           onClose={() => setDetailsRoleId(null)}
-          onSaveAssignments={(userIds) =>
-            saveRoleAssignments(selectedDetailsRole, userIds)
-          }
+          onSaveAssignments={(userIds) => saveRoleAssignments(selectedDetailsRole, userIds)}
         />
       )}
     </div>

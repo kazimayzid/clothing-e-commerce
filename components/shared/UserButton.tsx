@@ -17,7 +17,7 @@ const getNavbarUser = cache(async (userId: string) =>
       roles: {
         select: {
           role: {
-            select: { slug: true },
+            select: { scope: true },
           },
         },
       },
@@ -34,9 +34,9 @@ export default async function UserButton({ variant = "desktop" }: Props) {
 
   const user = await getNavbarUser(session.user.id);
 
-  const roleSlugs = user?.roles.map(({ role }) => role.slug) ?? [];
-  const hasCustomerRole = roleSlugs.includes("user");
-  const hasInternalRole = roleSlugs.includes("admin") || roleSlugs.includes("staff");
+  const roleScopes = user?.roles.map(({ role }) => role.scope) ?? [];
+  const hasCustomerRole = roleScopes.includes("CUSTOMER");
+  const hasInternalRole = roleScopes.includes("ADMIN");
 
   const customerName =
     user?.isActive && hasCustomerRole && !hasInternalRole

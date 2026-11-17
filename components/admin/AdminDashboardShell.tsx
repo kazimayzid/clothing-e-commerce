@@ -9,7 +9,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
 import AdminUsersManagement from "@/components/admin/management/AdminUsersManagement";
 import RolesPermissionsManagement from "@/components/admin/management/RolesPermissionsManagement";
-import type { AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
+import type { AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
 import { getAdminPage, type AdminPageKey } from "@/components/admin/admin-navigation";
 import { getAdminInitials } from "@/components/admin/admin-utils";
 
@@ -21,7 +21,15 @@ type Props = {
   roles?: AdminRoleSummary[];
   permissionCatalog?: AdminPermission[];
   managedUsers?: ManagedAdminUser[];
+  invitations?: AdminInvitationSummary[];
   canAssignRoles: boolean;
+  canInvite: boolean;
+  canDeactivateUsers: boolean;
+  canRevokeSessions: boolean;
+  canCreateRoles: boolean;
+  canUpdateRoles: boolean;
+  canDeleteRoles: boolean;
+  canAssignPermissions: boolean;
   canViewUsers: boolean;
 };
 
@@ -33,7 +41,15 @@ export default function AdminDashboardShell({
   roles,
   permissionCatalog,
   managedUsers,
+  invitations,
   canAssignRoles,
+  canInvite,
+  canDeactivateUsers,
+  canRevokeSessions,
+  canCreateRoles,
+  canUpdateRoles,
+  canDeleteRoles,
+  canAssignPermissions,
   canViewUsers,
 }: Props) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -111,8 +127,12 @@ export default function AdminDashboardShell({
           ) : activeView === "admin-users" ? (
             <AdminUsersManagement
               initialUsers={managedUsers ?? []}
+              initialInvitations={invitations ?? []}
               roles={roles ?? []}
               canAssignRoles={canAssignRoles}
+              canInvite={canInvite}
+              canDeactivateUsers={canDeactivateUsers}
+              canRevokeSessions={canRevokeSessions}
               currentUserId={currentUserId}
             />
           ) : activeView === "roles-permissions" ? (
@@ -122,6 +142,10 @@ export default function AdminDashboardShell({
               initialUsers={managedUsers ?? []}
               canViewUsers={canViewUsers}
               canAssignRoles={canAssignRoles}
+              canCreateRoles={canCreateRoles}
+              canUpdateRoles={canUpdateRoles}
+              canDeleteRoles={canDeleteRoles}
+              canAssignPermissions={canAssignPermissions}
               currentUserId={currentUserId}
             />
           ) : (
