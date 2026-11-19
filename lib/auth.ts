@@ -2,7 +2,8 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
-import { isEmailConfigured, sendVerificationEmail } from "@/lib/email";
+import { isEmailConfigured, sendTransactionalEmail } from "@/lib/email";
+import { createPasswordResetEmail, createVerificationEmail } from "@/lib/email-templates";
 
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
@@ -11,11 +12,17 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendTransactionalEmail(createPasswordResetEmail({ user, url }));
+    },
   },
 
   emailVerification: {
     sendOnSignUp: isEmailConfigured(),
-    sendVerificationEmail: async ({ user, url }) => sendVerificationEmail({ user, url }),
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendTransactionalEmail(createVerificationEmail({ user, url }));
+    },
   },
 
   databaseHooks: {

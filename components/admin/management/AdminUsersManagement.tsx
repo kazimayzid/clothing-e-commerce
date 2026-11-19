@@ -7,6 +7,8 @@ import {
   UserRoundCheck,
   UserRoundX,
   UsersRound,
+  MailCheck,
+  ShieldOff,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -18,6 +20,7 @@ import ManagementStatCard from "@/components/admin/management/ManagementStatCard
 import { formatAdminDate } from "@/components/admin/admin-utils";
 import type {
   AdminInvitationSummary,
+  AdminAccessRemovalSummary,
   AdminRoleSummary,
   ManagedAdminUser,
 } from "@/components/admin/management/management-types";
@@ -30,6 +33,7 @@ type Props = {
   canDeactivateUsers: boolean;
   canRevokeSessions: boolean;
   initialInvitations: AdminInvitationSummary[];
+  initialAccessRemovals: AdminAccessRemovalSummary[];
   currentUserId: string;
 };
 
@@ -41,10 +45,12 @@ export default function AdminUsersManagement({
   canDeactivateUsers,
   canRevokeSessions,
   initialInvitations,
+  initialAccessRemovals,
   currentUserId,
 }: Props) {
   const [users, setUsers] = useState(initialUsers);
   const [invitations, setInvitations] = useState(initialInvitations);
+  const [accessRemovals, setAccessRemovals] = useState(initialAccessRemovals);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -121,6 +127,49 @@ export default function AdminUsersManagement({
     } catch (cause) { toast.error(cause instanceof Error ? cause.message : "Unable to revoke sessions."); }
   }
 
+  async function removeAdminAccess(user: ManagedAdminUser) {
+    const roleNames = user.roles.map(({ name }) => name).join(", ");
+    if (!window.confirm(`Remove Admin access for ${user.name}? This removes ${roleNames}, revokes their active sessions, and preserves their customer account and data.`)) return;
+    try {
+      const response = await fetch(`/api/v1/admin/users/${user.id}/remove-admin-access`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to remove Admin access.");
+      setUsers((current) => current.filter(({ id }) => id !== user.id));
+      setAccessRemovals((current) => [data.removal, ...current.filter(({ id }) => id !== data.removal.id)]);
+      if (data.emailAcceptedByProvider) toast.success("Admin access removed; SMTP accepted the notification. Inbox delivery is unconfirmed.");
+      else if (data.removal.emailStatus === "FAILED") toast.error(`Admin access was removed; notification failed: ${data.removal.lastEmailError ?? "Retry the notification below."}`);
+      else toast.error(`Admin access was removed; SMTP acceptance is unconfirmed: ${data.removal.lastEmailError ?? "Review the notification status below."}`);
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Unable to remove Admin access.");
+    }
+  }
+
+  async function retryRemovalNotification(id: string) {
+    const removal = accessRemovals.find((entry) => entry.id === id);
+    if (removal?.emailStatus === "UNKNOWN" && !window.confirm("The previous SMTP result is unknown. Retrying may send a duplicate notification. Retry anyway?")) return;
+    try {
+      const response = await fetch(`/api/v1/admin/access-removals/${id}/retry`, { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Unable to retry notification.");
+      setAccessRemovals((current) => current.map((removal) => removal.id === id ? data.removal : removal));
+      if (data.emailAcceptedByProvider) toast.success("SMTP accepted the notification; inbox delivery is unconfirmed.");
+      else toast.error(data.removal.lastEmailError ?? "SMTP acceptance could not be confirmed.");
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Unable to retry notification.");
+    }
+  }
+
+  async function testSmtpConnection() {
+    try {
+      const response = await fetch("/api/v1/admin/email/test", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "SMTP connection test failed.");
+      toast.success(data.message || "SMTP connection verified; no email was sent.");
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "SMTP connection test failed.");
+    }
+  }
+
   return (
     <div className="space-y-5">
       <section aria-label="Admin account statistics" className="grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -159,15 +208,10 @@ export default function AdminUsersManagement({
                 Users with the existing Admin or Staff role
               </p>
             </div>
-            {canInvite && (
-              <button
-                type="button"
-                onClick={() => setInviteOpen(true)}
-                className="h-9 rounded-md bg-stone-900 px-3.5 text-xs font-medium text-white hover:bg-stone-700"
-              >
-                Add Admin / Invite Staff
-              </button>
-            )}
+            {canInvite && <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => void testSmtpConnection()} className="inline-flex h-9 items-center gap-2 rounded-md border border-stone-200 bg-white px-3 text-[11px] font-medium text-stone-700 hover:bg-stone-50"><MailCheck className="size-3.5" />Test SMTP</button>
+              <button type="button" onClick={() => setInviteOpen(true)} className="h-9 rounded-md bg-stone-900 px-3.5 text-xs font-medium text-white hover:bg-stone-700">Add Admin / Invite Staff</button>
+            </div>}
           </div>
 
           <div className="grid gap-2 sm:grid-cols-[minmax(180px,1fr)_190px_160px]">
@@ -313,6 +357,9 @@ export default function AdminUsersManagement({
                         {canRevokeSessions && user.id !== currentUserId && (
                           <button type="button" onClick={(event) => { void revokeUserSessions(user.id); event.currentTarget.closest("details")?.removeAttribute("open"); }} className="w-full rounded px-3 py-2 text-left text-[11px] text-stone-700 hover:bg-stone-50">Revoke sessions</button>
                         )}
+                        {canInvite && user.id !== currentUserId && !user.roles.some(({ isSuperAdmin }) => isSuperAdmin) && (
+                          <button type="button" onClick={(event) => { void removeAdminAccess(user); event.currentTarget.closest("details")?.removeAttribute("open"); }} className="w-full rounded px-3 py-2 text-left text-[11px] text-red-700 hover:bg-red-50"><span className="inline-flex items-center gap-2"><ShieldOff className="size-3.5" />Remove Admin Access</span></button>
+                        )}
                       </div>
                     </details>
                   </td>
@@ -348,8 +395,8 @@ export default function AdminUsersManagement({
               <div key={invitation.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <p className="text-xs font-medium text-stone-800">{invitation.name} · {invitation.email}</p>
-                  <p className="mt-1 text-[10px] text-stone-500">{invitation.roles.map(({ name }) => name).join(", ")} · {invitation.emailStatus === "ACCEPTED_BY_PROVIDER" ? "Resend accepted · delivery unconfirmed" : invitation.emailStatus === "FAILED" ? "Email request failed" : invitation.emailStatus === "UNKNOWN" ? "Provider result unknown · check logs" : invitation.emailStatus === "SENDING" ? "Email request in progress" : "Email not attempted"}</p>
-                  {invitation.providerEmailId && <p className="mt-1 font-mono text-[9px] text-stone-400">Resend ID: {invitation.providerEmailId}</p>}
+                  <p className="mt-1 text-[10px] text-stone-500">{invitation.roles.map(({ name }) => name).join(", ")} · {invitation.emailStatus === "ACCEPTED_BY_PROVIDER" ? `${invitation.emailProvider} accepted · inbox delivery unconfirmed` : invitation.emailStatus === "FAILED" ? "Email request failed" : invitation.emailStatus === "UNKNOWN" ? `${invitation.emailProvider} result unknown · check logs` : invitation.emailStatus === "SENDING" ? "Email request in progress" : "Email not attempted"}</p>
+                  {invitation.providerEmailId && <p className="mt-1 font-mono text-[9px] text-stone-400">Message ID: {invitation.providerEmailId}</p>}
                   {invitation.lastEmailError && <p className="mt-1 text-[10px] text-red-700">{invitation.lastEmailError}</p>}
                 </div>
                 <div className="flex items-center gap-2">
@@ -364,6 +411,29 @@ export default function AdminUsersManagement({
               </div>
             ))}
             {invitations.length === 0 && <p className="px-5 py-8 text-center text-xs text-stone-500">No invitations yet.</p>}
+          </div>
+        </section>
+      )}
+
+      {canInvite && (
+        <section className="overflow-hidden rounded-lg border border-stone-200 bg-white">
+          <div className="border-b border-stone-200 px-5 py-4">
+            <h2 className="font-serif text-lg text-stone-900">Admin access removal notifications</h2>
+            <p className="mt-1 text-[11px] text-stone-500">Access changes are recorded before email delivery; failed messages can be retried.</p>
+          </div>
+          <div className="divide-y divide-stone-100">
+            {accessRemovals.map((removal) => (
+              <div key={removal.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-medium text-stone-800">{removal.recipientName} · {removal.recipientEmail}</p>
+                  <p className="mt-1 text-[10px] text-stone-500">Removed roles: {removal.removedRoles.map(({ name }) => name).join(", ")} · {removal.emailStatus === "ACCEPTED_BY_PROVIDER" ? "SMTP accepted · inbox delivery unconfirmed" : removal.emailStatus === "FAILED" ? "Notification failed" : removal.emailStatus === "UNKNOWN" ? "SMTP result unknown · inspect logs" : removal.emailStatus === "SENDING" ? "Sending notification" : "Notification not attempted"}</p>
+                  {removal.providerEmailId && <p className="mt-1 font-mono text-[9px] text-stone-400">Message ID: {removal.providerEmailId}</p>}
+                  {removal.lastEmailError && <p className="mt-1 text-[10px] text-red-700">{removal.lastEmailError}</p>}
+                </div>
+                {(removal.emailStatus === "FAILED" || removal.emailStatus === "UNKNOWN") && <button type="button" onClick={() => void retryRemovalNotification(removal.id)} className="text-[10px] font-medium text-stone-700 underline">Retry notification</button>}
+              </div>
+            ))}
+            {accessRemovals.length === 0 && <p className="px-5 py-8 text-center text-xs text-stone-500">No Admin access removals yet.</p>}
           </div>
         </section>
       )}
@@ -396,7 +466,7 @@ export default function AdminUsersManagement({
       if (data.invitation) setInvitations((current) => current.map((invitation) => invitation.id === id ? data.invitation : invitation));
       if (!response.ok) throw new Error(data.error || `Unable to ${action} invitation.`);
       if (action === "revoke") setInvitations((current) => current.map((invitation) => invitation.id === id ? { ...invitation, status: "REVOKED" } : invitation));
-      toast.success(action === "revoke" ? "Invitation revoked" : "Resend accepted the request; delivery is unconfirmed.");
+      toast.success(action === "revoke" ? "Invitation revoked" : "SMTP accepted the request; inbox delivery is unconfirmed.");
     } catch (cause) {
       toast.error(cause instanceof Error ? cause.message : `Unable to ${action} invitation.`);
     }

@@ -22,8 +22,10 @@ model User {
   sessions                 Session[]
   accounts                 Account[]
   roles                    UserRole[]
-  sentAdminInvitations     AdminInvitation[] @relation("AdminInvitationInviter")
-  acceptedAdminInvitations AdminInvitation[] @relation("AdminInvitationAcceptedUser")
+  sentAdminInvitations     AdminInvitation[]    @relation("AdminInvitationInviter")
+  acceptedAdminInvitations AdminInvitation[]    @relation("AdminInvitationAcceptedUser")
+  adminAccessRemovals      AdminAccessRemoval[] @relation("AdminAccessRemovalTarget")
+  removedAdminAccesses     AdminAccessRemoval[] @relation("AdminAccessRemovalActor")
 
   @@unique([email])
   @@map("user")
@@ -128,23 +130,26 @@ enum AdminInvitationEmailStatus {
 }
 
 model AdminInvitation {
-  id             String                @id @default(uuid()) @db.Uuid
-  email          String                @db.VarChar(320)
-  name           String                @db.VarChar(200)
-  tokenHash      String                @unique @map("token_hash") @db.VarChar(64)
-  status         AdminInvitationStatus @default(PENDING)
-  expiresAt      DateTime              @map("expires_at")
-  sentAt         DateTime?             @map("sent_at")
-  emailStatus    AdminInvitationEmailStatus @default(NOT_ATTEMPTED) @map("email_status")
-  providerEmailId String?              @map("provider_email_id") @db.VarChar(120)
-  emailAttemptedAt DateTime?           @map("email_attempted_at")
-  lastEmailError String?               @map("last_email_error")
-  acceptedAt     DateTime?             @map("accepted_at")
-  revokedAt      DateTime?             @map("revoked_at")
-  invitedById    String                @map("invited_by_id")
-  acceptedUserId String?               @map("accepted_user_id")
-  createdAt      DateTime              @default(now()) @map("created_at")
-  updatedAt      DateTime              @updatedAt @map("updated_at")
+  id                     String                     @id @default(uuid()) @db.Uuid
+  email                  String                     @db.VarChar(320)
+  name                   String                     @db.VarChar(200)
+  tokenHash              String                     @unique @map("token_hash") @db.VarChar(64)
+  status                 AdminInvitationStatus      @default(PENDING)
+  expiresAt              DateTime                   @map("expires_at")
+  sentAt                 DateTime?                  @map("sent_at")
+  emailProvider          String                     @default("SMTP") @map("email_provider") @db.VarChar(20)
+  emailStatus            AdminInvitationEmailStatus @default(NOT_ATTEMPTED) @map("email_status")
+  providerEmailId        String?                    @map("provider_email_id") @db.VarChar(120)
+  providerResponse       String?                    @map("provider_response") @db.Text
+  emailAttemptedAt       DateTime?                  @map("email_attempted_at")
+  lastEmailError         String?                    @map("last_email_error")
+  inviteeExistedAtInvite Boolean                    @default(false) @map("invitee_existed_at_invite")
+  acceptedAt             DateTime?                  @map("accepted_at")
+  revokedAt              DateTime?                  @map("revoked_at")
+  invitedById            String                     @map("invited_by_id")
+  acceptedUserId         String?                    @map("accepted_user_id")
+  createdAt              DateTime                   @default(now()) @map("created_at")
+  updatedAt              DateTime                   @updatedAt @map("updated_at")
 
   invitedBy    User                  @relation("AdminInvitationInviter", fields: [invitedById], references: [id], onDelete: Restrict)
   acceptedUser User?                 @relation("AdminInvitationAcceptedUser", fields: [acceptedUserId], references: [id], onDelete: SetNull)
@@ -154,6 +159,30 @@ model AdminInvitation {
   @@index([status, expiresAt])
   @@index([invitedById])
   @@map("admin_invitations")
+}
+
+model AdminAccessRemoval {
+  id               String                     @id @default(uuid()) @db.Uuid
+  userId           String                     @map("user_id")
+  removedById      String                     @map("removed_by_id")
+  recipientEmail   String                     @map("recipient_email") @db.VarChar(320)
+  recipientName    String                     @map("recipient_name") @db.VarChar(200)
+  removedRoles     Json                       @map("removed_roles") @db.JsonB
+  emailProvider    String                     @default("SMTP") @map("email_provider") @db.VarChar(20)
+  emailStatus      AdminInvitationEmailStatus @default(NOT_ATTEMPTED) @map("email_status")
+  providerEmailId  String?                    @map("provider_email_id") @db.VarChar(120)
+  providerResponse String?                    @map("provider_response") @db.Text
+  emailAttemptedAt DateTime?                  @map("email_attempted_at")
+  lastEmailError   String?                    @map("last_email_error") @db.Text
+  createdAt        DateTime                   @default(now()) @map("created_at")
+
+  user      User @relation("AdminAccessRemovalTarget", fields: [userId], references: [id], onDelete: Restrict)
+  removedBy User @relation("AdminAccessRemovalActor", fields: [removedById], references: [id], onDelete: Restrict)
+
+  @@index([userId, createdAt])
+  @@index([removedById])
+  @@index([emailStatus, createdAt])
+  @@map("admin_access_removals")
 }
 
 model AdminInvitationRole {

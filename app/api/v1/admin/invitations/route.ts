@@ -12,6 +12,8 @@ import {
   serializeManagedInvitation,
 } from "@/lib/admin-invitations";
 
+export const runtime = "nodejs";
+
 const createSchema = z.object({
   name: z.string().trim().min(2).max(200),
   email: z.email().max(320),
@@ -60,6 +62,7 @@ export async function POST(request: Request) {
   const existingUser = await prisma.user.findFirst({
     where: { email: { equals: email, mode: "insensitive" } },
     select: {
+      id: true,
       roles: {
         where: { role: { scope: "ADMIN" } },
         select: { role: { select: { id: true } } },
@@ -98,6 +101,7 @@ export async function POST(request: Request) {
         tokenHash: hashInvitationToken(token),
         expiresAt: new Date(now.getTime() + INVITATION_LIFETIME_MS),
         invitedById: access.context.userId,
+        inviteeExistedAtInvite: Boolean(existingUser),
         roles: {
           create: roles.map(({ id }) => ({ role: { connect: { id } } })),
         },

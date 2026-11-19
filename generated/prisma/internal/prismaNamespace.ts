@@ -404,6 +404,7 @@ export const ModelName = {
   Role: 'Role',
   Permission: 'Permission',
   AdminInvitation: 'AdminInvitation',
+  AdminAccessRemoval: 'AdminAccessRemoval',
   AdminInvitationRole: 'AdminInvitationRole',
   UserRole: 'UserRole',
   RolePermission: 'RolePermission'
@@ -422,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "role" | "permission" | "adminInvitation" | "adminInvitationRole" | "userRole" | "rolePermission"
+    modelProps: "user" | "session" | "account" | "verification" | "role" | "permission" | "adminInvitation" | "adminAccessRemoval" | "adminInvitationRole" | "userRole" | "rolePermission"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -944,6 +945,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AdminAccessRemoval: {
+      payload: Prisma.$AdminAccessRemovalPayload<ExtArgs>
+      fields: Prisma.AdminAccessRemovalFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdminAccessRemovalFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdminAccessRemovalFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload>
+        }
+        findFirst: {
+          args: Prisma.AdminAccessRemovalFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdminAccessRemovalFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload>
+        }
+        findMany: {
+          args: Prisma.AdminAccessRemovalFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload>[]
+        }
+        create: {
+          args: Prisma.AdminAccessRemovalCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload>
+        }
+        createMany: {
+          args: Prisma.AdminAccessRemovalCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AdminAccessRemovalCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload>[]
+        }
+        delete: {
+          args: Prisma.AdminAccessRemovalDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload>
+        }
+        update: {
+          args: Prisma.AdminAccessRemovalUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload>
+        }
+        deleteMany: {
+          args: Prisma.AdminAccessRemovalDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdminAccessRemovalUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AdminAccessRemovalUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload>[]
+        }
+        upsert: {
+          args: Prisma.AdminAccessRemovalUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAccessRemovalPayload>
+        }
+        aggregate: {
+          args: Prisma.AdminAccessRemovalAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdminAccessRemoval>
+        }
+        groupBy: {
+          args: Prisma.AdminAccessRemovalGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminAccessRemovalGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdminAccessRemovalCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminAccessRemovalCountAggregateOutputType> | number
+        }
+      }
+    }
     AdminInvitationRole: {
       payload: Prisma.$AdminInvitationRolePayload<ExtArgs>
       fields: Prisma.AdminInvitationRoleFieldRefs
@@ -1296,10 +1371,13 @@ export const AdminInvitationScalarFieldEnum = {
   status: 'status',
   expiresAt: 'expiresAt',
   sentAt: 'sentAt',
+  emailProvider: 'emailProvider',
   emailStatus: 'emailStatus',
   providerEmailId: 'providerEmailId',
+  providerResponse: 'providerResponse',
   emailAttemptedAt: 'emailAttemptedAt',
   lastEmailError: 'lastEmailError',
+  inviteeExistedAtInvite: 'inviteeExistedAtInvite',
   acceptedAt: 'acceptedAt',
   revokedAt: 'revokedAt',
   invitedById: 'invitedById',
@@ -1309,6 +1387,25 @@ export const AdminInvitationScalarFieldEnum = {
 } as const
 
 export type AdminInvitationScalarFieldEnum = (typeof AdminInvitationScalarFieldEnum)[keyof typeof AdminInvitationScalarFieldEnum]
+
+
+export const AdminAccessRemovalScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  removedById: 'removedById',
+  recipientEmail: 'recipientEmail',
+  recipientName: 'recipientName',
+  removedRoles: 'removedRoles',
+  emailProvider: 'emailProvider',
+  emailStatus: 'emailStatus',
+  providerEmailId: 'providerEmailId',
+  providerResponse: 'providerResponse',
+  emailAttemptedAt: 'emailAttemptedAt',
+  lastEmailError: 'lastEmailError',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminAccessRemovalScalarFieldEnum = (typeof AdminAccessRemovalScalarFieldEnum)[keyof typeof AdminAccessRemovalScalarFieldEnum]
 
 
 export const AdminInvitationRoleScalarFieldEnum = {
@@ -1343,6 +1440,13 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -1357,6 +1461,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -1439,6 +1552,20 @@ export type EnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel> = FieldRef
  * Reference to a field of type 'AdminInvitationEmailStatus[]'
  */
 export type ListEnumAdminInvitationEmailStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AdminInvitationEmailStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -1613,6 +1740,7 @@ export type GlobalOmitConfig = {
   role?: Prisma.RoleOmit
   permission?: Prisma.PermissionOmit
   adminInvitation?: Prisma.AdminInvitationOmit
+  adminAccessRemoval?: Prisma.AdminAccessRemovalOmit
   adminInvitationRole?: Prisma.AdminInvitationRoleOmit
   userRole?: Prisma.UserRoleOmit
   rolePermission?: Prisma.RolePermissionOmit

@@ -32,10 +32,13 @@ export type AdminInvitationMinAggregateOutputType = {
   status: $Enums.AdminInvitationStatus | null
   expiresAt: Date | null
   sentAt: Date | null
+  emailProvider: string | null
   emailStatus: $Enums.AdminInvitationEmailStatus | null
   providerEmailId: string | null
+  providerResponse: string | null
   emailAttemptedAt: Date | null
   lastEmailError: string | null
+  inviteeExistedAtInvite: boolean | null
   acceptedAt: Date | null
   revokedAt: Date | null
   invitedById: string | null
@@ -52,10 +55,13 @@ export type AdminInvitationMaxAggregateOutputType = {
   status: $Enums.AdminInvitationStatus | null
   expiresAt: Date | null
   sentAt: Date | null
+  emailProvider: string | null
   emailStatus: $Enums.AdminInvitationEmailStatus | null
   providerEmailId: string | null
+  providerResponse: string | null
   emailAttemptedAt: Date | null
   lastEmailError: string | null
+  inviteeExistedAtInvite: boolean | null
   acceptedAt: Date | null
   revokedAt: Date | null
   invitedById: string | null
@@ -72,10 +78,13 @@ export type AdminInvitationCountAggregateOutputType = {
   status: number
   expiresAt: number
   sentAt: number
+  emailProvider: number
   emailStatus: number
   providerEmailId: number
+  providerResponse: number
   emailAttemptedAt: number
   lastEmailError: number
+  inviteeExistedAtInvite: number
   acceptedAt: number
   revokedAt: number
   invitedById: number
@@ -94,10 +103,13 @@ export type AdminInvitationMinAggregateInputType = {
   status?: true
   expiresAt?: true
   sentAt?: true
+  emailProvider?: true
   emailStatus?: true
   providerEmailId?: true
+  providerResponse?: true
   emailAttemptedAt?: true
   lastEmailError?: true
+  inviteeExistedAtInvite?: true
   acceptedAt?: true
   revokedAt?: true
   invitedById?: true
@@ -114,10 +126,13 @@ export type AdminInvitationMaxAggregateInputType = {
   status?: true
   expiresAt?: true
   sentAt?: true
+  emailProvider?: true
   emailStatus?: true
   providerEmailId?: true
+  providerResponse?: true
   emailAttemptedAt?: true
   lastEmailError?: true
+  inviteeExistedAtInvite?: true
   acceptedAt?: true
   revokedAt?: true
   invitedById?: true
@@ -134,10 +149,13 @@ export type AdminInvitationCountAggregateInputType = {
   status?: true
   expiresAt?: true
   sentAt?: true
+  emailProvider?: true
   emailStatus?: true
   providerEmailId?: true
+  providerResponse?: true
   emailAttemptedAt?: true
   lastEmailError?: true
+  inviteeExistedAtInvite?: true
   acceptedAt?: true
   revokedAt?: true
   invitedById?: true
@@ -227,10 +245,13 @@ export type AdminInvitationGroupByOutputType = {
   status: $Enums.AdminInvitationStatus
   expiresAt: Date
   sentAt: Date | null
+  emailProvider: string
   emailStatus: $Enums.AdminInvitationEmailStatus
   providerEmailId: string | null
+  providerResponse: string | null
   emailAttemptedAt: Date | null
   lastEmailError: string | null
+  inviteeExistedAtInvite: boolean
   acceptedAt: Date | null
   revokedAt: Date | null
   invitedById: string
@@ -268,10 +289,13 @@ export type AdminInvitationWhereInput = {
   status?: Prisma.EnumAdminInvitationStatusFilter<"AdminInvitation"> | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFilter<"AdminInvitation"> | Date | string
   sentAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
+  emailProvider?: Prisma.StringFilter<"AdminInvitation"> | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFilter<"AdminInvitation"> | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.StringNullableFilter<"AdminInvitation"> | string | null
+  providerResponse?: Prisma.StringNullableFilter<"AdminInvitation"> | string | null
   emailAttemptedAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
   lastEmailError?: Prisma.StringNullableFilter<"AdminInvitation"> | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFilter<"AdminInvitation"> | boolean
   acceptedAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
   revokedAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
   invitedById?: Prisma.StringFilter<"AdminInvitation"> | string
@@ -291,10 +315,13 @@ export type AdminInvitationOrderByWithRelationInput = {
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  emailProvider?: Prisma.SortOrder
   emailStatus?: Prisma.SortOrder
   providerEmailId?: Prisma.SortOrderInput | Prisma.SortOrder
+  providerResponse?: Prisma.SortOrderInput | Prisma.SortOrder
   emailAttemptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastEmailError?: Prisma.SortOrderInput | Prisma.SortOrder
+  inviteeExistedAtInvite?: Prisma.SortOrder
   acceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   revokedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   invitedById?: Prisma.SortOrder
@@ -317,10 +344,13 @@ export type AdminInvitationWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumAdminInvitationStatusFilter<"AdminInvitation"> | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFilter<"AdminInvitation"> | Date | string
   sentAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
+  emailProvider?: Prisma.StringFilter<"AdminInvitation"> | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFilter<"AdminInvitation"> | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.StringNullableFilter<"AdminInvitation"> | string | null
+  providerResponse?: Prisma.StringNullableFilter<"AdminInvitation"> | string | null
   emailAttemptedAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
   lastEmailError?: Prisma.StringNullableFilter<"AdminInvitation"> | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFilter<"AdminInvitation"> | boolean
   acceptedAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
   revokedAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
   invitedById?: Prisma.StringFilter<"AdminInvitation"> | string
@@ -340,10 +370,13 @@ export type AdminInvitationOrderByWithAggregationInput = {
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   sentAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  emailProvider?: Prisma.SortOrder
   emailStatus?: Prisma.SortOrder
   providerEmailId?: Prisma.SortOrderInput | Prisma.SortOrder
+  providerResponse?: Prisma.SortOrderInput | Prisma.SortOrder
   emailAttemptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   lastEmailError?: Prisma.SortOrderInput | Prisma.SortOrder
+  inviteeExistedAtInvite?: Prisma.SortOrder
   acceptedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   revokedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   invitedById?: Prisma.SortOrder
@@ -366,10 +399,13 @@ export type AdminInvitationScalarWhereWithAggregatesInput = {
   status?: Prisma.EnumAdminInvitationStatusWithAggregatesFilter<"AdminInvitation"> | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"AdminInvitation"> | Date | string
   sentAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AdminInvitation"> | Date | string | null
+  emailProvider?: Prisma.StringWithAggregatesFilter<"AdminInvitation"> | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusWithAggregatesFilter<"AdminInvitation"> | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.StringNullableWithAggregatesFilter<"AdminInvitation"> | string | null
+  providerResponse?: Prisma.StringNullableWithAggregatesFilter<"AdminInvitation"> | string | null
   emailAttemptedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AdminInvitation"> | Date | string | null
   lastEmailError?: Prisma.StringNullableWithAggregatesFilter<"AdminInvitation"> | string | null
+  inviteeExistedAtInvite?: Prisma.BoolWithAggregatesFilter<"AdminInvitation"> | boolean
   acceptedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AdminInvitation"> | Date | string | null
   revokedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"AdminInvitation"> | Date | string | null
   invitedById?: Prisma.StringWithAggregatesFilter<"AdminInvitation"> | string
@@ -386,10 +422,13 @@ export type AdminInvitationCreateInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
@@ -407,10 +446,13 @@ export type AdminInvitationUncheckedCreateInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   invitedById: string
@@ -428,10 +470,13 @@ export type AdminInvitationUpdateInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -449,10 +494,13 @@ export type AdminInvitationUncheckedUpdateInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
@@ -470,10 +518,13 @@ export type AdminInvitationCreateManyInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   invitedById: string
@@ -490,10 +541,13 @@ export type AdminInvitationUpdateManyMutationInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -508,10 +562,13 @@ export type AdminInvitationUncheckedUpdateManyInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
@@ -538,10 +595,13 @@ export type AdminInvitationCountOrderByAggregateInput = {
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   sentAt?: Prisma.SortOrder
+  emailProvider?: Prisma.SortOrder
   emailStatus?: Prisma.SortOrder
   providerEmailId?: Prisma.SortOrder
+  providerResponse?: Prisma.SortOrder
   emailAttemptedAt?: Prisma.SortOrder
   lastEmailError?: Prisma.SortOrder
+  inviteeExistedAtInvite?: Prisma.SortOrder
   acceptedAt?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrder
   invitedById?: Prisma.SortOrder
@@ -558,10 +618,13 @@ export type AdminInvitationMaxOrderByAggregateInput = {
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   sentAt?: Prisma.SortOrder
+  emailProvider?: Prisma.SortOrder
   emailStatus?: Prisma.SortOrder
   providerEmailId?: Prisma.SortOrder
+  providerResponse?: Prisma.SortOrder
   emailAttemptedAt?: Prisma.SortOrder
   lastEmailError?: Prisma.SortOrder
+  inviteeExistedAtInvite?: Prisma.SortOrder
   acceptedAt?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrder
   invitedById?: Prisma.SortOrder
@@ -578,10 +641,13 @@ export type AdminInvitationMinOrderByAggregateInput = {
   status?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   sentAt?: Prisma.SortOrder
+  emailProvider?: Prisma.SortOrder
   emailStatus?: Prisma.SortOrder
   providerEmailId?: Prisma.SortOrder
+  providerResponse?: Prisma.SortOrder
   emailAttemptedAt?: Prisma.SortOrder
   lastEmailError?: Prisma.SortOrder
+  inviteeExistedAtInvite?: Prisma.SortOrder
   acceptedAt?: Prisma.SortOrder
   revokedAt?: Prisma.SortOrder
   invitedById?: Prisma.SortOrder
@@ -709,10 +775,13 @@ export type AdminInvitationCreateWithoutInvitedByInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
@@ -729,10 +798,13 @@ export type AdminInvitationUncheckedCreateWithoutInvitedByInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   acceptedUserId?: string | null
@@ -759,10 +831,13 @@ export type AdminInvitationCreateWithoutAcceptedUserInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
@@ -779,10 +854,13 @@ export type AdminInvitationUncheckedCreateWithoutAcceptedUserInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   invitedById: string
@@ -828,10 +906,13 @@ export type AdminInvitationScalarWhereInput = {
   status?: Prisma.EnumAdminInvitationStatusFilter<"AdminInvitation"> | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFilter<"AdminInvitation"> | Date | string
   sentAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
+  emailProvider?: Prisma.StringFilter<"AdminInvitation"> | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFilter<"AdminInvitation"> | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.StringNullableFilter<"AdminInvitation"> | string | null
+  providerResponse?: Prisma.StringNullableFilter<"AdminInvitation"> | string | null
   emailAttemptedAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
   lastEmailError?: Prisma.StringNullableFilter<"AdminInvitation"> | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFilter<"AdminInvitation"> | boolean
   acceptedAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
   revokedAt?: Prisma.DateTimeNullableFilter<"AdminInvitation"> | Date | string | null
   invitedById?: Prisma.StringFilter<"AdminInvitation"> | string
@@ -864,10 +945,13 @@ export type AdminInvitationCreateWithoutRolesInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   createdAt?: Date | string
@@ -884,10 +968,13 @@ export type AdminInvitationUncheckedCreateWithoutRolesInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   invitedById: string
@@ -920,10 +1007,13 @@ export type AdminInvitationUpdateWithoutRolesInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -940,10 +1030,13 @@ export type AdminInvitationUncheckedUpdateWithoutRolesInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
@@ -960,10 +1053,13 @@ export type AdminInvitationCreateManyInvitedByInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   acceptedUserId?: string | null
@@ -979,10 +1075,13 @@ export type AdminInvitationCreateManyAcceptedUserInput = {
   status?: $Enums.AdminInvitationStatus
   expiresAt: Date | string
   sentAt?: Date | string | null
+  emailProvider?: string
   emailStatus?: $Enums.AdminInvitationEmailStatus
   providerEmailId?: string | null
+  providerResponse?: string | null
   emailAttemptedAt?: Date | string | null
   lastEmailError?: string | null
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: Date | string | null
   revokedAt?: Date | string | null
   invitedById: string
@@ -998,10 +1097,13 @@ export type AdminInvitationUpdateWithoutInvitedByInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1018,10 +1120,13 @@ export type AdminInvitationUncheckedUpdateWithoutInvitedByInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acceptedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1038,10 +1143,13 @@ export type AdminInvitationUncheckedUpdateManyWithoutInvitedByInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   acceptedUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1057,10 +1165,13 @@ export type AdminInvitationUpdateWithoutAcceptedUserInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -1077,10 +1188,13 @@ export type AdminInvitationUncheckedUpdateWithoutAcceptedUserInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1097,10 +1211,13 @@ export type AdminInvitationUncheckedUpdateManyWithoutAcceptedUserInput = {
   status?: Prisma.EnumAdminInvitationStatusFieldUpdateOperationsInput | $Enums.AdminInvitationStatus
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sentAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  emailProvider?: Prisma.StringFieldUpdateOperationsInput | string
   emailStatus?: Prisma.EnumAdminInvitationEmailStatusFieldUpdateOperationsInput | $Enums.AdminInvitationEmailStatus
   providerEmailId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  providerResponse?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   emailAttemptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   lastEmailError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  inviteeExistedAtInvite?: Prisma.BoolFieldUpdateOperationsInput | boolean
   acceptedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   revokedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   invitedById?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1147,10 +1264,13 @@ export type AdminInvitationSelect<ExtArgs extends runtime.Types.Extensions.Inter
   status?: boolean
   expiresAt?: boolean
   sentAt?: boolean
+  emailProvider?: boolean
   emailStatus?: boolean
   providerEmailId?: boolean
+  providerResponse?: boolean
   emailAttemptedAt?: boolean
   lastEmailError?: boolean
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: boolean
   revokedAt?: boolean
   invitedById?: boolean
@@ -1171,10 +1291,13 @@ export type AdminInvitationSelectCreateManyAndReturn<ExtArgs extends runtime.Typ
   status?: boolean
   expiresAt?: boolean
   sentAt?: boolean
+  emailProvider?: boolean
   emailStatus?: boolean
   providerEmailId?: boolean
+  providerResponse?: boolean
   emailAttemptedAt?: boolean
   lastEmailError?: boolean
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: boolean
   revokedAt?: boolean
   invitedById?: boolean
@@ -1193,10 +1316,13 @@ export type AdminInvitationSelectUpdateManyAndReturn<ExtArgs extends runtime.Typ
   status?: boolean
   expiresAt?: boolean
   sentAt?: boolean
+  emailProvider?: boolean
   emailStatus?: boolean
   providerEmailId?: boolean
+  providerResponse?: boolean
   emailAttemptedAt?: boolean
   lastEmailError?: boolean
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: boolean
   revokedAt?: boolean
   invitedById?: boolean
@@ -1215,10 +1341,13 @@ export type AdminInvitationSelectScalar = {
   status?: boolean
   expiresAt?: boolean
   sentAt?: boolean
+  emailProvider?: boolean
   emailStatus?: boolean
   providerEmailId?: boolean
+  providerResponse?: boolean
   emailAttemptedAt?: boolean
   lastEmailError?: boolean
+  inviteeExistedAtInvite?: boolean
   acceptedAt?: boolean
   revokedAt?: boolean
   invitedById?: boolean
@@ -1227,7 +1356,7 @@ export type AdminInvitationSelectScalar = {
   updatedAt?: boolean
 }
 
-export type AdminInvitationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "tokenHash" | "status" | "expiresAt" | "sentAt" | "emailStatus" | "providerEmailId" | "emailAttemptedAt" | "lastEmailError" | "acceptedAt" | "revokedAt" | "invitedById" | "acceptedUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["adminInvitation"]>
+export type AdminInvitationOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "name" | "tokenHash" | "status" | "expiresAt" | "sentAt" | "emailProvider" | "emailStatus" | "providerEmailId" | "providerResponse" | "emailAttemptedAt" | "lastEmailError" | "inviteeExistedAtInvite" | "acceptedAt" | "revokedAt" | "invitedById" | "acceptedUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["adminInvitation"]>
 export type AdminInvitationInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   invitedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   acceptedUser?: boolean | Prisma.AdminInvitation$acceptedUserArgs<ExtArgs>
@@ -1258,10 +1387,13 @@ export type $AdminInvitationPayload<ExtArgs extends runtime.Types.Extensions.Int
     status: $Enums.AdminInvitationStatus
     expiresAt: Date
     sentAt: Date | null
+    emailProvider: string
     emailStatus: $Enums.AdminInvitationEmailStatus
     providerEmailId: string | null
+    providerResponse: string | null
     emailAttemptedAt: Date | null
     lastEmailError: string | null
+    inviteeExistedAtInvite: boolean
     acceptedAt: Date | null
     revokedAt: Date | null
     invitedById: string
@@ -1701,10 +1833,13 @@ export interface AdminInvitationFieldRefs {
   readonly status: Prisma.FieldRef<"AdminInvitation", 'AdminInvitationStatus'>
   readonly expiresAt: Prisma.FieldRef<"AdminInvitation", 'DateTime'>
   readonly sentAt: Prisma.FieldRef<"AdminInvitation", 'DateTime'>
+  readonly emailProvider: Prisma.FieldRef<"AdminInvitation", 'String'>
   readonly emailStatus: Prisma.FieldRef<"AdminInvitation", 'AdminInvitationEmailStatus'>
   readonly providerEmailId: Prisma.FieldRef<"AdminInvitation", 'String'>
+  readonly providerResponse: Prisma.FieldRef<"AdminInvitation", 'String'>
   readonly emailAttemptedAt: Prisma.FieldRef<"AdminInvitation", 'DateTime'>
   readonly lastEmailError: Prisma.FieldRef<"AdminInvitation", 'String'>
+  readonly inviteeExistedAtInvite: Prisma.FieldRef<"AdminInvitation", 'Boolean'>
   readonly acceptedAt: Prisma.FieldRef<"AdminInvitation", 'DateTime'>
   readonly revokedAt: Prisma.FieldRef<"AdminInvitation", 'DateTime'>
   readonly invitedById: Prisma.FieldRef<"AdminInvitation", 'String'>

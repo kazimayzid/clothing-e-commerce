@@ -36,13 +36,18 @@ export default function AcceptAdminInvitationPage() {
     const form = new FormData(event.currentTarget);
     const email = invitation?.email ?? String(form.get("email") ?? "");
     const password = String(form.get("password") ?? "");
+    const confirmPassword = String(form.get("confirmPassword") ?? "");
+    if (mode === "signup" && password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
     setLoading(true);
     try {
       if (mode === "signup") {
         const name = String(form.get("name") ?? invitation?.name ?? "");
         const result = await authClient.signUp.email({ name, email, password, callbackURL: window.location.href });
         if (result.error) throw new Error(result.error.message || "Unable to create your account.");
-        setMessage("Account created. Check your email and verify it, then return to this invitation link.");
+        setMessage("Account created. Accept this secure invitation to confirm the email for this newly created staff account. If this account existed before the invitation, verify the separate Better Auth email first.");
       } else {
         const result = await authClient.signIn.email({ email, password });
         if (result.error) throw new Error(result.error.message || "Unable to sign in.");
@@ -89,15 +94,17 @@ export default function AcceptAdminInvitationPage() {
           <>
             <p className="mt-2 text-sm leading-6 text-neutral-600">Invitation for <strong>{invitation.name}</strong> at <strong>{invitation.email}</strong>.</p>
             <p className="mt-3 text-sm text-neutral-600">Assigned roles: {invitation.roles.map(({ name }) => name).join(", ")}</p>
-            {emailMatches && verified ? (
+            {emailMatches ? (
               <div className="mt-7 space-y-4">
-                <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Verified as {currentEmail}. Accept to activate the listed admin roles.</p>
+                {verified
+                  ? <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">Verified as {currentEmail}. Accept to activate the listed admin roles.</p>
+                  : <p className="rounded-lg bg-blue-50 px-3 py-2 text-sm text-blue-800">This secure invitation link confirms the invited email for a newly created account. An account that existed before the invitation must first use Better Auth email verification.</p>}
                 <button disabled={loading} onClick={accept} className="h-11 w-full rounded-lg bg-neutral-900 px-4 text-sm font-semibold text-white disabled:opacity-60">{loading ? "Accepting..." : "Accept invitation"}</button>
+                {!verified && <button type="button" onClick={async () => { const result = await authClient.sendVerificationEmail({ email: invitation.email, callbackURL: window.location.href }); if (result.error) setError(result.error.message || "Could not send the verification email."); else setMessage("A verification link has been sent, if email delivery is configured."); }} className="w-full text-sm text-neutral-600 underline">Send Better Auth verification email</button>}
               </div>
             ) : (
               <>
                 {currentEmail && !emailMatches && <p className="mt-5 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">You are signed in as {currentEmail}. Sign out and use the invited email.</p>}
-                {emailMatches && !verified && <div className="mt-5 rounded-lg bg-amber-50 px-3 py-3 text-sm text-amber-800"><p>Verify this email using the Better Auth verification link before accepting.</p><button type="button" onClick={async () => { const result = await authClient.sendVerificationEmail({ email: invitation.email, callbackURL: window.location.href }); if (result.error) setError(result.error.message || "Could not send the verification email."); else setMessage("A verification link has been sent, if email delivery is configured."); }} className="mt-2 font-medium underline">Send verification email again</button></div>}
                 {!currentEmail && (
                   <div className="mt-7">
                     <div className="mb-4 flex gap-2 border-b border-neutral-200">
@@ -108,6 +115,7 @@ export default function AcceptAdminInvitationPage() {
                       {mode === "signup" && <label className="block text-sm">Full name<input name="name" defaultValue={invitation.name} required maxLength={100} className="mt-1 h-10 w-full rounded-md border border-neutral-300 px-3" /></label>}
                       <label className="block text-sm">Email<input name="email" type="email" defaultValue={invitation.email} readOnly className="mt-1 h-10 w-full rounded-md border border-neutral-300 bg-neutral-50 px-3" /></label>
                       <label className="block text-sm">Password<input name="password" type="password" required minLength={8} maxLength={128} autoComplete={mode === "signup" ? "new-password" : "current-password"} className="mt-1 h-10 w-full rounded-md border border-neutral-300 px-3" /></label>
+                      {mode === "signup" && <label className="block text-sm">Confirm password<input name="confirmPassword" type="password" required minLength={8} maxLength={128} autoComplete="new-password" className="mt-1 h-10 w-full rounded-md border border-neutral-300 px-3" /></label>}
                       <button disabled={loading} className="h-11 w-full rounded-lg bg-neutral-900 px-4 text-sm font-semibold text-white disabled:opacity-60">{loading ? "Please wait..." : mode === "signup" ? "Create account" : "Sign in"}</button>
                     </form>
                   </div>

@@ -63,6 +63,7 @@ export default function LoginPage({
         email: data.email.trim(),
         password: data.password,
         rememberMe: data.rememberMe,
+        callbackURL,
       });
 
       if (error) {

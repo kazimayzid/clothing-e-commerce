@@ -77,6 +77,11 @@ export type Permission = Prisma.PermissionModel
  */
 export type AdminInvitation = Prisma.AdminInvitationModel
 /**
+ * Model AdminAccessRemoval
+ * 
+ */
+export type AdminAccessRemoval = Prisma.AdminAccessRemovalModel
+/**
  * Model AdminInvitationRole
  * 
  */

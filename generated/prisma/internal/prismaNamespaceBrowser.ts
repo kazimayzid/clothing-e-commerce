@@ -58,6 +58,7 @@ export const ModelName = {
   Role: 'Role',
   Permission: 'Permission',
   AdminInvitation: 'AdminInvitation',
+  AdminAccessRemoval: 'AdminAccessRemoval',
   AdminInvitationRole: 'AdminInvitationRole',
   UserRole: 'UserRole',
   RolePermission: 'RolePermission'
@@ -170,10 +171,13 @@ export const AdminInvitationScalarFieldEnum = {
   status: 'status',
   expiresAt: 'expiresAt',
   sentAt: 'sentAt',
+  emailProvider: 'emailProvider',
   emailStatus: 'emailStatus',
   providerEmailId: 'providerEmailId',
+  providerResponse: 'providerResponse',
   emailAttemptedAt: 'emailAttemptedAt',
   lastEmailError: 'lastEmailError',
+  inviteeExistedAtInvite: 'inviteeExistedAtInvite',
   acceptedAt: 'acceptedAt',
   revokedAt: 'revokedAt',
   invitedById: 'invitedById',
@@ -183,6 +187,25 @@ export const AdminInvitationScalarFieldEnum = {
 } as const
 
 export type AdminInvitationScalarFieldEnum = (typeof AdminInvitationScalarFieldEnum)[keyof typeof AdminInvitationScalarFieldEnum]
+
+
+export const AdminAccessRemovalScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  removedById: 'removedById',
+  recipientEmail: 'recipientEmail',
+  recipientName: 'recipientName',
+  removedRoles: 'removedRoles',
+  emailProvider: 'emailProvider',
+  emailStatus: 'emailStatus',
+  providerEmailId: 'providerEmailId',
+  providerResponse: 'providerResponse',
+  emailAttemptedAt: 'emailAttemptedAt',
+  lastEmailError: 'lastEmailError',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminAccessRemovalScalarFieldEnum = (typeof AdminAccessRemovalScalarFieldEnum)[keyof typeof AdminAccessRemovalScalarFieldEnum]
 
 
 export const AdminInvitationRoleScalarFieldEnum = {
@@ -217,6 +240,13 @@ export const SortOrder = {
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
 
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
 export const QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
@@ -231,4 +261,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

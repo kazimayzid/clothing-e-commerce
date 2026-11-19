@@ -64,11 +64,11 @@ export async function requirePermission(resource: string, action: string) {
   const allowed = access && hasPermission(access, `${resource}:${action}`);
 
   if (!access?.isActive || !isInternal) {
-    redirect("/admin/sign-in");
+    redirect("/admin/forbidden");
   }
 
   if (!allowed) {
-    redirect("/");
+    redirect("/admin/forbidden");
   }
 
   return session;

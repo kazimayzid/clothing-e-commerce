@@ -211,6 +211,8 @@ export type UserWhereInput = {
   roles?: Prisma.UserRoleListRelationFilter
   sentAdminInvitations?: Prisma.AdminInvitationListRelationFilter
   acceptedAdminInvitations?: Prisma.AdminInvitationListRelationFilter
+  adminAccessRemovals?: Prisma.AdminAccessRemovalListRelationFilter
+  removedAdminAccesses?: Prisma.AdminAccessRemovalListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -227,6 +229,8 @@ export type UserOrderByWithRelationInput = {
   roles?: Prisma.UserRoleOrderByRelationAggregateInput
   sentAdminInvitations?: Prisma.AdminInvitationOrderByRelationAggregateInput
   acceptedAdminInvitations?: Prisma.AdminInvitationOrderByRelationAggregateInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalOrderByRelationAggregateInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -246,6 +250,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   roles?: Prisma.UserRoleListRelationFilter
   sentAdminInvitations?: Prisma.AdminInvitationListRelationFilter
   acceptedAdminInvitations?: Prisma.AdminInvitationListRelationFilter
+  adminAccessRemovals?: Prisma.AdminAccessRemovalListRelationFilter
+  removedAdminAccesses?: Prisma.AdminAccessRemovalListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -290,6 +296,8 @@ export type UserCreateInput = {
   roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutInvitedByInput
   acceptedAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -306,6 +314,8 @@ export type UserUncheckedCreateInput = {
   roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserUpdateInput = {
@@ -322,6 +332,8 @@ export type UserUpdateInput = {
   roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutInvitedByNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -338,6 +350,8 @@ export type UserUncheckedUpdateInput = {
   roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -490,6 +504,34 @@ export type UserUpdateOneWithoutAcceptedAdminInvitationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAcceptedAdminInvitationsInput, Prisma.UserUpdateWithoutAcceptedAdminInvitationsInput>, Prisma.UserUncheckedUpdateWithoutAcceptedAdminInvitationsInput>
 }
 
+export type UserCreateNestedOneWithoutAdminAccessRemovalsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAdminAccessRemovalsInput, Prisma.UserUncheckedCreateWithoutAdminAccessRemovalsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAdminAccessRemovalsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutRemovedAdminAccessesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRemovedAdminAccessesInput, Prisma.UserUncheckedCreateWithoutRemovedAdminAccessesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRemovedAdminAccessesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutAdminAccessRemovalsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAdminAccessRemovalsInput, Prisma.UserUncheckedCreateWithoutAdminAccessRemovalsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAdminAccessRemovalsInput
+  upsert?: Prisma.UserUpsertWithoutAdminAccessRemovalsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAdminAccessRemovalsInput, Prisma.UserUpdateWithoutAdminAccessRemovalsInput>, Prisma.UserUncheckedUpdateWithoutAdminAccessRemovalsInput>
+}
+
+export type UserUpdateOneRequiredWithoutRemovedAdminAccessesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutRemovedAdminAccessesInput, Prisma.UserUncheckedCreateWithoutRemovedAdminAccessesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutRemovedAdminAccessesInput
+  upsert?: Prisma.UserUpsertWithoutRemovedAdminAccessesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutRemovedAdminAccessesInput, Prisma.UserUpdateWithoutRemovedAdminAccessesInput>, Prisma.UserUncheckedUpdateWithoutRemovedAdminAccessesInput>
+}
+
 export type UserCreateNestedOneWithoutRolesInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutRolesInput, Prisma.UserUncheckedCreateWithoutRolesInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutRolesInput
@@ -517,6 +559,8 @@ export type UserCreateWithoutSessionsInput = {
   roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutInvitedByInput
   acceptedAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -532,6 +576,8 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -563,6 +609,8 @@ export type UserUpdateWithoutSessionsInput = {
   roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutInvitedByNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -578,6 +626,8 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserCreateWithoutAccountsInput = {
@@ -593,6 +643,8 @@ export type UserCreateWithoutAccountsInput = {
   roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutInvitedByInput
   acceptedAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserUncheckedCreateWithoutAccountsInput = {
@@ -608,6 +660,8 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserCreateOrConnectWithoutAccountsInput = {
@@ -639,6 +693,8 @@ export type UserUpdateWithoutAccountsInput = {
   roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutInvitedByNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAccountsInput = {
@@ -654,6 +710,8 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserCreateWithoutSentAdminInvitationsInput = {
@@ -669,6 +727,8 @@ export type UserCreateWithoutSentAdminInvitationsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   acceptedAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserUncheckedCreateWithoutSentAdminInvitationsInput = {
@@ -684,6 +744,8 @@ export type UserUncheckedCreateWithoutSentAdminInvitationsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserCreateOrConnectWithoutSentAdminInvitationsInput = {
@@ -704,6 +766,8 @@ export type UserCreateWithoutAcceptedAdminInvitationsInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutInvitedByInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserUncheckedCreateWithoutAcceptedAdminInvitationsInput = {
@@ -719,6 +783,8 @@ export type UserUncheckedCreateWithoutAcceptedAdminInvitationsInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserCreateOrConnectWithoutAcceptedAdminInvitationsInput = {
@@ -750,6 +816,8 @@ export type UserUpdateWithoutSentAdminInvitationsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentAdminInvitationsInput = {
@@ -765,6 +833,8 @@ export type UserUncheckedUpdateWithoutSentAdminInvitationsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserUpsertWithoutAcceptedAdminInvitationsInput = {
@@ -791,6 +861,8 @@ export type UserUpdateWithoutAcceptedAdminInvitationsInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutInvitedByNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAcceptedAdminInvitationsInput = {
@@ -806,6 +878,176 @@ export type UserUncheckedUpdateWithoutAcceptedAdminInvitationsInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutRemovedByNestedInput
+}
+
+export type UserCreateWithoutAdminAccessRemovalsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  sentAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutInvitedByInput
+  acceptedAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutAcceptedUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalCreateNestedManyWithoutRemovedByInput
+}
+
+export type UserUncheckedCreateWithoutAdminAccessRemovalsInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  sentAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutAcceptedUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutRemovedByInput
+}
+
+export type UserCreateOrConnectWithoutAdminAccessRemovalsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAdminAccessRemovalsInput, Prisma.UserUncheckedCreateWithoutAdminAccessRemovalsInput>
+}
+
+export type UserCreateWithoutRemovedAdminAccessesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  roles?: Prisma.UserRoleCreateNestedManyWithoutUserInput
+  sentAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutInvitedByInput
+  acceptedAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutRemovedAdminAccessesInput = {
+  id: string
+  name: string
+  email: string
+  emailVerified?: boolean
+  image?: string | null
+  isActive?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  roles?: Prisma.UserRoleUncheckedCreateNestedManyWithoutUserInput
+  sentAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
+  acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutRemovedAdminAccessesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutRemovedAdminAccessesInput, Prisma.UserUncheckedCreateWithoutRemovedAdminAccessesInput>
+}
+
+export type UserUpsertWithoutAdminAccessRemovalsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAdminAccessRemovalsInput, Prisma.UserUncheckedUpdateWithoutAdminAccessRemovalsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAdminAccessRemovalsInput, Prisma.UserUncheckedCreateWithoutAdminAccessRemovalsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAdminAccessRemovalsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAdminAccessRemovalsInput, Prisma.UserUncheckedUpdateWithoutAdminAccessRemovalsInput>
+}
+
+export type UserUpdateWithoutAdminAccessRemovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  sentAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutInvitedByNestedInput
+  acceptedAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutAcceptedUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUpdateManyWithoutRemovedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAdminAccessRemovalsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  sentAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutAcceptedUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutRemovedByNestedInput
+}
+
+export type UserUpsertWithoutRemovedAdminAccessesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutRemovedAdminAccessesInput, Prisma.UserUncheckedUpdateWithoutRemovedAdminAccessesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutRemovedAdminAccessesInput, Prisma.UserUncheckedCreateWithoutRemovedAdminAccessesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutRemovedAdminAccessesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutRemovedAdminAccessesInput, Prisma.UserUncheckedUpdateWithoutRemovedAdminAccessesInput>
+}
+
+export type UserUpdateWithoutRemovedAdminAccessesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  roles?: Prisma.UserRoleUpdateManyWithoutUserNestedInput
+  sentAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutInvitedByNestedInput
+  acceptedAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutRemovedAdminAccessesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  emailVerified?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  image?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  roles?: Prisma.UserRoleUncheckedUpdateManyWithoutUserNestedInput
+  sentAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
+  acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutUserNestedInput
 }
 
 export type UserCreateWithoutRolesInput = {
@@ -821,6 +1063,8 @@ export type UserCreateWithoutRolesInput = {
   accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutInvitedByInput
   acceptedAdminInvitations?: Prisma.AdminInvitationCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserUncheckedCreateWithoutRolesInput = {
@@ -836,6 +1080,8 @@ export type UserUncheckedCreateWithoutRolesInput = {
   accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutInvitedByInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedCreateNestedManyWithoutAcceptedUserInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutUserInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedCreateNestedManyWithoutRemovedByInput
 }
 
 export type UserCreateOrConnectWithoutRolesInput = {
@@ -867,6 +1113,8 @@ export type UserUpdateWithoutRolesInput = {
   accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutInvitedByNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUpdateManyWithoutRemovedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRolesInput = {
@@ -882,6 +1130,8 @@ export type UserUncheckedUpdateWithoutRolesInput = {
   accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
   sentAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutInvitedByNestedInput
   acceptedAdminInvitations?: Prisma.AdminInvitationUncheckedUpdateManyWithoutAcceptedUserNestedInput
+  adminAccessRemovals?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutUserNestedInput
+  removedAdminAccesses?: Prisma.AdminAccessRemovalUncheckedUpdateManyWithoutRemovedByNestedInput
 }
 
 
@@ -895,6 +1145,8 @@ export type UserCountOutputType = {
   roles: number
   sentAdminInvitations: number
   acceptedAdminInvitations: number
+  adminAccessRemovals: number
+  removedAdminAccesses: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -903,6 +1155,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   roles?: boolean | UserCountOutputTypeCountRolesArgs
   sentAdminInvitations?: boolean | UserCountOutputTypeCountSentAdminInvitationsArgs
   acceptedAdminInvitations?: boolean | UserCountOutputTypeCountAcceptedAdminInvitationsArgs
+  adminAccessRemovals?: boolean | UserCountOutputTypeCountAdminAccessRemovalsArgs
+  removedAdminAccesses?: boolean | UserCountOutputTypeCountRemovedAdminAccessesArgs
 }
 
 /**
@@ -950,6 +1204,20 @@ export type UserCountOutputTypeCountAcceptedAdminInvitationsArgs<ExtArgs extends
   where?: Prisma.AdminInvitationWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAdminAccessRemovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AdminAccessRemovalWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountRemovedAdminAccessesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AdminAccessRemovalWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -965,6 +1233,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   roles?: boolean | Prisma.User$rolesArgs<ExtArgs>
   sentAdminInvitations?: boolean | Prisma.User$sentAdminInvitationsArgs<ExtArgs>
   acceptedAdminInvitations?: boolean | Prisma.User$acceptedAdminInvitationsArgs<ExtArgs>
+  adminAccessRemovals?: boolean | Prisma.User$adminAccessRemovalsArgs<ExtArgs>
+  removedAdminAccesses?: boolean | Prisma.User$removedAdminAccessesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1008,6 +1278,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   roles?: boolean | Prisma.User$rolesArgs<ExtArgs>
   sentAdminInvitations?: boolean | Prisma.User$sentAdminInvitationsArgs<ExtArgs>
   acceptedAdminInvitations?: boolean | Prisma.User$acceptedAdminInvitationsArgs<ExtArgs>
+  adminAccessRemovals?: boolean | Prisma.User$adminAccessRemovalsArgs<ExtArgs>
+  removedAdminAccesses?: boolean | Prisma.User$removedAdminAccessesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1021,6 +1293,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     roles: Prisma.$UserRolePayload<ExtArgs>[]
     sentAdminInvitations: Prisma.$AdminInvitationPayload<ExtArgs>[]
     acceptedAdminInvitations: Prisma.$AdminInvitationPayload<ExtArgs>[]
+    adminAccessRemovals: Prisma.$AdminAccessRemovalPayload<ExtArgs>[]
+    removedAdminAccesses: Prisma.$AdminAccessRemovalPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1430,6 +1704,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   roles<T extends Prisma.User$rolesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$rolesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserRolePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sentAdminInvitations<T extends Prisma.User$sentAdminInvitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sentAdminInvitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   acceptedAdminInvitations<T extends Prisma.User$acceptedAdminInvitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$acceptedAdminInvitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  adminAccessRemovals<T extends Prisma.User$adminAccessRemovalsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$adminAccessRemovalsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminAccessRemovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  removedAdminAccesses<T extends Prisma.User$removedAdminAccessesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$removedAdminAccessesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AdminAccessRemovalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1977,6 +2253,54 @@ export type User$acceptedAdminInvitationsArgs<ExtArgs extends runtime.Types.Exte
   take?: number
   skip?: number
   distinct?: Prisma.AdminInvitationScalarFieldEnum | Prisma.AdminInvitationScalarFieldEnum[]
+}
+
+/**
+ * User.adminAccessRemovals
+ */
+export type User$adminAccessRemovalsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AdminAccessRemoval
+   */
+  select?: Prisma.AdminAccessRemovalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AdminAccessRemoval
+   */
+  omit?: Prisma.AdminAccessRemovalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AdminAccessRemovalInclude<ExtArgs> | null
+  where?: Prisma.AdminAccessRemovalWhereInput
+  orderBy?: Prisma.AdminAccessRemovalOrderByWithRelationInput | Prisma.AdminAccessRemovalOrderByWithRelationInput[]
+  cursor?: Prisma.AdminAccessRemovalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AdminAccessRemovalScalarFieldEnum | Prisma.AdminAccessRemovalScalarFieldEnum[]
+}
+
+/**
+ * User.removedAdminAccesses
+ */
+export type User$removedAdminAccessesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AdminAccessRemoval
+   */
+  select?: Prisma.AdminAccessRemovalSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AdminAccessRemoval
+   */
+  omit?: Prisma.AdminAccessRemovalOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AdminAccessRemovalInclude<ExtArgs> | null
+  where?: Prisma.AdminAccessRemovalWhereInput
+  orderBy?: Prisma.AdminAccessRemovalOrderByWithRelationInput | Prisma.AdminAccessRemovalOrderByWithRelationInput[]
+  cursor?: Prisma.AdminAccessRemovalWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AdminAccessRemovalScalarFieldEnum | Prisma.AdminAccessRemovalScalarFieldEnum[]
 }
 
 /**

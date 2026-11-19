@@ -9,7 +9,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
 import AdminUsersManagement from "@/components/admin/management/AdminUsersManagement";
 import RolesPermissionsManagement from "@/components/admin/management/RolesPermissionsManagement";
-import type { AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
+import type { AdminAccessRemovalSummary, AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
 import { getAdminPage, type AdminPageKey } from "@/components/admin/admin-navigation";
 import { getAdminInitials } from "@/components/admin/admin-utils";
 
@@ -22,6 +22,7 @@ type Props = {
   permissionCatalog?: AdminPermission[];
   managedUsers?: ManagedAdminUser[];
   invitations?: AdminInvitationSummary[];
+  accessRemovals?: AdminAccessRemovalSummary[];
   canAssignRoles: boolean;
   canInvite: boolean;
   canDeactivateUsers: boolean;
@@ -42,6 +43,7 @@ export default function AdminDashboardShell({
   permissionCatalog,
   managedUsers,
   invitations,
+  accessRemovals,
   canAssignRoles,
   canInvite,
   canDeactivateUsers,
@@ -128,6 +130,7 @@ export default function AdminDashboardShell({
             <AdminUsersManagement
               initialUsers={managedUsers ?? []}
               initialInvitations={invitations ?? []}
+              initialAccessRemovals={accessRemovals ?? []}
               roles={roles ?? []}
               canAssignRoles={canAssignRoles}
               canInvite={canInvite}

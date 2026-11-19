@@ -71,10 +71,10 @@ export async function POST(request: Request) {
           status: 403,
         };
       }
-      if (!user.emailVerified)
+      if (!user.emailVerified && invitation.inviteeExistedAtInvite)
         return {
           error:
-            "Verify this email address through Better Auth before accepting the invitation.",
+            "Sign in to the existing account and verify this email address through Better Auth before accepting the invitation.",
           status: 403,
         };
       if (
@@ -98,6 +98,12 @@ export async function POST(request: Request) {
           error: "Invitation has already been accepted or changed.",
           status: 409,
         };
+      if (!user.emailVerified) {
+        await tx.user.update({
+          where: { id: user.id },
+          data: { emailVerified: true },
+        });
+      }
       await tx.userRole.createMany({
         data: invitation.roles.map(({ roleId }) => ({
           userId: user.id,
@@ -106,7 +112,7 @@ export async function POST(request: Request) {
         skipDuplicates: true,
       });
       return { ok: true as const };
-    });
+    }, { isolationLevel: "Serializable" });
   } catch (error) {
     if (
       typeof error === "object" &&

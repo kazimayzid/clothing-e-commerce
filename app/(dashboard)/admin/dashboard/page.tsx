@@ -1,7 +1,7 @@
 import { requirePermission } from "@/lib/dal";
 import AdminDashboardShell from "@/components/admin/AdminDashboardShell";
 import { getAdminPage, isAdminPageKey } from "@/components/admin/admin-navigation";
-import { getAdminInvitations, getAdminRoleData, getManagedAdminUsers, getUserPermissionKeys } from "@/lib/admin-management";
+import { getAdminAccessRemovals, getAdminInvitations, getAdminRoleData, getManagedAdminUsers, getUserPermissionKeys } from "@/lib/admin-management";
 import { getAdminAccessContext } from "@/lib/admin-access";
 import type { AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
 
@@ -31,15 +31,17 @@ export default async function AdminDashboardPage({
   let permissionCatalog: AdminPermission[] | undefined;
   let managedUsers: ManagedAdminUser[] | undefined;
   let invitations: Awaited<ReturnType<typeof getAdminInvitations>> | undefined;
+  let accessRemovals: Awaited<ReturnType<typeof getAdminAccessRemovals>> | undefined;
 
   if (activeView === "admin-users") {
     await requirePermission("users", "read");
-    const [roleData, adminUsers, adminInvitations] = await Promise.all([
-      getAdminRoleData(), getManagedAdminUsers(), canInvite ? getAdminInvitations() : Promise.resolve([]),
+    const [roleData, adminUsers, adminInvitations, adminAccessRemovals] = await Promise.all([
+      getAdminRoleData(), getManagedAdminUsers(), canInvite ? getAdminInvitations() : Promise.resolve([]), canInvite ? getAdminAccessRemovals() : Promise.resolve([]),
     ]);
     roles = roleData.roles;
     managedUsers = adminUsers;
     invitations = adminInvitations;
+    accessRemovals = adminAccessRemovals;
   } else if (activeView === "roles-permissions") {
     await requirePermission("roles", "read");
     const [roleData, adminUsers] = await Promise.all([
@@ -61,6 +63,7 @@ export default async function AdminDashboardPage({
       permissionCatalog={permissionCatalog}
       managedUsers={managedUsers}
       invitations={invitations}
+      accessRemovals={accessRemovals}
       canAssignRoles={canAssignRoles}
       canInvite={canInvite}
       canDeactivateUsers={permissionKeys.includes("users:deactivate")}

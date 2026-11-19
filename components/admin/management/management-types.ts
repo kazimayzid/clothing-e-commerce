@@ -36,10 +36,23 @@ export type AdminInvitationSummary = {
   status: "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED";
   expiresAt: string;
   sentAt: string | null;
+  emailProvider: "SMTP" | "RESEND";
   emailStatus: "NOT_ATTEMPTED" | "SENDING" | "ACCEPTED_BY_PROVIDER" | "FAILED" | "UNKNOWN";
   providerEmailId: string | null;
   emailAttemptedAt: string | null;
   lastEmailError: string | null;
   createdAt: string;
   roles: { id: string; name: string; slug: string }[];
+};
+
+export type AdminAccessRemovalSummary = {
+  id: string;
+  recipientEmail: string;
+  recipientName: string;
+  removedRoles: { id: string; name: string }[];
+  emailStatus: "NOT_ATTEMPTED" | "SENDING" | "ACCEPTED_BY_PROVIDER" | "FAILED" | "UNKNOWN";
+  providerEmailId: string | null;
+  emailAttemptedAt: string | null;
+  lastEmailError: string | null;
+  createdAt: string;
 };

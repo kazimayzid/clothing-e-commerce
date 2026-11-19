@@ -1,7 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
-import type { AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
+import type { AdminAccessRemovalSummary, AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
 import { getAdminAccessContext } from "@/lib/admin-access";
 import { ADMIN_PERMISSION_CATALOG } from "@/lib/admin-permission-catalog";
 
@@ -103,11 +103,38 @@ export async function getAdminInvitations(): Promise<AdminInvitationSummary[]> {
     status: invitation.status,
     expiresAt: invitation.expiresAt.toISOString(),
     sentAt: invitation.sentAt?.toISOString() ?? null,
+    emailProvider: invitation.emailProvider as "SMTP" | "RESEND",
     emailStatus: invitation.emailStatus,
     providerEmailId: invitation.providerEmailId,
     emailAttemptedAt: invitation.emailAttemptedAt?.toISOString() ?? null,
     lastEmailError: invitation.lastEmailError,
     createdAt: invitation.createdAt.toISOString(),
     roles: invitation.roles.map(({ role }) => role),
+  }));
+}
+
+export async function getAdminAccessRemovals(): Promise<AdminAccessRemovalSummary[]> {
+  const removals = await prisma.adminAccessRemoval.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 100,
+  });
+  return removals.map((removal) => ({
+    id: removal.id,
+    recipientEmail: removal.recipientEmail,
+    recipientName: removal.recipientName,
+    removedRoles: Array.isArray(removal.removedRoles)
+      ? removal.removedRoles.flatMap((role) => {
+          if (!role || typeof role !== "object") return [];
+          const item = role as { id?: unknown; name?: unknown };
+          return typeof item.id === "string" && typeof item.name === "string"
+            ? [{ id: item.id, name: item.name }]
+            : [];
+        })
+      : [],
+    emailStatus: removal.emailStatus,
+    providerEmailId: removal.providerEmailId,
+    emailAttemptedAt: removal.emailAttemptedAt?.toISOString() ?? null,
+    lastEmailError: removal.lastEmailError,
+    createdAt: removal.createdAt.toISOString(),
   }));
 }

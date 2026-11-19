@@ -46,18 +46,18 @@ export default function AdminInviteDialog({
       const data = await response.json();
       if (data.invitation) onCreated(data.invitation);
       if (data.invitation && !data.emailAcceptedByProvider) {
-        const deliveryMessage = data.error || "Invitation saved, but Resend did not accept the email request. Use Resend to retry after fixing configuration.";
+        const deliveryMessage = data.error || "Invitation saved, but the SMTP server did not accept the email request. Retry after fixing the configuration.";
         toast.error(deliveryMessage);
         onClose();
         return;
       }
       if (!response.ok) throw new Error(data.error || "Unable to send invitation.");
       if (data.deliveryStatus === "UNCONFIRMED") {
-        toast.success("Resend accepted the invitation request; delivery is not confirmed yet.");
+        toast.success("SMTP server accepted the invitation; inbox delivery is not confirmed yet.");
         onClose();
         return;
       }
-      toast.success("Resend accepted the invitation request; delivery is not confirmed yet.");
+      toast.success("SMTP server accepted the invitation; inbox delivery is not confirmed yet.");
       onClose();
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Unable to send invitation.";
@@ -148,7 +148,7 @@ export default function AdminInviteDialog({
         <div className="flex items-start gap-3 rounded-md border border-stone-200 bg-stone-50 p-3.5">
           <MailPlus className="mt-0.5 size-4 shrink-0 text-stone-500" />
           <p className="text-[11px] leading-5 text-stone-600">
-            The recipient will create or use an account through Better Auth and must verify the invited email before accepting. Email delivery uses Resend.
+            The recipient creates or uses an account through Better Auth. The invitation link confirms a newly created staff account; an account that existed before the invitation must have verified email. Delivery uses configured SMTP.
           </p>
         </div>
 

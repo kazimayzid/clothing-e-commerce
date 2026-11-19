@@ -2,7 +2,8 @@ import "server-only";
 
 import { createHash, randomBytes } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { EmailDeliveryError, getInvitationBaseUrl, sendAdminInvitationEmail } from "@/lib/email";
+import { EmailDeliveryError, getInvitationBaseUrl, sendTransactionalEmail, type EmailReceipt } from "@/lib/email";
+import { createAdminInvitationEmail } from "@/lib/email-templates";
 
 export const normalizeEmail = (email: string) => email.trim().toLowerCase();
 export const hashInvitationToken = (token: string) => createHash("sha256").update(token).digest("hex");
@@ -23,24 +24,26 @@ export async function sendInvitation(id: string, token: string) {
   await prisma.adminInvitation.update({
     where: { id },
     data: {
+      emailProvider: "SMTP",
       emailStatus: "SENDING",
       emailAttemptedAt: new Date(),
       providerEmailId: null,
+      providerResponse: null,
       lastEmailError: null,
       sentAt: null,
     },
   });
 
-  let receipt: { id: string };
+  let receipt: EmailReceipt;
   try {
-    receipt = await sendAdminInvitationEmail({
+    receipt = await sendTransactionalEmail(createAdminInvitationEmail({
       to: invitation.email,
       name: invitation.name,
       inviterName: invitation.invitedBy.name,
       roleNames: invitation.roles.map(({ role }) => role.name),
       acceptUrl: invitationUrl(token),
       expiresAt: invitation.expiresAt,
-    });
+    }));
   } catch (error) {
     const deliveryError = error instanceof EmailDeliveryError
       ? error
@@ -55,6 +58,7 @@ export async function sendInvitation(id: string, token: string) {
         emailStatus: deliveryError.outcome,
         lastEmailError: deliveryError.message,
         providerEmailId: deliveryError.providerEmailId ?? null,
+        providerResponse: deliveryError.providerResponse ?? null,
         sentAt: null,
       },
     });
@@ -68,17 +72,19 @@ export async function sendInvitation(id: string, token: string) {
       data: {
         emailStatus: "ACCEPTED_BY_PROVIDER",
         providerEmailId: receipt.id,
+        providerResponse: receipt.response,
         lastEmailError: null,
         sentAt,
       },
     });
   } catch {
     throw new EmailDeliveryError(
-      "Resend accepted the request, but the app could not save its email ID. Check Resend logs before retrying.",
+      "The SMTP server accepted the request, but the app could not save its message ID. Check the mail server logs before retrying.",
       undefined,
       "UNKNOWN",
       true,
       receipt.id,
+      receipt.response,
     );
   }
   return { providerEmailId: receipt.id, providerAcceptedAt: sentAt };
@@ -109,12 +115,13 @@ export function serializeInvitation(invitation: {
 export function serializeManagedInvitation(invitation: {
   id: string; email: string; name: string; status: string; expiresAt: Date; sentAt: Date | null;
   acceptedAt: Date | null; revokedAt: Date | null; createdAt: Date; emailStatus: string;
-  providerEmailId: string | null; emailAttemptedAt: Date | null; lastEmailError: string | null;
+  emailProvider: string; providerEmailId: string | null; emailAttemptedAt: Date | null; lastEmailError: string | null;
   roles: { role: { id: string; name: string; slug: string } }[];
 }) {
   return {
     ...serializeInvitation(invitation),
     emailStatus: invitation.emailStatus,
+    emailProvider: invitation.emailProvider,
     providerEmailId: invitation.providerEmailId,
     emailAttemptedAt: invitation.emailAttemptedAt?.toISOString() ?? null,
     lastEmailError: invitation.lastEmailError,

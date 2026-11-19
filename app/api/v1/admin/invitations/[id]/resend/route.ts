@@ -11,6 +11,8 @@ import {
   serializeManagedInvitation,
 } from "@/lib/admin-invitations";
 
+export const runtime = "nodejs";
+
 export async function POST(
   _request: Request,
   { params }: RouteContext<"/api/v1/admin/invitations/[id]/resend">,
@@ -41,8 +43,10 @@ export async function POST(
       tokenHash: hashInvitationToken(token),
       expiresAt: new Date(now.getTime() + INVITATION_LIFETIME_MS),
       sentAt: null,
+      emailProvider: "SMTP",
       emailStatus: "NOT_ATTEMPTED",
       providerEmailId: null,
+      providerResponse: null,
       emailAttemptedAt: null,
       lastEmailError: null,
     },
