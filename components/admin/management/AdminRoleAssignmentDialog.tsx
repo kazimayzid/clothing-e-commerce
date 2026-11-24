@@ -14,7 +14,7 @@ type Props = {
   roles: AdminRoleSummary[];
   currentUserId: string;
   onClose: () => void;
-  onSave: (roleIds: string[]) => void;
+  onSave: (roleIds: string[]) => Promise<void>;
 };
 
 export default function AdminRoleAssignmentDialog({
@@ -34,6 +34,7 @@ export default function AdminRoleAssignmentDialog({
   );
   const [confirming, setConfirming] = useState(false);
   const [criticalConfirmed, setCriticalConfirmed] = useState(false);
+  const [saving, setSaving] = useState(false);
   const isSelf = user.id === currentUserId;
   const selectedRoles = assignableRoles.filter(({ id }) => selectedRoleIds.includes(id));
   const selectedPermissions = [...new Map(selectedRoles.flatMap(({ permissions }) => permissions).map((permission) => [permission.id, permission])).values()];
@@ -47,11 +48,15 @@ export default function AdminRoleAssignmentDialog({
     );
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!confirming) { setConfirming(true); return; }
     if (criticalPermissions.length && !criticalConfirmed) return;
-    onSave(selectedRoleIds);
-    onClose();
+    setSaving(true);
+    try {
+      await onSave(selectedRoleIds);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -140,20 +145,21 @@ export default function AdminRoleAssignmentDialog({
           <button
             type="button"
             onClick={onClose}
+            disabled={saving}
             className="h-9 rounded-md border border-stone-200 px-3.5 text-xs font-medium text-stone-600 hover:bg-stone-50"
           >
             Cancel
           </button>
           <button
             type="button"
-            onClick={handleSave}
-            disabled={isSelf || confirming}
+            onClick={() => void handleSave()}
+            disabled={isSelf || confirming || saving}
             className="h-9 rounded-md bg-stone-900 px-4 text-xs font-medium text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Review role impact
+            {saving ? "Saving roles…" : "Review role impact"}
           </button>
         </div>
-        {confirming && <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950"><p className="font-medium">This account will receive effective access from the selected roles.</p><p className="mt-1 text-[11px]">{selectedRoles.map(({ name }) => name).join(", ") || "No roles"} · {selectedPermissions.length} distinct permissions</p>{criticalPermissions.length > 0 && <><p className="mt-2">Critical capabilities: {criticalPermissions.map(({ resource, action }) => `${resource}:${action}`).join(", ")}</p><label className="mt-3 flex gap-2"><input type="checkbox" checked={criticalConfirmed} onChange={(event) => setCriticalConfirmed(event.target.checked)} /><span>I understand these roles grant critical administrative access.</span></label></>}<button type="button" onClick={handleSave} disabled={criticalPermissions.length > 0 && !criticalConfirmed} className="mt-3 rounded bg-stone-900 px-3 py-2 text-white disabled:opacity-40">Confirm selected roles</button></div>}
+        {confirming && <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-950"><p className="font-medium">This account will receive effective access from the selected roles.</p><p className="mt-1 text-[11px]">{selectedRoles.map(({ name }) => name).join(", ") || "No roles"} · {selectedPermissions.length} distinct permissions</p>{criticalPermissions.length > 0 && <><p className="mt-2">Critical capabilities: {criticalPermissions.map(({ resource, action }) => `${resource}:${action}`).join(", ")}</p><label className="mt-3 flex gap-2"><input type="checkbox" checked={criticalConfirmed} onChange={(event) => setCriticalConfirmed(event.target.checked)} /><span>I understand these roles grant critical administrative access.</span></label></>}<button type="button" onClick={() => void handleSave()} disabled={saving || (criticalPermissions.length > 0 && !criticalConfirmed)} className="mt-3 rounded bg-stone-900 px-3 py-2 text-white disabled:opacity-40">{saving ? "Saving roles…" : "Confirm selected roles"}</button></div>}
           <p className="text-right text-[10px] text-stone-400">Role assignments are saved through the protected admin API.</p>
       </div>
     </AdminDialog>

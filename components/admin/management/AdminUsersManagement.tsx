@@ -10,6 +10,7 @@ import {
   MailCheck,
   ShieldOff,
   ShieldCheck,
+  LoaderCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -65,6 +66,25 @@ export default function AdminUsersManagement({
   const [promotionUserId, setPromotionUserId] = useState<string | null>(null);
   const [promotionConfirmed, setPromotionConfirmed] = useState(false);
   const [promotionPending, setPromotionPending] = useState(false);
+  const [pendingActions, setPendingActions] = useState<Set<string>>(() => new Set());
+
+  function isPending(actionId: string) {
+    return pendingActions.has(actionId);
+  }
+
+  async function withPending(actionId: string, action: () => Promise<void>) {
+    if (isPending(actionId)) return;
+    setPendingActions((current) => new Set(current).add(actionId));
+    try {
+      await action();
+    } finally {
+      setPendingActions((current) => {
+        const next = new Set(current);
+        next.delete(actionId);
+        return next;
+      });
+    }
+  }
 
   const filteredUsers = useMemo(
     () =>
@@ -90,9 +110,9 @@ export default function AdminUsersManagement({
   const activeCount = users.filter(({ isActive }) => isActive).length;
   const inactiveCount = users.length - activeCount;
 
-  function saveUserRoles(userId: string, selectedRoleIds: string[]) {
+  async function saveUserRoles(userId: string, selectedRoleIds: string[]) {
     const selected = new Set(selectedRoleIds);
-    void (async () => {
+    await withPending(`roles:${userId}`, async () => {
       try {
         const response = await fetch(`/api/v1/admin/users/${userId}/roles`, {
           method: "PUT",
@@ -125,18 +145,20 @@ export default function AdminUsersManagement({
           }),
         );
         toast.success("Role assignments saved");
+        setRolesUserId(null);
       } catch (cause) {
         toast.error(
           cause instanceof Error
             ? cause.message
             : "Unable to save role assignments.",
         );
+        throw cause;
       }
-    })();
+    });
   }
 
   async function updateUserStatus(userId: string, isActive: boolean) {
-    try {
+    await withPending(`status:${userId}`, async () => { try {
       const response = await fetch(`/api/v1/admin/users/${userId}/status`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -161,11 +183,11 @@ export default function AdminUsersManagement({
           ? cause.message
           : "Unable to update account status.",
       );
-    }
+    } });
   }
 
   async function revokeUserSessions(userId: string) {
-    try {
+    await withPending(`revoke:${userId}`, async () => { try {
       const response = await fetch(
         `/api/v1/admin/users/${userId}/revoke-sessions`,
         { method: "POST" },
@@ -180,7 +202,7 @@ export default function AdminUsersManagement({
       toast.error(
         cause instanceof Error ? cause.message : "Unable to revoke sessions.",
       );
-    }
+    } });
   }
 
   async function promoteToSuperAdmin(user: ManagedAdminUser) {
@@ -235,7 +257,7 @@ export default function AdminUsersManagement({
       )
     )
       return;
-    try {
+    await withPending(`remove:${user.id}`, async () => { try {
       const response = await fetch(
         `/api/v1/admin/users/${user.id}/remove-admin-access`,
         { method: "POST" },
@@ -266,7 +288,7 @@ export default function AdminUsersManagement({
           ? cause.message
           : "Unable to remove Admin access.",
       );
-    }
+    } });
   }
 
   async function retryRemovalNotification(id: string) {
@@ -278,7 +300,7 @@ export default function AdminUsersManagement({
       )
     )
       return;
-    try {
+    await withPending(`retry:${id}`, async () => { try {
       const response = await fetch(
         `/api/v1/admin/access-removals/${id}/retry`,
         { method: "POST" },
@@ -304,11 +326,11 @@ export default function AdminUsersManagement({
           ? cause.message
           : "Unable to retry notification.",
       );
-    }
+    } });
   }
 
   async function testSmtpConnection() {
-    try {
+    await withPending("smtp-test", async () => { try {
       const response = await fetch("/api/v1/admin/email/test", {
         method: "POST",
       });
@@ -322,7 +344,7 @@ export default function AdminUsersManagement({
       toast.error(
         cause instanceof Error ? cause.message : "SMTP connection test failed.",
       );
-    }
+    } });
   }
 
   return (
@@ -373,10 +395,11 @@ export default function AdminUsersManagement({
                 <button
                   type="button"
                   onClick={() => void testSmtpConnection()}
+                  disabled={isPending("smtp-test")}
                   className="inline-flex h-9 items-center gap-2 rounded-md border border-stone-200 bg-white px-3 text-[11px] font-medium text-stone-700 hover:bg-stone-50"
                 >
-                  <MailCheck className="size-3.5" />
-                  Test SMTP
+                  {isPending("smtp-test") ? <LoaderCircle className="size-3.5 animate-spin" /> : <MailCheck className="size-3.5" />}
+                  {isPending("smtp-test") ? "Testing SMTP…" : "Test SMTP"}
                 </button>
                 <button
                   type="button"
@@ -555,6 +578,7 @@ export default function AdminUsersManagement({
                                     .closest("details")
                                     ?.removeAttribute("open");
                                 }}
+                                disabled={isPending(`roles:${user.id}`)}
                                 className="w-full rounded px-3 py-2 text-left text-[11px] text-stone-700 hover:bg-stone-50"
                               >
                                 Edit roles
@@ -589,18 +613,17 @@ export default function AdminUsersManagement({
                             !user.isProtectedSuperAdmin && (
                               <button
                                 type="button"
-                                onClick={(event) => {
+                                onClick={() => {
                                   void updateUserStatus(
                                     user.id,
                                     !user.isActive,
                                   );
-                                  event.currentTarget
-                                    .closest("details")
-                                    ?.removeAttribute("open");
                                 }}
+                                disabled={isPending(`status:${user.id}`)}
+                                aria-busy={isPending(`status:${user.id}`)}
                                 className="w-full rounded px-3 py-2 text-left text-[11px] text-stone-700 hover:bg-stone-50"
                               >
-                                {user.isActive
+                                {isPending(`status:${user.id}`) ? "Updating…" : user.isActive
                                   ? "Deactivate account"
                                   : "Activate account"}
                               </button>
@@ -610,15 +633,14 @@ export default function AdminUsersManagement({
                             (!user.isProtectedSuperAdmin || actorIsProtectedSuperAdmin) && (
                             <button
                               type="button"
-                              onClick={(event) => {
+                              onClick={() => {
                                 void revokeUserSessions(user.id);
-                                event.currentTarget
-                                  .closest("details")
-                                  ?.removeAttribute("open");
                               }}
+                              disabled={isPending(`revoke:${user.id}`)}
+                              aria-busy={isPending(`revoke:${user.id}`)}
                               className="w-full rounded px-3 py-2 text-left text-[11px] text-stone-700 hover:bg-stone-50"
                             >
-                              Revoke sessions
+                              {isPending(`revoke:${user.id}`) ? "Revoking sessions…" : "Revoke sessions"}
                             </button>
                           )}
                           {canInvite &&
@@ -629,17 +651,16 @@ export default function AdminUsersManagement({
                             ) && (
                               <button
                                 type="button"
-                                onClick={(event) => {
+                                onClick={() => {
                                   void removeAdminAccess(user);
-                                  event.currentTarget
-                                    .closest("details")
-                                    ?.removeAttribute("open");
                                 }}
-                                className="w-full rounded px-3 py-2 text-left text-[11px] text-red-700 hover:bg-red-50"
+                                disabled={isPending(`remove:${user.id}`)}
+                                aria-busy={isPending(`remove:${user.id}`)}
+                                className="w-full rounded px-3 py-2 text-left text-[11px] text-red-700 hover:bg-red-50 disabled:opacity-50"
                               >
                                 <span className="inline-flex items-center gap-2">
-                                  <ShieldOff className="size-3.5" />
-                                  Remove Admin Access
+                                  {isPending(`remove:${user.id}`) ? <LoaderCircle className="size-3.5 animate-spin" /> : <ShieldOff className="size-3.5" />}
+                                  {isPending(`remove:${user.id}`) ? "Removing access…" : "Remove Admin Access"}
                                 </span>
                               </button>
                             )}
@@ -804,9 +825,10 @@ export default function AdminUsersManagement({
                   <button
                     type="button"
                     onClick={() => void retryRemovalNotification(removal.id)}
+                    disabled={isPending(`retry:${removal.id}`)}
                     className="text-[10px] font-medium text-stone-700 underline"
                   >
-                    Retry notification
+                    {isPending(`retry:${removal.id}`) ? "Retrying…" : "Retry notification"}
                   </button>
                 )}
               </div>

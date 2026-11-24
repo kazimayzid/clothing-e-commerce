@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/dal";
 import AdminDashboardShell from "@/components/admin/AdminDashboardShell";
 import { getAdminPage, isAdminPageKey } from "@/components/admin/admin-navigation";
-import { getAdminAccessRemovals, getAdminInvitations, getAdminRoleData, getManagedAdminUsers, getUserPermissionKeys } from "@/lib/admin-management";
+import { getAdminAccessRemovals, getAdminInvitations, getAdminRoleData, getManagedAdminUsers } from "@/lib/admin-management";
 import { canAccessAdminModule } from "@/lib/admin-module-policy";
 import type { AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
 import { redirect } from "next/navigation";
@@ -15,7 +15,7 @@ export default async function AdminDashboardPage({
   const activeView = isAdminPageKey(requestedView) ? requestedView : "dashboard";
   const activePage = getAdminPage(activeView);
   if (!canAccessAdminModule(access.isSuperAdmin, access.permissions, activePage)) redirect("/admin/forbidden");
-  const permissionKeys = await getUserPermissionKeys(session.user.id);
+  const permissionKeys = [...access.permissions];
   const canInvite = Boolean(access?.isSuperAdmin);
   const canAssignRoles = Boolean(access?.isSuperAdmin);
   const canViewUsers = access.isSuperAdmin;

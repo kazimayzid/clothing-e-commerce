@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ChevronDown, X } from "lucide-react";
 import { adminNavigation, type AdminPageKey } from "@/components/admin/admin-navigation";
+import AdminNavigationLink from "@/components/admin/AdminNavigationLink";
 import AdminLogoutButton from "@/components/admin/AdminLogoutButton";
 import { getAdminInitials } from "@/components/admin/admin-utils";
 import { canAccessAdminModule } from "@/lib/admin-module-policy";
@@ -73,23 +74,14 @@ export default function AdminSidebar({
                 const Icon = item.icon;
                 const isActive = activeView === item.id;
                 return (
-                  <Link
+                  <AdminNavigationLink
                     key={item.id}
                     href={item.id === "dashboard" ? "/admin/dashboard" : `/admin/dashboard?view=${item.id}`}
-                    onClick={onNavigate}
-                    aria-current={isActive ? "page" : undefined}
-                    className={`group flex min-h-10 items-center gap-3 rounded-md border-l-2 px-3 text-[13px] transition-colors ${
-                      isActive
-                        ? "border-brand bg-stone-100 font-medium text-stone-950"
-                        : "border-transparent text-stone-600 hover:bg-stone-50 hover:text-stone-950"
-                    }`}
-                  >
-                    <Icon
-                      className={`size-[17px] shrink-0 ${isActive ? "text-brand" : "text-stone-500 group-hover:text-stone-800"}`}
-                      strokeWidth={1.7}
-                    />
-                    <span>{item.label}</span>
-                  </Link>
+                    onNavigate={onNavigate}
+                    icon={Icon}
+                    label={item.label}
+                    isActive={isActive}
+                  />
                 );
               })}
             </div>
