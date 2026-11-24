@@ -5,12 +5,14 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ADMIN_PERMISSION_CATALOG, ADMIN_PERMISSION_KEY_SET } from "@/lib/admin-permission-catalog";
+import { appendAdminAuditLog } from "@/lib/admin-audit";
 
 export type AdminAccessContext = {
   userId: string;
   email: string;
   name: string;
   isActive: boolean;
+  isProtectedSuperAdmin: boolean;
   isSuperAdmin: boolean;
   roles: { id: string; name: string; slug: string; isSuperAdmin: boolean }[];
   permissions: Set<string>;
@@ -33,6 +35,7 @@ export async function getAdminAccessContext(userId?: string): Promise<AdminAcces
       email: true,
       name: true,
       isActive: true,
+      isProtectedSuperAdmin: true,
       roles: {
         where: { role: { scope: "ADMIN" } },
         select: {
@@ -73,7 +76,7 @@ export async function getAdminAccessContext(userId?: string): Promise<AdminAcces
     }
   }
 
-  return { userId: user.id, email: user.email, name: user.name, isActive: user.isActive, isSuperAdmin, roles, permissions };
+  return { userId: user.id, email: user.email, name: user.name, isActive: user.isActive, isProtectedSuperAdmin: user.isProtectedSuperAdmin, isSuperAdmin, roles, permissions };
 }
 
 export async function requireAdminApiPermission(permission: string) {
@@ -98,6 +101,22 @@ export async function requireSuperAdminApi() {
   }
   const context = await getAdminAccessContext(session.user.id);
   if (!context?.isActive || !context.isSuperAdmin) {
+    if (context?.isActive) {
+      try {
+        await appendAdminAuditLog(prisma, {
+          actor: context,
+          action: "authorization.super_admin_required",
+          category: "AUTHORIZATION",
+          riskLevel: "HIGH",
+          description: "A signed-in account without Super Admin status attempted to use a Super Admin-only endpoint.",
+          targetType: "ENDPOINT",
+          success: false,
+          failureCode: "SUPER_ADMIN_REQUIRED",
+        });
+      } catch (error) {
+        console.error("Failed to record denied Super Admin endpoint access", error);
+      }
+    }
     return { response: NextResponse.json({ error: "Super Admin access required." }, { status: 403 }) } as const;
   }
   return { context } as const;

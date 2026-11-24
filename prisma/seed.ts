@@ -33,6 +33,17 @@ async function main() {
     );
   }
 
+  await prisma.$transaction(async (tx) => {
+    await tx.user.updateMany({
+      where: { isProtectedSuperAdmin: true, id: { not: adminUser.id } },
+      data: { isProtectedSuperAdmin: false },
+    });
+    await tx.user.update({
+      where: { id: adminUser.id },
+      data: { isProtectedSuperAdmin: true },
+    });
+  });
+
   const roleDefinitions = [
     { slug: "user", name: "User", description: "Regular customer account", scope: "CUSTOMER" as const, isSuperAdmin: false },
     { slug: "staff", name: "Staff", description: "Store staff account", scope: "ADMIN" as const, isSuperAdmin: false },

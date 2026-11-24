@@ -6,7 +6,7 @@
 /*
  * This file should be your main import to use Prisma-related types and utilities in a browser. 
  * Use it to get access to models, enums, and input types.
- * 
+ *
  * This file does not contain a `PrismaClient` class, nor several other helpers that are intended as server-side only.
  * See `client.ts` for the standard, server-side entry point.
  *
@@ -19,56 +19,61 @@ export * as $Enums from './enums'
 export * from './enums';
 /**
  * Model User
- * 
+ *
  */
 export type User = Prisma.UserModel
 /**
  * Model Session
- * 
+ *
  */
 export type Session = Prisma.SessionModel
 /**
  * Model Account
- * 
+ *
  */
 export type Account = Prisma.AccountModel
 /**
  * Model Verification
- * 
+ *
  */
 export type Verification = Prisma.VerificationModel
 /**
  * Model Role
- * 
+ *
  */
 export type Role = Prisma.RoleModel
 /**
  * Model Permission
- * 
+ *
  */
 export type Permission = Prisma.PermissionModel
 /**
  * Model AdminInvitation
- * 
+ *
  */
 export type AdminInvitation = Prisma.AdminInvitationModel
 /**
  * Model AdminAccessRemoval
- * 
+ *
  */
 export type AdminAccessRemoval = Prisma.AdminAccessRemovalModel
 /**
+ * Model AdminAuditLog
+ *
+ */
+export type AdminAuditLog = Prisma.AdminAuditLogModel
+/**
  * Model AdminInvitationRole
- * 
+ *
  */
 export type AdminInvitationRole = Prisma.AdminInvitationRoleModel
 /**
  * Model UserRole
- * 
+ *
  */
 export type UserRole = Prisma.UserRoleModel
 /**
  * Model RolePermission
- * 
+ *
  */
 export type RolePermission = Prisma.RolePermissionModel

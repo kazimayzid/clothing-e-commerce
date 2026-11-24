@@ -125,7 +125,7 @@ export default function RolesPermissionsManagement({
         const currentlyAssigned = user.roles.some((userRole) => userRole.id === role.id);
         const shouldBeAssigned = selectedUsers.has(user.id);
         if (currentlyAssigned === shouldBeAssigned) return user;
-        const nextRole = { id: role.id, name: role.name, slug: role.slug, permissions: role.permissions, isSuperAdmin: false };
+        const nextRole = { id: role.id, name: role.name, slug: role.slug, scope: role.scope, permissions: role.permissions, isSuperAdmin: false };
         return { ...user, roles: shouldBeAssigned ? [...user.roles, nextRole] : user.roles.filter((userRole) => userRole.id !== role.id) };
       }));
       const countDifference = selectedUserIds.length - previousUserCount;
@@ -313,6 +313,7 @@ export default function RolesPermissionsManagement({
       )}
       {selectedDetailsRole && (
         <RoleDetailsDialog
+          key={selectedDetailsRole.id}
           role={selectedDetailsRole}
           catalog={permissionCatalog}
           users={users}

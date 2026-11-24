@@ -15,6 +15,7 @@ model User {
   image         String?
 
   isActive Boolean @default(true)
+  isProtectedSuperAdmin Boolean @default(false) @map("is_protected_super_admin")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -183,6 +184,48 @@ model AdminAccessRemoval {
   @@index([removedById])
   @@index([emailStatus, createdAt])
   @@map("admin_access_removals")
+}
+
+// Append-only from the application: no update/delete API is provided.
+// Snapshots are stored as scalar/JSON data so the history survives account or role changes.
+model AdminAuditLog {
+  id             String   @id @default(uuid()) @db.Uuid
+  actorUserId    String?  @map("actor_user_id")
+  actorName      String?  @map("actor_name") @db.VarChar(200)
+  actorEmail     String?  @map("actor_email") @db.VarChar(320)
+  actorRoles     Json?    @map("actor_roles") @db.JsonB
+  actorIsSuperAdmin Boolean? @map("actor_is_super_admin")
+  action         String   @db.VarChar(100)
+  category       String   @db.VarChar(50)
+  riskLevel      String   @default("LOW") @map("risk_level") @db.VarChar(20)
+  description    String   @db.Text
+  targetType     String   @map("target_type") @db.VarChar(50)
+  targetId       String?  @map("target_id")
+  targetName     String?  @map("target_name") @db.VarChar(200)
+  targetEmail    String?  @map("target_email") @db.VarChar(320)
+  roleId         String?  @map("role_id") @db.Uuid
+  roleName       String?  @map("role_name") @db.VarChar(100)
+  permissionId   String?  @map("permission_id") @db.Uuid
+  permissionKey  String?  @map("permission_key") @db.VarChar(160)
+  beforeState    Json?    @map("before_state") @db.JsonB
+  afterState     Json?    @map("after_state") @db.JsonB
+  changedFields  Json?    @map("changed_fields") @db.JsonB
+  requestIp      String?  @map("request_ip") @db.VarChar(100)
+  userAgent      String?  @map("user_agent") @db.Text
+  requestId      String?  @map("request_id") @db.VarChar(200)
+  success        Boolean  @default(true)
+  failureCode    String?  @map("failure_code") @db.VarChar(100)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@index([createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([targetType, targetId, createdAt])
+  @@index([category, createdAt])
+  @@index([action, createdAt])
+  @@index([riskLevel, createdAt])
+  @@index([roleId, createdAt])
+  @@index([permissionKey, createdAt])
+  @@map("admin_audit_logs")
 }
 
 model AdminInvitationRole {

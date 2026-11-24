@@ -19,7 +19,7 @@ const WISHLIST_KEY = "store-wishlist-items";
 const CHANGE_EVENT = "store-actions-changed";
 const WISHLIST_FEEDBACK_EVENT = "store-wishlist-feedback";
 const LEGACY_CART_IMAGE =
-  "https://images.unsplash.com/photo-1625910513413-3fc215c76e2b?auto=format&fit=crop&w=800&q=80";
+  "https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80";
 
 function read<T>(key: string): T[] {
   try {

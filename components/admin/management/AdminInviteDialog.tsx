@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { MailPlus } from "lucide-react";
 import { toast } from "sonner";
 
 import AdminDialog from "@/components/admin/management/AdminDialog";
 import type { AdminInvitationSummary, AdminRoleSummary } from "@/components/admin/management/management-types";
+import { getPermissionRisk } from "@/lib/admin-permission-risk";
 
 export default function AdminInviteDialog({
   roles,
@@ -16,14 +17,20 @@ export default function AdminInviteDialog({
   onClose: () => void;
   onCreated: (invitation: AdminInvitationSummary) => void;
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [confirming, setConfirming] = useState(false);
+  const [criticalConfirmed, setCriticalConfirmed] = useState(false);
   const [error, setError] = useState("");
   const assignableRoles = roles.filter(
     ({ isSuperAdmin, scope }) => scope === "ADMIN" && !isSuperAdmin,
   );
+  const selectedRoles = assignableRoles.filter(({ id }) => selectedRoleIds.includes(id));
+  const selectedPermissions = [...new Map(selectedRoles.flatMap(({ permissions }) => permissions).map((permission) => [permission.id, permission])).values()];
+  const criticalPermissions = selectedPermissions.filter((permission) => getPermissionRisk(permission) === "CRITICAL");
 
   function toggleRole(roleId: string) {
     setSelectedRoleIds((current) =>
@@ -35,6 +42,8 @@ export default function AdminInviteDialog({
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (!confirming) { setConfirming(true); return; }
+    if (criticalPermissions.length > 0 && !criticalConfirmed) return;
     setError("");
     setLoading(true);
     try {
@@ -75,7 +84,7 @@ export default function AdminInviteDialog({
       onClose={onClose}
       size="lg"
     >
-      <form onSubmit={submit} className="space-y-5 p-5 sm:p-6">
+      <form ref={formRef} onSubmit={submit} className="space-y-5 p-5 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="text-xs font-medium text-stone-700">
             Full name
@@ -165,14 +174,15 @@ export default function AdminInviteDialog({
             </button>
             <button
               type="submit"
-              disabled={loading || !name.trim() || !email.trim() || selectedRoleIds.length === 0}
+              disabled={loading || !name.trim() || !email.trim() || selectedRoleIds.length === 0 || (confirming && criticalPermissions.length > 0 && !criticalConfirmed)}
               className="h-9 rounded-md bg-stone-900 px-4 text-xs font-medium text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:bg-stone-300"
             >
-              {loading ? "Sending..." : "Send Invitation"}
+              {loading ? "Sending..." : confirming ? "Confirm & Send Invitation" : "Review Access & Continue"}
             </button>
           </div>
         </div>
       </form>
+      {confirming && <AdminDialog title="Review invitation access" description="Confirm the capabilities the invited person will receive after accepting." onClose={() => { setConfirming(false); setCriticalConfirmed(false); }} size="md"><div className="space-y-4 p-5"><div className="rounded-md border border-stone-200 bg-stone-50 p-3 text-xs"><p className="font-medium">{name || "New staff member"}</p><p className="mt-1 text-stone-500">{email || "Email not entered"}</p></div><div><p className="text-xs font-medium text-stone-700">Assigned roles</p><ul className="mt-2 space-y-2">{selectedRoles.map((role) => <li key={role.id} className="flex items-center justify-between gap-3 rounded border border-stone-200 p-2 text-xs"><span>{role.name}</span><span className="text-[10px] text-stone-500">{role.permissions.length} permissions</span></li>)}</ul></div>{criticalPermissions.length > 0 && <><p className="rounded border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900">Critical access included: {criticalPermissions.map(({ resource, action }) => `${resource}:${action}`).join(", ")}</p><label className="flex gap-2 text-xs"><input type="checkbox" checked={criticalConfirmed} onChange={(event) => setCriticalConfirmed(event.target.checked)} /><span>I understand the invited staff member receives these critical capabilities.</span></label></>}<div className="flex justify-end gap-2"><button type="button" onClick={() => { setConfirming(false); setCriticalConfirmed(false); }} className="rounded-md border px-3 py-2 text-xs">Back</button><button type="button" disabled={criticalPermissions.length > 0 && !criticalConfirmed} onClick={() => { if (criticalPermissions.length > 0 && !criticalConfirmed) return; formRef.current?.requestSubmit(); }} className="rounded-md bg-stone-900 px-3 py-2 text-xs text-white disabled:opacity-40">Confirm invitation</button></div></div></AdminDialog>}
     </AdminDialog>
   );
 }

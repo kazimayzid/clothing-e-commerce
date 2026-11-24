@@ -4,6 +4,8 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashInvitationToken, normalizeEmail } from "@/lib/admin-invitations";
+import { appendAdminAuditLog } from "@/lib/admin-audit";
+import { getAdminAccessContext } from "@/lib/admin-access";
 
 const acceptSchema = z.object({ token: z.string().min(32).max(100) });
 
@@ -29,7 +31,7 @@ export async function POST(request: Request) {
         include: {
           roles: {
             include: {
-              role: { select: { id: true, scope: true, isSuperAdmin: true } },
+              role: { select: { id: true, name: true, slug: true, scope: true, isSuperAdmin: true } },
             },
           },
         },
@@ -59,7 +61,7 @@ export async function POST(request: Request) {
 
       const user = await tx.user.findUnique({
         where: { id: session.user.id },
-        select: { id: true, email: true, emailVerified: true, isActive: true },
+        select: { id: true, name: true, email: true, emailVerified: true, isActive: true },
       });
       if (
         !user ||
@@ -111,6 +113,16 @@ export async function POST(request: Request) {
         })),
         skipDuplicates: true,
       });
+      await appendAdminAuditLog(tx, {
+        actor: {
+          userId: user.id, name: user.name, email: user.email, isSuperAdmin: false,
+          roles: invitation.roles.map(({ role }) => ({ id: role.id, name: role.name, slug: role.slug, isSuperAdmin: false })),
+        },
+        request, action: "invitation.accepted", category: "INVITATION", riskLevel: "HIGH",
+        description: `Staff invitation accepted by ${user.email}.`, targetType: "INVITATION", targetId: invitation.id, targetName: invitation.name, targetEmail: invitation.email,
+        beforeState: { status: "PENDING", userHadAdminAccess: false },
+        afterState: { status: "ACCEPTED", userId: user.id, roleIds: invitation.roles.map(({ roleId }) => roleId) },
+      });
       return { ok: true as const };
     }, { isolationLevel: "Serializable" });
   } catch (error) {
@@ -128,10 +140,23 @@ export async function POST(request: Request) {
     throw error;
   }
 
-  if ("error" in result)
+  if ("error" in result) {
+    const actor = await getAdminAccessContext(session.user.id);
+    if (actor) {
+      try {
+        await appendAdminAuditLog(prisma, {
+          actor, request, action: "invitation.acceptance_denied", category: "INVITATION", riskLevel: "HIGH",
+          description: "A signed-in user submitted an invitation acceptance that did not pass validation.", targetType: "INVITATION",
+          success: false, failureCode: `HTTP_${result.status}`,
+        });
+      } catch (auditError) {
+        console.error("Failed to record rejected invitation acceptance", auditError);
+      }
+    }
     return NextResponse.json(
       { error: result.error },
       { status: result.status },
     );
+  }
   return NextResponse.json({ accepted: true, redirectTo: "/admin/dashboard" });
 }

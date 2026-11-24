@@ -5,6 +5,7 @@ import AdminDialog from "@/components/admin/management/AdminDialog";
 import PermissionMatrix from "@/components/admin/management/PermissionMatrix";
 import { formatAdminDate } from "@/components/admin/admin-utils";
 import type { AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
+import { getUsersAssignedToAdminRole, isAssignedToAdminRole } from "@/components/admin/management/role-view-model";
 
 type Props = {
   role: AdminRoleSummary;
@@ -32,11 +33,14 @@ export default function RoleDetailsDialog({
 }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("Overview");
   const roleIsProtected = role.isSuperAdmin;
-  const initialUserIds = users.filter((user) => user.roles.some((userRole) => userRole.id === role.id)).map(({ id }) => id);
+  const initialUserIds = getUsersAssignedToAdminRole(users, role.id).map(({ id }) => id);
   const [selectedUserIds, setSelectedUserIds] = useState(initialUserIds);
   const [isEditingAssignments, setIsEditingAssignments] = useState(false);
   const isSystemRole = role.isSuperAdmin || ["staff"].includes(role.slug);
   const rolePermissions = useMemo(() => new Set(role.permissions.map(({ id }) => id)), [role.permissions]);
+  const assignedUsers = getUsersAssignedToAdminRole(users, role.id);
+  const displayedUsers = isEditingAssignments ? users : assignedUsers;
+  const assignedCount = isEditingAssignments ? selectedUserIds.length : assignedUsers.length;
 
   function toggleUser(userId: string) {
     setSelectedUserIds((current) => current.includes(userId)
@@ -51,6 +55,16 @@ export default function RoleDetailsDialog({
     } catch {
       // The parent reports the server error through the dashboard toast.
     }
+  }
+
+  function toggleAssignmentEditing() {
+    if (isEditingAssignments) {
+      setSelectedUserIds(assignedUsers.map(({ id }) => id));
+      setIsEditingAssignments(false);
+      return;
+    }
+    setSelectedUserIds(assignedUsers.map(({ id }) => id));
+    setIsEditingAssignments(true);
   }
 
   return (
@@ -91,24 +105,27 @@ export default function RoleDetailsDialog({
         {activeTab === "Assigned Users" && (
           <div>
             <div className="mb-4 flex items-center justify-between gap-3">
-              <div><h3 className="text-sm font-medium text-stone-800">Assigned Admin & Staff</h3><p className="mt-1 text-[11px] text-stone-500">The role total includes all accounts assigned to it.</p></div>
+              <div><h3 className="text-sm font-medium text-stone-800">Assigned Admin & Staff</h3><p className="mt-1 text-[11px] text-stone-500">{assignedCount} user{assignedCount === 1 ? "" : "s"} assigned to this role.</p></div>
               {canViewUsers && canAssignRoles && !roleIsProtected && (
-                <button type="button" onClick={() => setIsEditingAssignments((editing) => !editing)} className="rounded-md border border-stone-200 px-3 py-2 text-[11px] font-medium text-stone-600 hover:bg-stone-50">{isEditingAssignments ? "Cancel" : "Manage users"}</button>
+                <button type="button" onClick={toggleAssignmentEditing} className="rounded-md border border-stone-200 px-3 py-2 text-[11px] font-medium text-stone-600 hover:bg-stone-50">{isEditingAssignments ? "Cancel" : "Manage users"}</button>
               )}
             </div>
             {!canViewUsers ? (
               <div className="rounded-lg border border-stone-200 bg-stone-50 p-4 text-xs leading-5 text-stone-600">User names are hidden because this account does not have the <code className="font-mono">users:read</code> permission.</div>
-            ) : users.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500">No admin or staff accounts are available for this role.</div>
+            ) : displayedUsers.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-stone-300 p-8 text-center text-xs text-stone-500">{isEditingAssignments ? "No Admin or Staff accounts are available to assign." : "No Admin or Staff users are assigned to this role yet."}</div>
             ) : (
               <div className="divide-y divide-stone-100 rounded-lg border border-stone-200">
-                {users.map((user) => {
-                  const assigned = selectedUserIds.includes(user.id);
+                {displayedUsers.map((user) => {
+                  const assigned = isEditingAssignments
+                    ? selectedUserIds.includes(user.id)
+                    : isAssignedToAdminRole(user, role.id);
                   return (
                     <label key={user.id} className={`flex items-center gap-3 px-4 py-3 ${isEditingAssignments && user.id !== currentUserId ? "cursor-pointer hover:bg-stone-50" : ""}`}>
                       {isEditingAssignments && canAssignRoles && !roleIsProtected && <input type="checkbox" checked={assigned} disabled={user.id === currentUserId} onChange={() => toggleUser(user.id)} className="size-4 accent-stone-900" aria-label={`${assigned ? "Remove" : "Assign"} ${role.name} for ${user.name}`} />}
                       <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-stone-100 text-[10px] font-medium text-stone-600">{user.name.split(/\s+/).slice(0, 2).map((part) => part[0]?.toUpperCase()).join("")}</span>
                       <span className="min-w-0 flex-1"><span className="block truncate text-xs font-medium text-stone-800">{user.name}</span><span className="mt-0.5 block truncate text-[10px] text-stone-500">{user.email}</span></span>
+                      {isEditingAssignments && <span className={`rounded-full px-2 py-1 text-[9px] ${assigned ? "bg-emerald-50 text-emerald-700" : "bg-stone-100 text-stone-500"}`}>{assigned ? "Assigned" : "Not assigned"}</span>}
                       <span className={`rounded-full px-2 py-1 text-[9px] ${user.isActive ? "bg-stone-100 text-stone-600" : "bg-stone-200 text-stone-500"}`}>{user.isActive ? "Active" : "Inactive"}</span>
                     </label>
                   );

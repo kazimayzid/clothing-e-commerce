@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireSuperAdminApi } from "@/lib/admin-access";
+import { appendAdminAuditLog } from "@/lib/admin-audit";
 import { EmailDeliveryError } from "@/lib/email";
 import {
   createInvitationToken,
@@ -94,7 +95,8 @@ export async function POST(request: Request) {
   const token = createInvitationToken();
   let invitation;
   try {
-    invitation = await prisma.adminInvitation.create({
+    invitation = await prisma.$transaction(async (tx) => {
+      const created = await tx.adminInvitation.create({
       data: {
         email,
         name: parsed.data.name,
@@ -111,6 +113,13 @@ export async function POST(request: Request) {
           include: { role: { select: { id: true, name: true, slug: true } } },
         },
       },
+      });
+      await appendAdminAuditLog(tx, {
+        actor: access.context, request, action: "invitation.created", category: "INVITATION", riskLevel: "HIGH",
+        description: `Created staff invitation for ${email}.`, targetType: "INVITATION", targetId: created.id, targetName: created.name, targetEmail: created.email,
+        beforeState: null, afterState: { status: created.status, roleIds: roles.map(({ id }) => id), expiresAt: created.expiresAt.toISOString() },
+      });
+      return created;
     });
   } catch (error) {
     if (

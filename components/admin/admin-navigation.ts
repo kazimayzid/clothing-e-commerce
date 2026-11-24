@@ -21,9 +21,9 @@ export const adminNavigation = [
   {
     label: "OVERVIEW",
     items: [
-      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Overview of your store's performance." },
-      { id: "analytics", label: "Analytics", icon: BarChart3, description: "Explore trends across your store.", requiredPermission: "dashboard:access" },
-      { id: "sales-reports", label: "Sales & Reports", icon: FileBarChart2, description: "Review sales performance and reports.", requiredPermission: "dashboard:access" },
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, description: "Overview of your store's performance.", superAdminOnly: true },
+      { id: "analytics", label: "Analytics", icon: BarChart3, description: "Explore trends across your store.", superAdminOnly: true },
+      { id: "sales-reports", label: "Sales & Reports", icon: FileBarChart2, description: "Review sales performance and reports.", superAdminOnly: true },
     ],
   },
   {
@@ -48,10 +48,10 @@ export const adminNavigation = [
   {
     label: "SYSTEM",
     items: [
-      { id: "admin-users", label: "Admin Users", icon: UserRoundCog, description: "Manage administrators, staff accounts, roles, and access to your store.", requiredPermission: "users:read" },
-      { id: "roles-permissions", label: "Roles & Permissions", icon: KeyRound, description: "Control what administrators and staff members can access and manage.", requiredPermission: "roles:read" },
-      { id: "settings", label: "Settings", icon: Settings2, description: "Configure store and dashboard preferences.", requiredPermission: "dashboard:access" },
-      { id: "activity-logs", label: "Activity Logs", icon: Activity, description: "Review recent changes across the store.", requiredPermission: "__not_implemented__" },
+      { id: "admin-users", label: "Admin Users", icon: UserRoundCog, description: "Manage administrators, staff accounts, roles, and access to your store.", superAdminOnly: true },
+      { id: "roles-permissions", label: "Roles & Permissions", icon: KeyRound, description: "Control what administrators and staff members can access and manage.", superAdminOnly: true },
+      { id: "settings", label: "Settings", icon: Settings2, description: "Configure store and dashboard preferences.", superAdminOnly: true },
+      { id: "activity-logs", label: "Activity Logs", icon: Activity, description: "Review recent changes across the store.", superAdminOnly: true },
     ],
   },
 ] as const;

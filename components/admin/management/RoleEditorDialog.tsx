@@ -4,6 +4,7 @@ import { useState } from "react";
 import AdminDialog from "@/components/admin/management/AdminDialog";
 import PermissionMatrix from "@/components/admin/management/PermissionMatrix";
 import type { AdminPermission, AdminRoleSummary } from "@/components/admin/management/management-types";
+import { getPermissionRisk } from "@/lib/admin-permission-risk";
 
 export type RoleDraft = {
   id?: string;
@@ -31,19 +32,37 @@ export default function RoleEditorDialog({ role, catalog, onClose, onSave, canAs
   const [description, setDescription] = useState(role?.description ?? "");
   const [permissionIds, setPermissionIds] = useState(role?.permissions.map(({ id }) => id) ?? []);
   const [saving, setSaving] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<RoleDraft | null>(null);
+  const [criticalConfirmed, setCriticalConfirmed] = useState(false);
   const protectedRole = role?.isSuperAdmin === true;
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (protectedRole || !name.trim() || !slug.trim()) return;
+  function makeDraft(): RoleDraft {
+    return { id: role?.id, name: name.trim(), slug: makeSlug(slug), description: description.trim(), permissionIds: canAssignPermissions ? permissionIds : (role?.permissions.map(({ id }) => id) ?? []) };
+  }
+
+  function persist(draft: RoleDraft) {
     setSaving(true);
-    void onSave({ id: role?.id, name: name.trim(), slug: makeSlug(slug), description: description.trim(), permissionIds: canAssignPermissions ? permissionIds : (role?.permissions.map(({ id }) => id) ?? []) })
+    void onSave(draft)
       .then(onClose)
       .catch(() => undefined)
       .finally(() => setSaving(false));
   }
 
+  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (protectedRole || !name.trim() || !slug.trim()) return;
+    const draft = makeDraft();
+    const oldIds = new Set(role?.permissions.map(({ id }) => id) ?? []);
+    const grants = catalog.filter(({ id }) => draft.permissionIds.includes(id) && !oldIds.has(id));
+    if (grants.length) setPendingDraft(draft);
+    else persist(draft);
+  }
+
+  const addedPermissions = catalog.filter(({ id }) => pendingDraft?.permissionIds.includes(id) && !role?.permissions.some((permission) => permission.id === id));
+  const criticalPermissions = addedPermissions.filter((permission) => getPermissionRisk(permission) === "CRITICAL");
+
   return (
+    <>
     <AdminDialog
       title={role ? `Edit ${role.name}` : "Create New Role"}
       description="Define a role using only permissions already present in the database catalog."
@@ -86,5 +105,7 @@ export default function RoleEditorDialog({ role, catalog, onClose, onSave, canAs
         </div>
       </form>
     </AdminDialog>
+    {pendingDraft && <AdminDialog title="Confirm permission changes" description="Review the capability being added to this role before saving." onClose={() => { setPendingDraft(null); setCriticalConfirmed(false); }} size="md"><div className="space-y-4 p-5"><p className="text-xs text-stone-600">Anyone assigned this role will receive these permissions:</p><ul className="max-h-48 space-y-2 overflow-auto rounded-md border border-stone-200 p-3">{addedPermissions.map((permission) => <li key={permission.id} className="flex items-center justify-between gap-3 text-xs"><span className="font-mono">{permission.resource}:{permission.action}</span><span className={`rounded-full px-2 py-1 text-[9px] font-semibold ${getPermissionRisk(permission) === "CRITICAL" ? "bg-rose-100 text-rose-700" : getPermissionRisk(permission) === "HIGH" ? "bg-amber-100 text-amber-800" : "bg-stone-100 text-stone-600"}`}>{getPermissionRisk(permission)}</span></li>)}</ul>{criticalPermissions.length > 0 && <label className="flex gap-2 rounded-md border border-rose-200 bg-rose-50 p-3 text-xs text-rose-900"><input type="checkbox" checked={criticalConfirmed} onChange={(event) => setCriticalConfirmed(event.target.checked)} /><span>I understand this role can grant critical administrative access.</span></label>}<div className="flex justify-end gap-2"><button type="button" onClick={() => { setPendingDraft(null); setCriticalConfirmed(false); }} className="rounded-md border px-3 py-2 text-xs">Cancel</button><button type="button" disabled={criticalPermissions.length > 0 && !criticalConfirmed} onClick={() => { const draft = pendingDraft; setPendingDraft(null); setCriticalConfirmed(false); persist(draft); }} className="rounded-md bg-stone-900 px-3 py-2 text-xs text-white disabled:opacity-40">Confirm and save</button></div></div></AdminDialog>}
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { requireSuperAdminApi } from "@/lib/admin-access";
+import { appendAdminAuditLog } from "@/lib/admin-audit";
 import { EmailDeliveryError } from "@/lib/email";
 import {
   createInvitationToken,
@@ -14,7 +15,7 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(
-  _request: Request,
+  request: Request,
   { params }: RouteContext<"/api/v1/admin/invitations/[id]/resend">,
 ) {
   const access = await requireSuperAdminApi();
@@ -27,7 +28,7 @@ export async function POST(
   const now = new Date();
   const current = await prisma.adminInvitation.findFirst({
     where: { id, status: "PENDING", expiresAt: { gt: now } },
-    select: { tokenHash: true },
+    select: { id: true, name: true, email: true, tokenHash: true, expiresAt: true, status: true },
   });
   if (!current) {
     return NextResponse.json(
@@ -57,6 +58,13 @@ export async function POST(
       { status: 409 },
     );
   }
+  await prisma.$transaction(async (tx) => {
+    await appendAdminAuditLog(tx, {
+      actor: access.context, request, action: "invitation.resent", category: "INVITATION", riskLevel: "MEDIUM",
+      description: `Generated and sent a replacement invitation link to ${current.email}.`, targetType: "INVITATION", targetId: current.id, targetName: current.name, targetEmail: current.email,
+      beforeState: { status: current.status, expiresAt: current.expiresAt.toISOString() }, afterState: { status: "PENDING", expiresAt: new Date(now.getTime() + INVITATION_LIFETIME_MS).toISOString() },
+    });
+  });
 
   try {
     await sendInvitation(id, token);

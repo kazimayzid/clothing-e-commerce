@@ -9,6 +9,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
 import AdminUsersManagement from "@/components/admin/management/AdminUsersManagement";
 import RolesPermissionsManagement from "@/components/admin/management/RolesPermissionsManagement";
+import AdminAuditLogs from "@/components/admin/management/AdminAuditLogs";
 import type { AdminAccessRemovalSummary, AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
 import { getAdminPage, type AdminPageKey } from "@/components/admin/admin-navigation";
 import { getAdminInitials } from "@/components/admin/admin-utils";
@@ -18,6 +19,7 @@ type Props = {
   adminName: string;
   currentUserId: string;
   permissionKeys: string[];
+  isSuperAdmin: boolean;
   roles?: AdminRoleSummary[];
   permissionCatalog?: AdminPermission[];
   managedUsers?: ManagedAdminUser[];
@@ -27,6 +29,7 @@ type Props = {
   canInvite: boolean;
   canDeactivateUsers: boolean;
   canRevokeSessions: boolean;
+  actorIsProtectedSuperAdmin: boolean;
   canCreateRoles: boolean;
   canUpdateRoles: boolean;
   canDeleteRoles: boolean;
@@ -39,6 +42,7 @@ export default function AdminDashboardShell({
   adminName,
   currentUserId,
   permissionKeys,
+  isSuperAdmin,
   roles,
   permissionCatalog,
   managedUsers,
@@ -48,6 +52,7 @@ export default function AdminDashboardShell({
   canInvite,
   canDeactivateUsers,
   canRevokeSessions,
+  actorIsProtectedSuperAdmin,
   canCreateRoles,
   canUpdateRoles,
   canDeleteRoles,
@@ -61,7 +66,7 @@ export default function AdminDashboardShell({
   return (
     <div className="min-h-screen bg-[#fafaf9] text-stone-900">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[258px] border-r border-stone-200 lg:block">
-        <AdminSidebar activeView={activeView} adminName={adminName} permissionKeys={permissionKeys} />
+        <AdminSidebar activeView={activeView} adminName={adminName} permissionKeys={permissionKeys} isSuperAdmin={isSuperAdmin} />
       </aside>
 
       {mobileNavOpen && (
@@ -77,6 +82,7 @@ export default function AdminDashboardShell({
               activeView={activeView}
               adminName={adminName}
               permissionKeys={permissionKeys}
+              isSuperAdmin={isSuperAdmin}
               mobile
               onNavigate={() => setMobileNavOpen(false)}
             />
@@ -95,7 +101,7 @@ export default function AdminDashboardShell({
             >
               <Menu className="size-[18px]" />
             </button>
-            <Link href="/admin/dashboard" className="lg:hidden" aria-label="LuneCraft admin home">
+            <Link href="/admin/landing" className="lg:hidden" aria-label="LuneCraft admin home">
               <span className="block font-serif text-[15px] tracking-[0.12em]">LUNECRAFT</span>
               <span className="block text-[8px] tracking-[0.2em] text-stone-500">STORE ADMIN</span>
             </Link>
@@ -136,6 +142,7 @@ export default function AdminDashboardShell({
               canInvite={canInvite}
               canDeactivateUsers={canDeactivateUsers}
               canRevokeSessions={canRevokeSessions}
+              actorIsProtectedSuperAdmin={actorIsProtectedSuperAdmin}
               currentUserId={currentUserId}
             />
           ) : activeView === "roles-permissions" ? (
@@ -151,6 +158,8 @@ export default function AdminDashboardShell({
               canAssignPermissions={canAssignPermissions}
               currentUserId={currentUserId}
             />
+          ) : activeView === "activity-logs" && isSuperAdmin ? (
+            <AdminAuditLogs />
           ) : (
             <AdminModulePlaceholder pageKey={activeView} />
           )}

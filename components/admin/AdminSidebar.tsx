@@ -5,11 +5,13 @@ import { ChevronDown, X } from "lucide-react";
 import { adminNavigation, type AdminPageKey } from "@/components/admin/admin-navigation";
 import AdminLogoutButton from "@/components/admin/AdminLogoutButton";
 import { getAdminInitials } from "@/components/admin/admin-utils";
+import { canAccessAdminModule } from "@/lib/admin-module-policy";
 
 type Props = {
   activeView: AdminPageKey;
   adminName: string;
   permissionKeys: string[];
+  isSuperAdmin: boolean;
   onNavigate?: () => void;
   mobile?: boolean;
 };
@@ -18,6 +20,7 @@ export default function AdminSidebar({
   activeView,
   adminName,
   permissionKeys,
+  isSuperAdmin,
   onNavigate,
   mobile = false,
 }: Props) {
@@ -25,7 +28,7 @@ export default function AdminSidebar({
     <div className="flex h-full flex-col bg-white">
       <div className="flex h-[76px] items-center justify-between border-b border-stone-200 px-6">
         <Link
-          href="/admin/dashboard"
+          href="/admin/landing"
           onClick={onNavigate}
           className="flex items-center gap-3"
           aria-label="LuneCraft admin home"
@@ -57,7 +60,7 @@ export default function AdminSidebar({
       <nav aria-label="Admin navigation" className="flex-1 overflow-y-auto px-3 py-5">
         {adminNavigation.map((group) => {
           const visibleItems = group.items.filter((item) =>
-            !("requiredPermission" in item) || permissionKeys.includes(item.requiredPermission),
+            canAccessAdminModule(isSuperAdmin, permissionKeys, item),
           );
           if (!visibleItems.length) return null;
           return (

@@ -24,7 +24,7 @@ export * as $Enums from './enums'
 export * from "./enums"
 /**
  * ## Prisma Client
- * 
+ *
  * Type-safe database client for TypeScript
  * @example
  * ```
@@ -34,7 +34,7 @@ export * from "./enums"
  * // Fetch zero or more Users
  * const users = await prisma.user.findMany()
  * ```
- * 
+ *
  * Read more in our [docs](https://pris.ly/d/client).
  */
 export const PrismaClient = $Class.getPrismaClientClass()
@@ -43,56 +43,61 @@ export { Prisma }
 
 /**
  * Model User
- * 
+ *
  */
 export type User = Prisma.UserModel
 /**
  * Model Session
- * 
+ *
  */
 export type Session = Prisma.SessionModel
 /**
  * Model Account
- * 
+ *
  */
 export type Account = Prisma.AccountModel
 /**
  * Model Verification
- * 
+ *
  */
 export type Verification = Prisma.VerificationModel
 /**
  * Model Role
- * 
+ *
  */
 export type Role = Prisma.RoleModel
 /**
  * Model Permission
- * 
+ *
  */
 export type Permission = Prisma.PermissionModel
 /**
  * Model AdminInvitation
- * 
+ *
  */
 export type AdminInvitation = Prisma.AdminInvitationModel
 /**
  * Model AdminAccessRemoval
- * 
+ *
  */
 export type AdminAccessRemoval = Prisma.AdminAccessRemovalModel
 /**
+ * Model AdminAuditLog
+ *
+ */
+export type AdminAuditLog = Prisma.AdminAuditLogModel
+/**
  * Model AdminInvitationRole
- * 
+ *
  */
 export type AdminInvitationRole = Prisma.AdminInvitationRoleModel
 /**
  * Model UserRole
- * 
+ *
  */
 export type UserRole = Prisma.UserRoleModel
 /**
  * Model RolePermission
- * 
+ *
  */
 export type RolePermission = Prisma.RolePermissionModel

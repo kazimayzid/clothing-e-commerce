@@ -54,18 +54,23 @@ export async function requireCustomer() {
   return session;
 }
 
-export async function requirePermission(resource: string, action: string) {
+export async function requireAdmin() {
   const session = await getCurrentSession();
 
   if (!session) redirect("/admin/sign-in");
 
   const access = await getAdminAccessContext(session.user.id);
   const isInternal = Boolean(access?.roles.length);
-  const allowed = access && hasPermission(access, `${resource}:${action}`);
-
   if (!access?.isActive || !isInternal) {
     redirect("/admin/forbidden");
   }
+
+  return { session, access };
+}
+
+export async function requirePermission(resource: string, action: string) {
+  const { session, access } = await requireAdmin();
+  const allowed = hasPermission(access, `${resource}:${action}`);
 
   if (!allowed) {
     redirect("/admin/forbidden");

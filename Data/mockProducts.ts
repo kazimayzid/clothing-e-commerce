@@ -12,9 +12,9 @@ export const mockProducts20: Product[] = [
     categoryName: 'Polos',
     tags: ['polo', 'casual', 'bestseller', 'cotton'],
     relatedProductIds: ['prod-102', 'prod-103', 'prod-105', 'prod-107'],
-    imageSrc: 'https://images.unsplash.com/photo-1625910513413-3fc215c76e2b?auto=format&fit=crop&w=800&q=80',
+    imageSrc: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80',
     images: [
-      'https://images.unsplash.com/photo-1625910513413-3fc215c76e2b?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80',
     ],
     colorName: 'Petrol Blue',

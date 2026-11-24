@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireSuperAdminApi } from "@/lib/admin-access";
 import { sendAccessRemovalNotification, serializeAccessRemoval } from "@/lib/admin-access-removals";
+import { appendAdminAuditLog } from "@/lib/admin-audit";
 
 export const runtime = "nodejs";
 
@@ -22,6 +23,7 @@ export async function POST(_request: Request, { params }: RouteContext<"/api/v1/
           id: true,
           name: true,
           email: true,
+          isProtectedSuperAdmin: true,
           roles: {
             where: { role: { scope: "ADMIN" } },
             select: { role: { select: { id: true, name: true, isSuperAdmin: true } } },
@@ -29,12 +31,12 @@ export async function POST(_request: Request, { params }: RouteContext<"/api/v1/
         },
       });
       if (!target || target.roles.length === 0) return null;
-      if (target.roles.some(({ role }) => role.isSuperAdmin)) throw new Error("PROTECTED_SUPER_ADMIN");
+      if (target.isProtectedSuperAdmin || target.roles.some(({ role }) => role.isSuperAdmin)) throw new Error("PROTECTED_SUPER_ADMIN");
 
       const removedRoles = target.roles.map(({ role }) => ({ id: role.id, name: role.name }));
       await tx.userRole.deleteMany({ where: { userId: id, role: { scope: "ADMIN" } } });
       await tx.session.deleteMany({ where: { userId: id } });
-      return tx.adminAccessRemoval.create({
+      const record = await tx.adminAccessRemoval.create({
         data: {
           userId: target.id,
           removedById: access.context.userId,
@@ -44,6 +46,12 @@ export async function POST(_request: Request, { params }: RouteContext<"/api/v1/
         },
         select: { id: true },
       });
+      await appendAdminAuditLog(tx, {
+        actor: access.context, request: _request, action: "user.admin_access_removed", category: "USER_ACCESS", riskLevel: "CRITICAL",
+        description: `Removed Admin access from ${target.name} and revoked active sessions.`, targetType: "USER", targetId: target.id, targetName: target.name, targetEmail: target.email,
+        beforeState: { roles: removedRoles, adminAccess: true }, afterState: { roles: [], adminAccess: false }, changedFields: ["roles", "sessions"],
+      });
+      return record;
     }, { isolationLevel: "Serializable" });
 
     if (!removal) return NextResponse.json({ error: "Admin or Staff account not found." }, { status: 404 });

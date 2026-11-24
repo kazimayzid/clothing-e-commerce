@@ -18,13 +18,15 @@ export type AdminRoleSummary = {
   permissions: AdminPermission[];
 };
 
-export type AdminUserRole = Pick<AdminRoleSummary, "id" | "name" | "slug" | "permissions" | "isSuperAdmin">;
+export type AdminUserRole = Pick<AdminRoleSummary, "id" | "name" | "slug" | "permissions" | "isSuperAdmin"> & { scope: "ADMIN" | "CUSTOMER" };
 
 export type ManagedAdminUser = {
   id: string;
   name: string;
   email: string;
+  emailVerified: boolean;
   isActive: boolean;
+  isProtectedSuperAdmin: boolean;
   createdAt: string;
   roles: AdminUserRole[];
 };

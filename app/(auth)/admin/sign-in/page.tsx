@@ -6,7 +6,7 @@ export default function AdminSigninPage() {
       audience="internal"
       heading="Administrator Sign In"
       description="Sign in to access the administration panel"
-      callbackURL="/admin/dashboard"
+      callbackURL="/admin/landing"
     />
   );
 }

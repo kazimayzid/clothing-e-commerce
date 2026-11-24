@@ -405,6 +405,7 @@ export const ModelName = {
   Permission: 'Permission',
   AdminInvitation: 'AdminInvitation',
   AdminAccessRemoval: 'AdminAccessRemoval',
+  AdminAuditLog: 'AdminAuditLog',
   AdminInvitationRole: 'AdminInvitationRole',
   UserRole: 'UserRole',
   RolePermission: 'RolePermission'
@@ -423,7 +424,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "session" | "account" | "verification" | "role" | "permission" | "adminInvitation" | "adminAccessRemoval" | "adminInvitationRole" | "userRole" | "rolePermission"
+    modelProps: "user" | "session" | "account" | "verification" | "role" | "permission" | "adminInvitation" | "adminAccessRemoval" | "adminAuditLog" | "adminInvitationRole" | "userRole" | "rolePermission"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1019,6 +1020,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AdminAuditLog: {
+      payload: Prisma.$AdminAuditLogPayload<ExtArgs>
+      fields: Prisma.AdminAuditLogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AdminAuditLogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AdminAuditLogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        findFirst: {
+          args: Prisma.AdminAuditLogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AdminAuditLogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        findMany: {
+          args: Prisma.AdminAuditLogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>[]
+        }
+        create: {
+          args: Prisma.AdminAuditLogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        createMany: {
+          args: Prisma.AdminAuditLogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AdminAuditLogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>[]
+        }
+        delete: {
+          args: Prisma.AdminAuditLogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        update: {
+          args: Prisma.AdminAuditLogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        deleteMany: {
+          args: Prisma.AdminAuditLogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AdminAuditLogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AdminAuditLogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>[]
+        }
+        upsert: {
+          args: Prisma.AdminAuditLogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AdminAuditLogPayload>
+        }
+        aggregate: {
+          args: Prisma.AdminAuditLogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAdminAuditLog>
+        }
+        groupBy: {
+          args: Prisma.AdminAuditLogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminAuditLogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AdminAuditLogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AdminAuditLogCountAggregateOutputType> | number
+        }
+      }
+    }
     AdminInvitationRole: {
       payload: Prisma.$AdminInvitationRolePayload<ExtArgs>
       fields: Prisma.AdminInvitationRoleFieldRefs
@@ -1287,6 +1362,7 @@ export const UserScalarFieldEnum = {
   emailVerified: 'emailVerified',
   image: 'image',
   isActive: 'isActive',
+  isProtectedSuperAdmin: 'isProtectedSuperAdmin',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -1408,6 +1484,39 @@ export const AdminAccessRemovalScalarFieldEnum = {
 export type AdminAccessRemovalScalarFieldEnum = (typeof AdminAccessRemovalScalarFieldEnum)[keyof typeof AdminAccessRemovalScalarFieldEnum]
 
 
+export const AdminAuditLogScalarFieldEnum = {
+  id: 'id',
+  actorUserId: 'actorUserId',
+  actorName: 'actorName',
+  actorEmail: 'actorEmail',
+  actorRoles: 'actorRoles',
+  actorIsSuperAdmin: 'actorIsSuperAdmin',
+  action: 'action',
+  category: 'category',
+  riskLevel: 'riskLevel',
+  description: 'description',
+  targetType: 'targetType',
+  targetId: 'targetId',
+  targetName: 'targetName',
+  targetEmail: 'targetEmail',
+  roleId: 'roleId',
+  roleName: 'roleName',
+  permissionId: 'permissionId',
+  permissionKey: 'permissionKey',
+  beforeState: 'beforeState',
+  afterState: 'afterState',
+  changedFields: 'changedFields',
+  requestIp: 'requestIp',
+  userAgent: 'userAgent',
+  requestId: 'requestId',
+  success: 'success',
+  failureCode: 'failureCode',
+  createdAt: 'createdAt'
+} as const
+
+export type AdminAuditLogScalarFieldEnum = (typeof AdminAuditLogScalarFieldEnum)[keyof typeof AdminAuditLogScalarFieldEnum]
+
+
 export const AdminInvitationRoleScalarFieldEnum = {
   invitationId: 'invitationId',
   roleId: 'roleId'
@@ -1445,6 +1554,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1741,6 +1858,7 @@ export type GlobalOmitConfig = {
   permission?: Prisma.PermissionOmit
   adminInvitation?: Prisma.AdminInvitationOmit
   adminAccessRemoval?: Prisma.AdminAccessRemovalOmit
+  adminAuditLog?: Prisma.AdminAuditLogOmit
   adminInvitationRole?: Prisma.AdminInvitationRoleOmit
   userRole?: Prisma.UserRoleOmit
   rolePermission?: Prisma.RolePermissionOmit
