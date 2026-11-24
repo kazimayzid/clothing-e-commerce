@@ -1,5 +1,5 @@
-import LoadingScreen from "@/components/shared/LoadingScreen";
+import AccountLoadingSkeleton from "@/components/account/AccountLoadingSkeleton";
 
-export default function AccountLoading() {
-  return <LoadingScreen fullScreen={false} />;
+export default function Loading() {
+  return <AccountLoadingSkeleton />;
 }
