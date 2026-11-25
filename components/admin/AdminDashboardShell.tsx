@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Menu, Search } from "lucide-react";
 import AdminModulePlaceholder from "@/components/admin/AdminModulePlaceholder";
+import AdminModuleSkeleton from "@/components/admin/AdminModuleSkeleton";
 import AdminPageHeader from "@/components/admin/AdminPageHeader";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
@@ -11,7 +13,7 @@ import AdminUsersManagement from "@/components/admin/management/AdminUsersManage
 import RolesPermissionsManagement from "@/components/admin/management/RolesPermissionsManagement";
 import AdminAuditLogs from "@/components/admin/management/AdminAuditLogs";
 import type { AdminAccessRemovalSummary, AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
-import { getAdminPage, type AdminPageKey } from "@/components/admin/admin-navigation";
+import { getAdminPage, isAdminPageKey, type AdminPageKey } from "@/components/admin/admin-navigation";
 import { getAdminInitials } from "@/components/admin/admin-utils";
 
 type Props = {
@@ -60,13 +62,83 @@ export default function AdminDashboardShell({
   canViewUsers,
 }: Props) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const page = getAdminPage(activeView);
+  const [pendingView, setPendingView] = useState<AdminPageKey | null>(null);
+  const [skeletonView, setSkeletonView] = useState<AdminPageKey | null>(null);
+  const searchParams = useSearchParams();
+  const queryViewParam = searchParams.get("view");
+  const urlView = queryViewParam && isAdminPageKey(queryViewParam) ? queryViewParam : "dashboard";
+  const pendingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const historyNavigation = useRef(false);
+  const lastUrlView = useRef<AdminPageKey>(urlView);
+  const displayView = pendingView ?? activeView;
+  const isNavigating = Boolean(pendingView && pendingView !== activeView);
+  const showModuleSkeleton = isNavigating && skeletonView === pendingView;
+  const page = getAdminPage(isNavigating && showModuleSkeleton ? displayView : activeView);
   const isDashboard = activeView === "dashboard";
+
+  const clearPendingView = useCallback(() => {
+    if (pendingTimer.current) clearTimeout(pendingTimer.current);
+    pendingTimer.current = null;
+    setPendingView(null);
+  }, []);
+
+  const selectAdminView = useCallback((view: AdminPageKey) => {
+    if (view === activeView) {
+      clearPendingView();
+      return;
+    }
+    if (pendingTimer.current) clearTimeout(pendingTimer.current);
+    setPendingView(view);
+    pendingTimer.current = setTimeout(() => {
+      setPendingView((current) => current === view ? null : current);
+      pendingTimer.current = null;
+    }, 15000);
+  }, [activeView, clearPendingView]);
+
+  useEffect(() => {
+    const onPopState = () => { historyNavigation.current = true; };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  useEffect(() => {
+    if (lastUrlView.current === urlView) return;
+    lastUrlView.current = urlView;
+    const isHistoryNavigation = historyNavigation.current;
+    historyNavigation.current = false;
+    const timer = setTimeout(() => {
+      if (isHistoryNavigation) {
+        if (urlView === activeView) clearPendingView();
+        else selectAdminView(urlView);
+        return;
+      }
+      // Sidebar clicks already set the latest intent. Let that navigation win
+      // even if an earlier rapid click updates the URL first.
+      if (!pendingView && urlView !== activeView) selectAdminView(urlView);
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [urlView, activeView, pendingView, clearPendingView, selectAdminView]);
+
+  useEffect(() => {
+    if (!pendingView || pendingView !== activeView) return;
+    const timer = setTimeout(clearPendingView, 0);
+    return () => clearTimeout(timer);
+  }, [pendingView, activeView, clearPendingView]);
+
+  useEffect(() => {
+    if (!pendingView || pendingView === activeView) return;
+    const timer = setTimeout(() => setSkeletonView(pendingView), 120);
+    return () => clearTimeout(timer);
+  }, [pendingView, activeView]);
+
+  useEffect(() => () => {
+    if (pendingTimer.current) clearTimeout(pendingTimer.current);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#fafaf9] text-stone-900">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[258px] border-r border-stone-200 lg:block">
-        <AdminSidebar activeView={activeView} adminName={adminName} permissionKeys={permissionKeys} isSuperAdmin={isSuperAdmin} />
+        <AdminSidebar activeView={activeView} pendingView={pendingView} onSelectView={selectAdminView} adminName={adminName} permissionKeys={permissionKeys} isSuperAdmin={isSuperAdmin} />
       </aside>
 
       {mobileNavOpen && (
@@ -80,6 +152,8 @@ export default function AdminDashboardShell({
           <aside className="absolute inset-y-0 left-0 w-[min(300px,86vw)] border-r border-stone-200 shadow-xl">
             <AdminSidebar
               activeView={activeView}
+              pendingView={pendingView}
+              onSelectView={selectAdminView}
               adminName={adminName}
               permissionKeys={permissionKeys}
               isSuperAdmin={isSuperAdmin}
@@ -124,13 +198,15 @@ export default function AdminDashboardShell({
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 lg:px-9">
+        <main className="mx-auto w-full max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8 lg:px-9" aria-busy={isNavigating || undefined}>
           <AdminPageHeader
             title={page.label}
             description={page.description}
-            showDashboardActions={isDashboard}
+            showDashboardActions={page.id === "dashboard"}
           />
-          {isDashboard ? (
+          {isNavigating && showModuleSkeleton ? (
+            <AdminModuleSkeleton pageKey={displayView} />
+          ) : isDashboard ? (
             <DashboardOverview />
           ) : activeView === "admin-users" ? (
             <AdminUsersManagement

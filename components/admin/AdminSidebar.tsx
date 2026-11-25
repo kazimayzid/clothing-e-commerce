@@ -13,6 +13,8 @@ type Props = {
   adminName: string;
   permissionKeys: string[];
   isSuperAdmin: boolean;
+  pendingView?: AdminPageKey | null;
+  onSelectView?: (view: AdminPageKey) => void;
   onNavigate?: () => void;
   mobile?: boolean;
 };
@@ -22,6 +24,8 @@ export default function AdminSidebar({
   adminName,
   permissionKeys,
   isSuperAdmin,
+  pendingView = null,
+  onSelectView,
   onNavigate,
   mobile = false,
 }: Props) {
@@ -77,10 +81,13 @@ export default function AdminSidebar({
                   <AdminNavigationLink
                     key={item.id}
                     href={item.id === "dashboard" ? "/admin/dashboard" : `/admin/dashboard?view=${item.id}`}
+                    view={item.id}
                     onNavigate={onNavigate}
+                    onSelectView={onSelectView}
                     icon={Icon}
                     label={item.label}
                     isActive={isActive}
+                    isPending={pendingView === item.id && !isActive}
                   />
                 );
               })}
