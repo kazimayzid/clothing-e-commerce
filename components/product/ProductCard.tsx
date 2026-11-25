@@ -12,6 +12,7 @@ export interface Product {
   title: string;
   colorName?: string;
   price: string;
+  currency?: string;
   multibuyPrice?: string;
   imageSrc: string;
   isNew?: boolean;
@@ -40,6 +41,7 @@ export default function ProductCard({
     slug: productSlug,
     colorName,
     price,
+    currency,
     multibuyPrice,
     imageSrc,
     isNew = false,
@@ -54,6 +56,9 @@ export default function ProductCard({
 
   const productHref = `/products/${slug}`;
   const numericPrice = Number(price.replace(/[^\d.]/g, "")) || 0;
+  const displayPrice = currency
+    ? new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(numericPrice)
+    : price;
 
   return (
     <div className="group cursor-pointer">
@@ -134,7 +139,7 @@ export default function ProductCard({
         
         <div className="mt-1 flex flex-col">
           <span className="text-sm font-bold text-neutral-900">
-            {price}
+            {displayPrice}
           </span>
 
           {multibuyPrice && (

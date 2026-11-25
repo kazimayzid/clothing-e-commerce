@@ -12,6 +12,7 @@ export interface Product {
   slug: string;
   price: string;
   multibuyPrice?: string;
+  currency?: string;
 
   // Gender & Categorization
   gender: Gender;
@@ -24,6 +25,7 @@ export interface Product {
   imageSrc: string;        // Main featured thumbnail
   images: string[];        // Product gallery carousel
   colorName: string;
+  colorCount?: number;
   colors?: ColorOption[];
   sizes?: string[];
 
@@ -48,6 +50,7 @@ export type ProductCardDTO = Pick<
   | 'slug'
   | 'price'
   | 'multibuyPrice'
+  | 'currency'
   | 'gender'
   | 'imageSrc'
   | 'colorName'
@@ -55,6 +58,7 @@ export type ProductCardDTO = Pick<
   | 'bestsellerRank'
   | 'sellingFastCount'
   | 'categoryName'
+  | 'colorCount'
 >;
 
 

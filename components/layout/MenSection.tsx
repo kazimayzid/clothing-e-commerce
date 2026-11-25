@@ -27,7 +27,8 @@ export default async function MenSection() {
           id: String(product.id),
           slug: product.slug,
           title: product.title,
-          price: `$${product.price}`,
+          price: product.price,
+          currency: product.currency,
           imageSrc: product.imageSrc,
         }} />
           ))}

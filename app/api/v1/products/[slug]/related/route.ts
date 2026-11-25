@@ -1,27 +1,8 @@
-import { mockProducts20 } from "@/Data/mockProducts";
-import { ResponseBuilder } from "@/lib/api-response";
-import { getRelatedProducts } from "@/services/relatedProduct.service";
+import { NextResponse } from "next/server";
+import { getRelatedProduct } from "@/services/relatedProduct.service";
 
-
-export async function GET(
-  request: Request,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(_request: Request, { params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-
-  const product = mockProducts20.find(
-    (product) => product.slug === slug
-  );
-
-  if (!product) {
-    return ResponseBuilder.error(
-      "Product not found",
-      404,
-      "PRODUCT_NOT_FOUND"
-    );
-  }
-
-  const relatedProducts = getRelatedProducts(slug);
-
-  return ResponseBuilder.success(relatedProducts);
+  const products = await getRelatedProduct(slug);
+  return NextResponse.json(products, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120" } });
 }

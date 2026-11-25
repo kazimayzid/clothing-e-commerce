@@ -36,3 +36,22 @@ export const AdminInvitationEmailStatus = {
 } as const
 
 export type AdminInvitationEmailStatus = (typeof AdminInvitationEmailStatus)[keyof typeof AdminInvitationEmailStatus]
+
+
+export const ProductStatus = {
+  DRAFT: 'DRAFT',
+  PUBLISHED: 'PUBLISHED',
+  ARCHIVED: 'ARCHIVED'
+} as const
+
+export type ProductStatus = (typeof ProductStatus)[keyof typeof ProductStatus]
+
+
+export const ProductGender = {
+  MEN: 'MEN',
+  WOMEN: 'WOMEN',
+  UNISEX: 'UNISEX',
+  KIDS: 'KIDS'
+} as const
+
+export type ProductGender = (typeof ProductGender)[keyof typeof ProductGender]

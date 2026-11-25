@@ -1,65 +1,40 @@
+import { prisma } from "@/lib/prisma";
+import { adminProductInclude, toStorefrontProduct } from "@/lib/product-data";
 import type { Product } from "@/types/product";
-import { mockProducts20 } from "@/Data/mockProducts";
 
-
-export function calculateSimilarityScore(
-  product: Product,
-  candidate: Product
-) {
-  let score = 0;
-
-  // Category match
-  if (
-    candidate.categoryName.toLowerCase() ===
-    product.categoryName.toLowerCase()
-  ) {
-    score += 50;
-  }
-
-  // Gender match
-  if (
-    candidate.gender.toLowerCase() ===
-      product.gender.toLowerCase() ||
-    candidate.gender.toLowerCase() === "unisex"
-  ) {
-    score += 20;
-  }
-
-  // Tags match
-  const currentTags = product.tags ?? [];
-  const candidateTags = candidate.tags ?? [];
-
-  const matchedTags = candidateTags.filter((tag) =>
-    currentTags.some(
-      (currentTag) =>
-        currentTag.toLowerCase() === tag.toLowerCase()
-    )
+export function calculateSimilarityScore(product: Product, candidate: Product) {
+  let score = product.categoryId === candidate.categoryId ? 50 : 0;
+  if (candidate.gender === product.gender || candidate.gender === "unisex") score += 20;
+  const matchedTags = (candidate.tags ?? []).filter((tag) =>
+    (product.tags ?? []).some((currentTag) => currentTag.toLowerCase() === tag.toLowerCase()),
   );
-
-  score += Math.min(matchedTags.length * 10, 30);
-
-  return score;
+  return score + Math.min(matchedTags.length * 10, 30);
 }
 
-
-export function getRelatedProducts(slug: string): Product[] {
-  const product = mockProducts20.find((item) => item.slug === slug);
-
+export async function getRelatedProducts(slug: string): Promise<Product[]> {
+  const product = await prisma.product.findFirst({ where: { slug, status: "PUBLISHED" }, include: adminProductInclude });
   if (!product) return [];
-
-  return mockProducts20
-    .filter((candidate) => candidate.id !== product.id)
-    .map((candidate) => ({
-      product: candidate,
-      score: calculateSimilarityScore(product, candidate),
-    }))
+  const current = toStorefrontProduct(product);
+  const candidates = await prisma.product.findMany({
+    where: {
+      status: "PUBLISHED",
+      id: { not: product.id },
+      OR: [
+        { categoryId: product.categoryId },
+        { gender: product.gender },
+        ...(product.tags.length ? [{ tags: { hasSome: product.tags } }] : []),
+      ],
+    },
+    include: adminProductInclude,
+    take: 40,
+  });
+  return candidates.map(toStorefrontProduct)
+    .map((candidate) => ({ candidate, score: calculateSimilarityScore(current, candidate) }))
     .sort((first, second) => second.score - first.score)
     .slice(0, 4)
-    .map(({ product: relatedProduct }) => relatedProduct);
+    .map(({ candidate }) => candidate);
 }
 
-export async function getRelatedProduct(
-  slug: string
-): Promise<{ success: boolean; data: Product[] }> {
-  return { success: true, data: getRelatedProducts(slug) };
+export async function getRelatedProduct(slug: string): Promise<{ success: boolean; data: Product[] }> {
+  return { success: true, data: await getRelatedProducts(slug) };
 }

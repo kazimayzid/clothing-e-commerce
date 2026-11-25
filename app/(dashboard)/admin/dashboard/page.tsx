@@ -1,9 +1,21 @@
 import { requireAdmin } from "@/lib/dal";
 import AdminDashboardShell from "@/components/admin/AdminDashboardShell";
-import { getAdminPage, isAdminPageKey } from "@/components/admin/admin-navigation";
-import { getAdminAccessRemovals, getAdminInvitations, getAdminRoleData, getManagedAdminUsers } from "@/lib/admin-management";
+import {
+  getAdminPage,
+  isAdminPageKey,
+} from "@/components/admin/admin-navigation";
+import {
+  getAdminAccessRemovals,
+  getAdminInvitations,
+  getAdminRoleData,
+  getManagedAdminUsers,
+} from "@/lib/admin-management";
 import { canAccessAdminModule } from "@/lib/admin-module-policy";
-import type { AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
+import type {
+  AdminPermission,
+  AdminRoleSummary,
+  ManagedAdminUser,
+} from "@/components/admin/management/management-types";
 import { redirect } from "next/navigation";
 
 export default async function AdminDashboardPage({
@@ -11,10 +23,17 @@ export default async function AdminDashboardPage({
 }: PageProps<"/admin/dashboard">) {
   const { session, access } = await requireAdmin();
   const params = await searchParams;
-  const requestedView = Array.isArray(params.view) ? params.view[0] : params.view;
-  const activeView = isAdminPageKey(requestedView) ? requestedView : "dashboard";
+  const requestedView = Array.isArray(params.view)
+    ? params.view[0]
+    : params.view;
+  const activeView = isAdminPageKey(requestedView)
+    ? requestedView
+    : "dashboard";
   const activePage = getAdminPage(activeView);
-  if (!canAccessAdminModule(access.isSuperAdmin, access.permissions, activePage)) redirect("/admin/forbidden");
+  if (
+    !canAccessAdminModule(access.isSuperAdmin, access.permissions, activePage)
+  )
+    redirect("/admin/forbidden");
   const permissionKeys = [...access.permissions];
   const canInvite = Boolean(access?.isSuperAdmin);
   const canAssignRoles = Boolean(access?.isSuperAdmin);
@@ -28,12 +47,20 @@ export default async function AdminDashboardPage({
   let permissionCatalog: AdminPermission[] | undefined;
   let managedUsers: ManagedAdminUser[] | undefined;
   let invitations: Awaited<ReturnType<typeof getAdminInvitations>> | undefined;
-  let accessRemovals: Awaited<ReturnType<typeof getAdminAccessRemovals>> | undefined;
+  let accessRemovals:
+    | Awaited<ReturnType<typeof getAdminAccessRemovals>>
+    | undefined;
 
   if (activeView === "admin-users") {
-    const [roleData, adminUsers, adminInvitations, adminAccessRemovals] = await Promise.all([
-      canInvite ? getAdminRoleData() : Promise.resolve({ roles: [], permissionCatalog: [] }), getManagedAdminUsers(), canInvite ? getAdminInvitations() : Promise.resolve([]), canInvite ? getAdminAccessRemovals() : Promise.resolve([]),
-    ]);
+    const [roleData, adminUsers, adminInvitations, adminAccessRemovals] =
+      await Promise.all([
+        canInvite
+          ? getAdminRoleData()
+          : Promise.resolve({ roles: [], permissionCatalog: [] }),
+        getManagedAdminUsers(),
+        canInvite ? getAdminInvitations() : Promise.resolve([]),
+        canInvite ? getAdminAccessRemovals() : Promise.resolve([]),
+      ]);
     roles = roleData.roles;
     managedUsers = adminUsers;
     invitations = adminInvitations;

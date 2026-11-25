@@ -41,6 +41,7 @@ export default async function ProductDetailPage({
           variant={product.colorName}
           title={product.title}
           price={product.price}
+          currency={product.currency}
           rating={product.rating}
           reviewCount={product.reviewCount}
           description={product.description}

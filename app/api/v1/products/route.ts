@@ -1,51 +1,34 @@
-import { mockProducts20 } from "@/Data/mockProducts";
-import type { ProductCardDTO } from "@/types/product";
-import type { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@/generated/prisma/client";
+import { prisma } from "@/lib/prisma";
+import { adminProductInclude, toProductCardDTO } from "@/lib/product-data";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const queryGender = searchParams.get("gender");
-  const querySearch = searchParams.get("search");
-  const queryCategory = searchParams.get("category")
-
-
-  let products = mockProducts20;
-
-  if (queryGender) {
-    const allowedGenders = [queryGender.toLowerCase(), "unisex"];
-    products = products.filter((product) =>
-      allowedGenders.includes(product.gender.toLowerCase()),
-    );
-  }
-
-  if (querySearch) {
-    products = products.filter(
-      (product) =>
-        product.title.toLowerCase().includes(querySearch.toLowerCase()) ||
-        product.tags?.some((tag) =>
-          tag.toLowerCase().includes(querySearch.toLowerCase()),
-        ),
-    );
-  }
-
-  if (queryCategory) {
-    products = products.filter((product) => product.categoryName.toLowerCase().includes(queryCategory.toLowerCase()))
-  }
-
-  const mappedDTOs: ProductCardDTO[] = products.map((product) => ({
-    id: product.id,
-    title: product.title,
-    slug: product.slug,
-    price:  product.price,
-    multibuyPrice: product.multibuyPrice,
-    gender: product.gender,
-    imageSrc: product.imageSrc,
-    colorName: product.colorName,
-    isNew: product.isNew,
-    bestsellerRank: product.bestsellerRank,
-    sellingFastCount: product.sellingFastCount,
-    categoryName: product.categoryName,
-  }));
-
-  return Response.json(mappedDTOs);
+  const genderParam = searchParams.get("gender")?.toUpperCase();
+  const gender = ["MEN", "WOMEN", "UNISEX", "KIDS"].includes(genderParam ?? "") ? genderParam : undefined;
+  const query = searchParams.get("search")?.trim().slice(0, 100);
+  const category = searchParams.get("category")?.trim().slice(0, 100);
+  const clauses: Prisma.ProductWhereInput[] = [];
+  if (gender) clauses.push({ OR: [
+    { gender: gender as "MEN" | "WOMEN" | "UNISEX" | "KIDS" },
+    { gender: "UNISEX" },
+  ] });
+  if (query) clauses.push({ OR: [
+    { title: { contains: query, mode: "insensitive" } },
+    { slug: { contains: query, mode: "insensitive" } },
+    { tags: { has: query.toLowerCase() } },
+  ] });
+  const products = await prisma.product.findMany({
+    where: {
+      status: "PUBLISHED",
+      ...(category ? { category: { name: { contains: category, mode: "insensitive" } } } : {}),
+      ...(clauses.length ? { AND: clauses } : {}),
+    },
+    include: adminProductInclude,
+    orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+    take: 1000,
+  });
+  const response = products.map(toProductCardDTO);
+  return NextResponse.json(response, { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=120" } });
 }

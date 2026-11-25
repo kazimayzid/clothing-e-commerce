@@ -12,6 +12,7 @@ import DashboardOverview from "@/components/admin/dashboard/DashboardOverview";
 import AdminUsersManagement from "@/components/admin/management/AdminUsersManagement";
 import RolesPermissionsManagement from "@/components/admin/management/RolesPermissionsManagement";
 import AdminAuditLogs from "@/components/admin/management/AdminAuditLogs";
+import AdminProductsManagement from "@/components/admin/management/AdminProductsManagement";
 import type { AdminAccessRemovalSummary, AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
 import { getAdminPage, isAdminPageKey, type AdminPageKey } from "@/components/admin/admin-navigation";
 import { getAdminInitials } from "@/components/admin/admin-utils";
@@ -236,6 +237,13 @@ export default function AdminDashboardShell({
             />
           ) : activeView === "activity-logs" && isSuperAdmin ? (
             <AdminAuditLogs />
+          ) : activeView === "products" ? (
+            <AdminProductsManagement
+              canCreate={isSuperAdmin || permissionKeys.includes("products:create")}
+              canUpdate={isSuperAdmin || permissionKeys.includes("products:update")}
+              canArchive={isSuperAdmin || permissionKeys.includes("products:archive")}
+              canAdjustInventory={isSuperAdmin || permissionKeys.includes("inventory:adjust")}
+            />
           ) : (
             <AdminModulePlaceholder pageKey={activeView} />
           )}

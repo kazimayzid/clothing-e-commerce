@@ -15,6 +15,7 @@ interface ProductDetailsProps {
   variant: string;
   title: string;
   price: string;
+  currency?: string;
   originalPrice?: number;
   rating?: number;
   reviewCount?: number;
@@ -30,6 +31,7 @@ export default function ProductDetails({
   variant,
   title,
   price,
+  currency = "USD",
   originalPrice,
   rating,
   reviewCount,
@@ -61,6 +63,7 @@ export default function ProductDetails({
       <PricingBox
         numericOriginalPrice={numericOriginalPrice ?? 0}
         numericPrice={numericPrice}
+        currency={currency}
       />
       {/* Description */}
       <p className="text-neutral-600 text-sm leading-relaxed mb-4">
