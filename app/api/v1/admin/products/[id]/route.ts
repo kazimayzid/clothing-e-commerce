@@ -4,8 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { appendAdminAuditLog } from "@/lib/admin-audit";
 import { hasPermission, requireAdminApiPermission } from "@/lib/admin-access";
 import { adminProductInclude, toAdminProductDTO } from "@/lib/product-data";
-import { canSetVariantStock, updateProductSchema, slugifyProductName } from "@/lib/product-validation";
+import { canSetVariantStock, updateProductSchema } from "@/lib/product-validation";
 import { destroyProductImage } from "@/lib/cloudinary";
+import { isActiveCategoryPath } from "@/lib/category-tree";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -26,8 +27,6 @@ export async function PATCH(request: Request, { params }: Context) {
   if (!parsed.success) return NextResponse.json({ error: "Product changes are invalid.", fields: parsed.error.flatten().fieldErrors }, { status: 400 });
   const input = parsed.data;
   const mayAdjustInventory = hasPermission(authorization.context, "inventory:adjust");
-  const categorySlug = input.categoryName ? slugifyProductName(input.categoryName) : null;
-  if (input.categoryName && !categorySlug) return NextResponse.json({ error: "Category name must contain letters or numbers." }, { status: 400 });
 
   let removedImageIds: string[] = [];
   try {
@@ -46,14 +45,10 @@ export async function PATCH(request: Request, { params }: Context) {
       if (input.description !== undefined) data.description = input.description;
       if (input.detailsAndCare !== undefined) data.detailsAndCare = input.detailsAndCare;
       if (input.gender !== undefined) data.gender = input.gender;
-      if (input.categoryName !== undefined && categorySlug) {
-        const category = await tx.productCategory.upsert({
-          where: { slug: categorySlug },
-          update: { name: input.categoryName },
-          create: { name: input.categoryName, slug: categorySlug },
-          select: { id: true },
-        });
-        data.category = { connect: { id: category.id } };
+      if (input.categoryId !== undefined) {
+        const categoryRecords = await tx.productCategory.findMany({ select: { id: true, parentId: true, archivedAt: true, name: true, slug: true, description: true } });
+        if (!isActiveCategoryPath(input.categoryId, categoryRecords)) throw new Error("CATEGORY_INVALID");
+        data.category = { connect: { id: input.categoryId } };
       }
       if (input.price !== undefined) data.price = new Prisma.Decimal(input.price);
       if (input.multibuyPrice !== undefined) data.multibuyPrice = input.multibuyPrice ? new Prisma.Decimal(input.multibuyPrice) : null;
@@ -192,6 +187,7 @@ export async function PATCH(request: Request, { params }: Context) {
     if (error instanceof Error && error.message === "ARCHIVED_PRODUCT_REQUIRES_RESTORE") return NextResponse.json({ error: "Restore this product with products:archive permission before changing its status." }, { status: 409 });
     if (error instanceof Error && error.message === "INVENTORY_PERMISSION_REQUIRED") return NextResponse.json({ error: "Stock changes require inventory:adjust permission." }, { status: 403 });
     if (error instanceof Error && error.message === "IMAGE_OWNERSHIP_INVALID") return NextResponse.json({ error: "One or more uploaded images are invalid or do not belong to this product." }, { status: 400 });
+    if (error instanceof Error && error.message === "CATEGORY_INVALID") return NextResponse.json({ error: "Choose an existing category whose full parent path is active." }, { status: 400 });
     if (error instanceof Error && error.message === "PUBLISHED_PRODUCT_REQUIRES_IMAGE") return NextResponse.json({ error: "Published products require at least one image." }, { status: 400 });
     if (error instanceof Error && error.message === "INVALID_MULTIBUY_PRICE") return NextResponse.json({ error: "Multibuy price must be lower than the regular price." }, { status: 400 });
     if (error instanceof Error && error.message.startsWith("DUPLICATE_")) return NextResponse.json({ error: "Remove duplicate variants or images before saving." }, { status: 400 });
@@ -205,7 +201,7 @@ export async function PATCH(request: Request, { params }: Context) {
 function auditState(product: {
   title: string; slug: string; description: string; detailsAndCare: string[]; gender: string; price: Prisma.Decimal;
   multibuyPrice: Prisma.Decimal | null; currency: string; status: string; tags: string[];
-  isNew: boolean; bestsellerRank: number | null; category: { name: string };
+  isNew: boolean; bestsellerRank: number | null; category: { id: string; name: string };
   images: { id: string; secureUrl: string; isPrimary: boolean; sortOrder: number }[];
   variants: { id: string; sku: string | null; size: string | null; colorName: string | null; priceOverride: Prisma.Decimal | null; stockQuantity: number; isActive: boolean; images: { id: string; variantId: string | null; sortOrder: number; isPrimary: boolean }[] }[];
 }) {
@@ -213,7 +209,7 @@ function auditState(product: {
     title: product.title, slug: product.slug, description: product.description, detailsAndCare: product.detailsAndCare, gender: product.gender,
     price: product.price.toFixed(2), multibuyPrice: product.multibuyPrice?.toFixed(2) ?? null,
     currency: product.currency.trim(), status: product.status, tags: product.tags, isNew: product.isNew,
-    bestsellerRank: product.bestsellerRank, category: product.category.name,
+    bestsellerRank: product.bestsellerRank, category: { id: product.category.id, name: product.category.name },
     images: product.images.map(({ id, secureUrl, isPrimary, sortOrder }) => ({ id, secureUrl, isPrimary, sortOrder })),
     variants: product.variants.map(({ id, sku, size, colorName, priceOverride, stockQuantity, isActive, images }) => ({ id, sku, size, colorName, priceOverride: priceOverride?.toFixed(2) ?? null, stockQuantity, isActive, images: images.map(({ id: imageId, variantId, sortOrder, isPrimary }) => ({ id: imageId, variantId, sortOrder, isPrimary })) })),
   };

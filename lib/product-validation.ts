@@ -2,6 +2,16 @@ import { z } from "zod";
 
 const moneySchema = z.string().trim().regex(/^\d{1,8}(?:\.\d{1,2})?$/, "Enter a valid amount with up to two decimal places.");
 const slugSchema = z.string().trim().min(2).max(220).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers, and hyphens for the slug.");
+const categorySlugSchema = z.string().trim().min(2).max(120).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers, and hyphens for the category slug.");
+
+export const createProductCategorySchema = z.object({
+  name: z.string().trim().min(2).max(100),
+  slug: categorySlugSchema,
+  description: z.string().trim().max(5000).nullable().optional(),
+  parentId: z.string().uuid().nullable().optional(),
+});
+
+export const updateProductCategorySchema = createProductCategorySchema.partial();
 
 export const productImageInputSchema = z.object({
   id: z.string().uuid(),
@@ -29,7 +39,7 @@ const productFields = {
   description: z.string().trim().min(1).max(20_000),
   detailsAndCare: z.array(z.string().trim().min(1).max(300)).max(30),
   gender: z.enum(["MEN", "WOMEN", "UNISEX", "KIDS"]),
-  categoryName: z.string().trim().min(2).max(100),
+  categoryId: z.string().uuid(),
   price: moneySchema,
   multibuyPrice: moneySchema.nullable(),
   currency: z.enum(["GBP", "USD", "EUR", "BDT"]),

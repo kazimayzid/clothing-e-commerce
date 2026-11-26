@@ -32,6 +32,7 @@ export interface Product {
   gender: Gender;
   categoryId: string;
   categoryName: string;
+  categoryPath?: { id: string; name: string; slug: string }[];
   tags?: string[];
   relatedProductIds?: string[]; // Hand-picked recommendations
 

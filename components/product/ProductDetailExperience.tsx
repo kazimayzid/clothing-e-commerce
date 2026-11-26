@@ -11,34 +11,36 @@ const EMPTY_VARIANTS: ProductVariantOption[] = [];
 
 export default function ProductDetailExperience({ product }: { product: ProductDetailDTO }) {
   const [selectedVariantId, setSelectedVariantId] = useState(product.variants?.[0]?.id);
+  const [selectedColorName, setSelectedColorName] = useState(product.variants?.[0]?.colorName ?? undefined);
+  const [selectedSize, setSelectedSize] = useState(product.variants?.[0]?.size ?? undefined);
   const variants = product.variants ?? EMPTY_VARIANTS;
-  const selectedVariant = variants.find(({ id }) => id === selectedVariantId) ?? variants[0];
+  const selectedVariant = variants.find(({ id }) => id === selectedVariantId);
   const colors = useMemo(() => [...new Map(variants.filter(({ colorName }) => colorName).map((variant) => [variant.colorName!, {
     name: variant.colorName!,
     hexCode: variant.colorHex ?? "#808080",
   }])).values()], [variants]);
   const availableSizes = useMemo(() => [...new Set(variants.filter((variant) =>
-    variant.isActive && variant.colorName === selectedVariant?.colorName && variant.size,
-  ).map((variant) => variant.size!))], [variants, selectedVariant?.colorName]);
+    variant.isActive && variant.colorName === selectedColorName && variant.size,
+  ).map((variant) => variant.size!))], [variants, selectedColorName]);
   const commonImages = product.commonImages ?? product.images;
   const selectedImages = getVariantGallery(selectedVariant, commonImages);
-  const initialImageSrc = selectedVariant?.images.length
-    ? selectedVariant.primaryImageSrc ?? selectedVariant.images[0]
-    : product.commonPrimaryImageSrc ?? selectedImages[0];
+  const initialImageSrc = selectedVariant?.primaryImageSrc ?? selectedVariant?.images[0] ?? product.commonPrimaryImageSrc ?? selectedImages[0];
 
   function chooseColor(color: ColorOption) {
-    const next = selectColorVariant(variants, color.name, selectedVariant?.size ?? undefined);
-    if (next) setSelectedVariantId(next.id);
+    setSelectedColorName(color.name);
+    const next = selectColorVariant(variants, color.name, selectedSize);
+    setSelectedVariantId(next?.id);
   }
 
   function chooseSize(size: string) {
-    const next = selectSizeVariant(variants, size, selectedVariant?.colorName ?? undefined);
-    if (next) setSelectedVariantId(next.id);
+    setSelectedSize(size);
+    const next = selectSizeVariant(variants, size, selectedColorName);
+    setSelectedVariantId(next?.id);
   }
 
   return (
     <>
-      <ProductGallery key={selectedVariant?.id ?? "common-gallery"} images={selectedImages} title={product.title} initialImageSrc={initialImageSrc} />
+      <ProductGallery key={`${selectedImages.join("|")}:${initialImageSrc}`} images={selectedImages} title={product.title} initialImageSrc={initialImageSrc} />
       <ProductDetails
         id={product.id}
         slug={product.slug}
@@ -53,6 +55,9 @@ export default function ProductDetailExperience({ product }: { product: ProductD
         sizes={availableSizes.length ? availableSizes : product.sizes}
         variants={variants}
         selectedVariant={selectedVariant}
+        selectedColorName={selectedColorName}
+        selectedSize={selectedSize}
+        categoryPath={product.categoryPath ?? []}
         onSelectColor={chooseColor}
         onSelectSize={chooseSize}
       />

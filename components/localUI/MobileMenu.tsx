@@ -13,10 +13,7 @@ import {
 
 import Logo from "../shared/Logo";
 
-import {
-  NAV_ITEMS,
-  type NavItem,
-} from "@/Data/navItems";
+import type { NavItem } from "@/Data/navItems";
 
 // ---------------------------------
 // Props
@@ -153,7 +150,7 @@ function NestedMenuItem({
 // Mobile Menu
 // ---------------------------------
 
-export default function MobileMenu({ actions }: { actions?: ReactNode }) {
+export default function MobileMenu({ actions, items }: { actions?: ReactNode; items: NavItem[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
@@ -176,7 +173,8 @@ export default function MobileMenu({ actions }: { actions?: ReactNode }) {
   }, [isOpen]);
 
   useEffect(() => {
-    setIsOpen(false);
+    const timeout = window.setTimeout(() => setIsOpen(false), 0);
+    return () => window.clearTimeout(timeout);
   }, [pathname]);
 
   return (
@@ -245,7 +243,7 @@ export default function MobileMenu({ actions }: { actions?: ReactNode }) {
 
         <nav className="flex-1 overflow-y-auto px-4 py-5">
           <ul className="space-y-2">
-            {NAV_ITEMS.map((item) => {
+            {items.map((item) => {
               const Icon = item.icon;
 
               /*

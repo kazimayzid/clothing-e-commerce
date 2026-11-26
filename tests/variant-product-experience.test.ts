@@ -13,14 +13,14 @@ const variants: ProductVariantOption[] = [
 test("selecting a color resolves the matching size variant and its gallery, SKU, price, and stock", () => {
   const red = selectColorVariant(variants, "Red", "S");
   assert.equal(red?.id, "red-s");
-  assert.deepEqual(getVariantGallery(red, ["common.jpg"]), ["red-front.jpg", "red-back.jpg"]);
+  assert.deepEqual(getVariantGallery(red, ["common.jpg"]), ["common.jpg", "red-front.jpg", "red-back.jpg"]);
   assert.equal(red?.sku, "TEE-RED-S");
   assert.equal(getVariantUnitPrice("18.00", red?.price ?? null), "20.00");
   assert.equal(red?.stockQuantity, 3);
 
   const blue = selectColorVariant(variants, "Blue", "S");
   assert.equal(blue?.id, "blue-s");
-  assert.deepEqual(getVariantGallery(blue, ["common.jpg"]), ["blue-front.jpg"]);
+  assert.deepEqual(getVariantGallery(blue, ["common.jpg"]), ["common.jpg", "blue-front.jpg"]);
   assert.equal(blue?.sku, "TEE-BLUE-S");
   assert.equal(blue?.price, "22.00");
   assert.equal(blue?.stockQuantity, 0);
@@ -29,6 +29,11 @@ test("selecting a color resolves the matching size variant and its gallery, SKU,
 test("variant without images falls back to the common product gallery", () => {
   const variant = selectSizeVariant(variants, "M", "Blue");
   assert.deepEqual(getVariantGallery(variant, ["common-1.jpg", "common-2.jpg"]), ["common-1.jpg", "common-2.jpg"]);
+});
+
+test("variant selection never silently substitutes a different size or color", () => {
+  assert.equal(selectColorVariant(variants, "Red", "M"), undefined);
+  assert.equal(selectSizeVariant(variants, "M", "Red"), undefined);
 });
 
 test("cart quantity validation rejects inactive and insufficient-stock variants", () => {
@@ -45,7 +50,7 @@ test("cart lines keep different variants of one product separate", () => {
 test("published products can use variant images without common images", () => {
   const product = {
     title: "Linen Tee", slug: "linen-tee", description: "A tee", detailsAndCare: [], gender: "UNISEX",
-    categoryName: "Tops", price: "20.00", multibuyPrice: null, currency: "GBP", status: "PUBLISHED",
+    categoryId: "39b8ab31-bcb0-487c-a318-2a11e44ef318", price: "20.00", multibuyPrice: null, currency: "GBP", status: "PUBLISHED",
     tags: [], isNew: false, bestsellerRank: null, variants: [{ name: "Red", images: [{ id: "a1c044b3-2f40-49c2-8a61-fdad63882ac8" }], primaryImageId: "a1c044b3-2f40-49c2-8a61-fdad63882ac8" }],
     images: [], primaryImageId: null,
   };

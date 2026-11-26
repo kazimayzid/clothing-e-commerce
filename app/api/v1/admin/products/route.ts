@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { appendAdminAuditLog } from "@/lib/admin-audit";
 import { hasPermission, requireAdminApiPermission } from "@/lib/admin-access";
 import { adminProductInclude, toAdminProductDTO } from "@/lib/product-data";
-import { canSetVariantStock, createProductSchema, slugifyProductName } from "@/lib/product-validation";
+import { canSetVariantStock, createProductSchema } from "@/lib/product-validation";
+import { getDescendantCategoryIds, isActiveCategoryPath, resolveCategoryPath } from "@/lib/category-tree";
 import { z } from "zod";
 
 const listSchema = z.object({
@@ -27,6 +28,8 @@ export async function GET(request: Request) {
   const parsed = listSchema.safeParse(Object.fromEntries(searchParams));
   if (!parsed.success) return NextResponse.json({ error: "Product filters are invalid." }, { status: 400 });
   const filters = parsed.data;
+  const categoryRecords = filters.category ? await prisma.productCategory.findMany({ select: { id: true, name: true, slug: true, description: true, parentId: true, archivedAt: true } }) : [];
+  const categoryIds = filters.category ? getDescendantCategoryIds(filters.category, categoryRecords).filter((id) => isActiveCategoryPath(id, categoryRecords)) : [];
   if (filters.minPrice && filters.maxPrice && new Prisma.Decimal(filters.minPrice).gt(filters.maxPrice)) {
     return NextResponse.json({ error: "Minimum price cannot exceed maximum price." }, { status: 400 });
   }
@@ -37,7 +40,7 @@ export async function GET(request: Request) {
       : undefined;
   const where: Prisma.ProductWhereInput = {
     ...(filters.status !== "ALL" ? { status: filters.status } : {}),
-    ...(filters.category ? { categoryId: filters.category } : {}),
+    ...(filters.category ? { categoryId: { in: categoryIds } } : {}),
     ...(filters.q ? { OR: [
       { title: { contains: filters.q, mode: "insensitive" } },
       { slug: { contains: filters.q, mode: "insensitive" } },
@@ -58,7 +61,7 @@ export async function GET(request: Request) {
   const [products, total, categories, totalProducts, activeProducts, draftProducts, archivedProducts, outOfStockProducts] = await Promise.all([
     prisma.product.findMany({ where, include: adminProductInclude, orderBy, skip: (filters.page - 1) * filters.pageSize, take: filters.pageSize }),
     prisma.product.count({ where }),
-    prisma.productCategory.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } }),
+    prisma.productCategory.findMany({ select: { id: true, name: true, slug: true, description: true, parentId: true, archivedAt: true }, orderBy: { name: "asc" } }),
     prisma.product.count(),
     prisma.product.count({ where: { status: "PUBLISHED" } }),
     prisma.product.count({ where: { status: "DRAFT" } }),
@@ -68,7 +71,7 @@ export async function GET(request: Request) {
 
   return NextResponse.json({
     products: products.map(toAdminProductDTO),
-    categories,
+    categories: categories.filter(({ id }) => isActiveCategoryPath(id, categories)).map((category) => ({ ...category, path: resolveCategoryPath(category.id, categories) ?? [] })),
     pagination: { page: filters.page, pageSize: filters.pageSize, total, totalPages: Math.ceil(total / filters.pageSize) },
     stats: { total: totalProducts, active: activeProducts, drafts: draftProducts, archived: archivedProducts, outOfStock: outOfStockProducts },
   }, { headers: { "Cache-Control": "private, no-store" } });
@@ -84,8 +87,6 @@ export async function POST(request: Request) {
   if (input.variants.some(({ stockQuantity }) => !canSetVariantStock(mayAdjustInventory, stockQuantity))) {
     return NextResponse.json({ error: "Initial stock requires inventory:adjust permission." }, { status: 403 });
   }
-  const categorySlug = slugifyProductName(input.categoryName);
-  if (!categorySlug) return NextResponse.json({ error: "Category name must contain letters or numbers." }, { status: 400 });
   const allImages = [...input.images, ...input.variants.flatMap(({ images }) => images ?? [])];
   const imageIds = [...new Set(allImages.map(({ id }) => id))];
   if (imageIds.length !== allImages.length) return NextResponse.json({ error: "An image cannot be assigned to more than one gallery." }, { status: 400 });
@@ -93,17 +94,13 @@ export async function POST(request: Request) {
 
   try {
     const product = await prisma.$transaction(async (tx) => {
+      const categoryRecords = await tx.productCategory.findMany({ select: { id: true, parentId: true, archivedAt: true, name: true, slug: true, description: true } });
+      if (!isActiveCategoryPath(input.categoryId, categoryRecords)) throw new Error("CATEGORY_INVALID");
       const stagedImages = imageIds.length ? await tx.productImage.findMany({
         where: { id: { in: imageIds }, productId: null, uploadedById: authorization.context.userId, deletedAt: null },
         select: { id: true },
       }) : [];
       if (stagedImages.length !== imageIds.length) throw new Error("IMAGE_OWNERSHIP_INVALID");
-      const category = await tx.productCategory.upsert({
-        where: { slug: categorySlug },
-        update: { name: input.categoryName },
-        create: { name: input.categoryName, slug: categorySlug },
-        select: { id: true },
-      });
       const created = await tx.product.create({
         data: {
           title: input.title,
@@ -111,7 +108,7 @@ export async function POST(request: Request) {
           description: input.description,
           detailsAndCare: input.detailsAndCare,
           gender: input.gender,
-          categoryId: category.id,
+          categoryId: input.categoryId,
           price: new Prisma.Decimal(input.price),
           multibuyPrice: input.multibuyPrice ? new Prisma.Decimal(input.multibuyPrice) : null,
           currency: input.currency,
@@ -175,6 +172,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ product: toAdminProductDTO(product) }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     if (error instanceof Error && error.message === "IMAGE_OWNERSHIP_INVALID") return NextResponse.json({ error: "One or more uploaded images are invalid or no longer available." }, { status: 400 });
+    if (error instanceof Error && error.message === "CATEGORY_INVALID") return NextResponse.json({ error: "Choose an existing category whose full parent path is active." }, { status: 400 });
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return NextResponse.json({ error: "A product with this slug or SKU already exists." }, { status: 409 });
     console.error("Product creation failed", error);
     return NextResponse.json({ error: "Could not create the product." }, { status: 500 });

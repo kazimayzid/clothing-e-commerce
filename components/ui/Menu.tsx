@@ -5,19 +5,19 @@ import { usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
-import { NAV_ITEMS, type NavItem } from "@/Data/navItems";
+import type { NavItem } from "@/Data/navItems";
 
 // ---------------------------------
 // Navbar
 // ---------------------------------
 
-export default function Navbar() {
+export default function Navbar({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 
   return (
     <nav className="hidden items-center md:flex">
       <ul className="flex items-center gap-6">
-        {NAV_ITEMS.map((item) => (
+        {items.map((item) => (
           <DesktopNavItem
             key={item.label}
             item={item}
@@ -176,19 +176,7 @@ function DesktopDropdownItem({
 
       {hasChildren && isOpen && (
         <div className="absolute top-0 left-full ml-1 min-w-[170px] border border-neutral-200 bg-white p-2 shadow-lg">
-          {item.children?.map((child) => (
-            <Link
-              key={child.label}
-              href={child.href ?? "#"}
-              className={`block px-3 py-2.5 text-xs font-medium transition-colors ${
-                pathname === child.href
-                  ? "text-black"
-                  : "text-neutral-600 hover:bg-neutral-50 hover:text-black"
-              }`}
-            >
-              {child.label}
-            </Link>
-          ))}
+          {item.children?.map((child) => <DesktopDropdownItem key={child.label} item={child} pathname={pathname} />)}
         </div>
       )}
     </div>

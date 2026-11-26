@@ -46,7 +46,7 @@ export default function ProductCard({
     imageSrc,
     isNew = false,
     bestsellerRank,
-    categoryName = 'Polos',
+    categoryName,
     sellingFastCount = 0,
     colorCount = 0,
   } = product;
@@ -120,10 +120,7 @@ export default function ProductCard({
             <Award className="h-4 w-4 fill-[#a88238]/15 stroke-[1.75]" />
 
             <span>
-              Top {bestsellerRank} Bestseller{' '}
-              <span className="font-normal text-neutral-500">
-                in {categoryName}
-              </span>
+              Top {bestsellerRank} Bestseller{categoryName && <span className="font-normal text-neutral-500"> in {categoryName}</span>}
             </span>
           </div>
         )}

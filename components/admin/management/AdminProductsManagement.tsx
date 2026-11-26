@@ -7,8 +7,9 @@ import { toast } from "sonner";
 import AdminDialog from "@/components/admin/management/AdminDialog";
 import AdminModuleSkeleton from "@/components/admin/AdminModuleSkeleton";
 import AdminProductEditorDialog, { type AdminProductDTO, type ProductSaveInput } from "@/components/admin/management/AdminProductEditorDialog";
+import AdminProductCategoriesManagement from "@/components/admin/management/AdminProductCategoriesManagement";
 
-type Category = { id: string; name: string; slug: string };
+type Category = { id: string; name: string; slug: string; parentId: string | null; path: { name: string }[] };
 type CatalogResponse = {
   products: AdminProductDTO[];
   categories: Category[];
@@ -26,6 +27,7 @@ type Props = {
 const money = (amount: string, currency: string) => new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(Number(amount));
 
 export default function AdminProductsManagement({ canCreate, canUpdate, canArchive, canAdjustInventory }: Props) {
+  const [activeTab, setActiveTab] = useState<"products" | "categories">("products");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("ALL");
@@ -114,9 +116,12 @@ export default function AdminProductsManagement({ canCreate, canUpdate, canArchi
   }
 
   if (loading && !catalog) return <AdminModuleSkeleton pageKey="products" />;
+  const categoryOptions = (catalog?.categories ?? []).map((entry) => ({ id: entry.id, label: entry.path.map(({ name }) => name).join(" / ") }));
 
   return (
     <div className="space-y-5">
+      <div className="flex gap-2 border-b border-stone-200"><button type="button" onClick={() => setActiveTab("products")} className={`px-3 py-2 text-xs ${activeTab === "products" ? "border-b-2 border-stone-900 font-semibold text-stone-900" : "text-stone-500"}`}>Products</button><button type="button" onClick={() => setActiveTab("categories")} className={`px-3 py-2 text-xs ${activeTab === "categories" ? "border-b-2 border-stone-900 font-semibold text-stone-900" : "text-stone-500"}`}>Categories</button></div>
+      {activeTab === "categories" ? <AdminProductCategoriesManagement canCreate={canCreate} canUpdate={canUpdate} canArchive={canArchive} /> : <>
       <section aria-label="Product statistics" className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         <Stat label="Total products" value={catalog?.stats.total ?? 0} />
         <Stat label="Published" value={catalog?.stats.active ?? 0} />
@@ -133,7 +138,7 @@ export default function AdminProductsManagement({ canCreate, canUpdate, canArchi
           </div>
           <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
             <label className="relative"><span className="sr-only">Search products</span><Search className="absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-stone-400" /><input value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} placeholder="Search name, SKU, or slug" className="h-9 w-full rounded-md border border-stone-200 pl-9 pr-3 text-xs outline-none focus:border-stone-500" /></label>
-            <select aria-label="Filter by category" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} className="h-9 rounded-md border border-stone-200 px-3 text-xs"><option value="">All categories</option>{catalog?.categories.map((entry) => <option key={entry.id} value={entry.id}>{entry.name}</option>)}</select>
+            <select aria-label="Filter by category" value={category} onChange={(event) => { setCategory(event.target.value); setPage(1); }} className="h-9 rounded-md border border-stone-200 px-3 text-xs"><option value="">All categories</option>{catalog?.categories.map((entry) => <option key={entry.id} value={entry.id}>{entry.path.map(({ name }) => name).join(" / ")}</option>)}</select>
             <select aria-label="Filter by status" value={status} onChange={(event) => { setStatus(event.target.value); setPage(1); }} className="h-9 rounded-md border border-stone-200 px-3 text-xs"><option value="ALL">All statuses</option><option value="PUBLISHED">Published</option><option value="DRAFT">Draft</option><option value="ARCHIVED">Archived</option></select>
             <select aria-label="Filter stock availability" value={availability} onChange={(event) => { setAvailability(event.target.value); setPage(1); }} className="h-9 rounded-md border border-stone-200 px-3 text-xs"><option value="">Any availability</option><option value="IN_STOCK">In stock</option><option value="OUT_OF_STOCK">Out of stock</option></select>
           </div>
@@ -173,8 +178,9 @@ export default function AdminProductsManagement({ canCreate, canUpdate, canArchi
         <div className="flex flex-col gap-2 border-t border-stone-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"><p className="text-[10px] text-stone-500">Page {catalog?.pagination.page ?? 1} of {Math.max(1, catalog?.pagination.totalPages ?? 1)} · {catalog?.pagination.total ?? 0} products</p><div className="flex gap-2"><button type="button" disabled={page <= 1 || loading} onClick={() => setPage((current) => Math.max(1, current - 1))} className="h-8 rounded border border-stone-200 px-3 text-[10px] disabled:opacity-40">Previous</button><button type="button" disabled={page >= (catalog?.pagination.totalPages ?? 1) || loading} onClick={() => setPage((current) => current + 1)} className="h-8 rounded border border-stone-200 px-3 text-[10px] disabled:opacity-40">Next</button></div></div>
       </section>
 
-      {editingProduct !== undefined && <AdminProductEditorDialog product={editingProduct} canAdjustInventory={canAdjustInventory} onClose={() => setEditingProduct(undefined)} onSave={saveProduct} />}
+      {editingProduct !== undefined && <AdminProductEditorDialog product={editingProduct} categories={categoryOptions} canAdjustInventory={canAdjustInventory} onClose={() => setEditingProduct(undefined)} onSave={saveProduct} />}
       {detailsProduct && <ProductDetailsDialog product={detailsProduct} onClose={() => setDetailsProduct(null)} />}
+      </>}
     </div>
   );
 }

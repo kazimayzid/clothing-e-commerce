@@ -57,7 +57,7 @@ export type ProductSaveInput = {
   description: string;
   detailsAndCare: string[];
   gender: "MEN" | "WOMEN" | "UNISEX" | "KIDS";
-  categoryName: string;
+  categoryId: string;
   price: string;
   multibuyPrice: string | null;
   currency: "GBP" | "USD" | "EUR" | "BDT";
@@ -72,6 +72,7 @@ export type ProductSaveInput = {
 
 type Props = {
   product: AdminProductDTO | null;
+  categories: { id: string; label: string }[];
   canAdjustInventory: boolean;
   onClose: () => void;
   onSave: (payload: ProductSaveInput) => Promise<void>;
@@ -90,14 +91,14 @@ const emptyVariant = (index: number): ProductVariantDraft => ({
   primaryImageId: null,
 });
 
-export default function AdminProductEditorDialog({ product, canAdjustInventory, onClose, onSave }: Props) {
+export default function AdminProductEditorDialog({ product, categories, canAdjustInventory, onClose, onSave }: Props) {
   const [title, setTitle] = useState(product?.title ?? "");
   const [slug, setSlug] = useState(product?.slug ?? "");
   const [slugEdited, setSlugEdited] = useState(Boolean(product));
   const [description, setDescription] = useState(product?.description ?? "");
   const [detailsText, setDetailsText] = useState(product?.detailsAndCare.join("\n") ?? "");
   const [gender, setGender] = useState<ProductSaveInput["gender"]>(product?.gender ?? "UNISEX");
-  const [categoryName, setCategoryName] = useState(product?.category.name ?? "");
+  const [categoryId, setCategoryId] = useState(product?.category.id ?? "");
   const [price, setPrice] = useState(product?.price ?? "");
   const [multibuyPrice, setMultibuyPrice] = useState(product?.multibuyPrice ?? "");
   const [currency, setCurrency] = useState<ProductSaveInput["currency"]>((product?.currency as ProductSaveInput["currency"]) ?? "GBP");
@@ -235,7 +236,7 @@ export default function AdminProductEditorDialog({ product, canAdjustInventory, 
       description: description.trim(),
       detailsAndCare: detailsText.split("\n").map((value) => value.trim()).filter(Boolean),
       gender,
-      categoryName: categoryName.trim(),
+      categoryId,
       price: price.trim(),
       multibuyPrice: multibuyPrice.trim() || null,
       currency,
@@ -268,7 +269,7 @@ export default function AdminProductEditorDialog({ product, canAdjustInventory, 
           <div className="grid gap-3 sm:grid-cols-2">
             <Field label="Product name *"><input required minLength={2} maxLength={200} value={title} onChange={(event) => { const next = event.target.value; setTitle(next); if (!slugEdited) setSlug(next.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")); }} className={inputClass} /></Field>
             <Field label="Slug *"><input required pattern="[a-z0-9]+(-[a-z0-9]+)*" maxLength={220} value={slug} onChange={(event) => { setSlug(event.target.value); setSlugEdited(true); }} className={inputClass} /></Field>
-            <Field label="Category *"><input required minLength={2} maxLength={100} value={categoryName} onChange={(event) => setCategoryName(event.target.value)} placeholder="e.g. Polos" className={inputClass} /></Field>
+            <Field label="Category *"><select required value={categoryId} onChange={(event) => setCategoryId(event.target.value)} className={inputClass}><option value="">Choose category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.label}</option>)}</select></Field>
             <Field label="Gender"><select value={gender} onChange={(event) => setGender(event.target.value as ProductSaveInput["gender"])} className={inputClass}><option value="UNISEX">Unisex</option><option value="MEN">Men</option><option value="WOMEN">Women</option><option value="KIDS">Kids</option></select></Field>
           </div>
           <Field label="Description *"><textarea required maxLength={20000} rows={4} value={description} onChange={(event) => setDescription(event.target.value)} className={`${inputClass} h-auto py-2`} /></Field>

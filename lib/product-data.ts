@@ -58,7 +58,7 @@ function currencyAmount(value: Prisma.Decimal, currency: string) {
   return new Intl.NumberFormat("en-GB", { style: "currency", currency: currency.trim() }).format(Number(value.toFixed(2)));
 }
 
-export function toStorefrontProduct(product: AdminProductRecord): Product {
+export function toStorefrontProduct(product: AdminProductRecord, categoryPath?: Product["categoryPath"]): Product {
   const colors = [...new Map(product.variants.filter((variant) => variant.isActive && variant.colorName).map((variant) => [variant.colorName, {
     name: variant.colorName!,
     hexCode: variant.colorHex ?? "#808080",
@@ -66,7 +66,7 @@ export function toStorefrontProduct(product: AdminProductRecord): Product {
   const sizes = [...new Set(product.variants.filter(({ isActive, size }) => isActive && size).map(({ size }) => size!))];
   const commonImages = product.images.filter(({ variantId }) => variantId === null);
   const firstVariant = product.variants.find(({ isActive }) => isActive);
-  const initialGallery = firstVariant?.images.length ? firstVariant.images : commonImages;
+  const initialGallery = commonImages.length ? commonImages : firstVariant?.images ?? [];
   const images = initialGallery.map(({ secureUrl }) => secureUrl);
   const primaryImage = initialGallery.find(({ isPrimary }) => isPrimary) ?? initialGallery[0];
   return {
@@ -79,6 +79,7 @@ export function toStorefrontProduct(product: AdminProductRecord): Product {
     gender: product.gender.toLowerCase() as Product["gender"],
     categoryId: product.categoryId,
     categoryName: product.category.name,
+    categoryPath,
     tags: product.tags,
     imageSrc: primaryImage?.secureUrl ?? "",
     images,

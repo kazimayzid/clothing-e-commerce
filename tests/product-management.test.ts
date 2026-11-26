@@ -14,7 +14,7 @@ const validProduct = {
   description: "A breathable shirt.",
   detailsAndCare: ["Wash at 30 degrees"],
   gender: "MEN",
-  categoryName: "Shirts",
+  categoryId: "39b8ab31-bcb0-487c-a318-2a11e44ef318",
   price: "59.90",
   multibuyPrice: "39.00",
   currency: "GBP",
