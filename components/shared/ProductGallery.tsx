@@ -7,14 +7,16 @@ interface ProductGalleryProps {
   images?: string[];
   title: string;
   discount?: string;
+  initialImageSrc?: string;
 }
 
 export default function ProductGallery({
   images = [],
   title,
   discount,
+  initialImageSrc,
 }: ProductGalleryProps) {
-  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [selectedIdx, setSelectedIdx] = useState(() => Math.max(0, images.indexOf(initialImageSrc ?? "")));
 
   // কোনো image না থাকলে
   if (images.length === 0) {

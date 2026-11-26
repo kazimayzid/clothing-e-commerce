@@ -2,23 +2,35 @@
 
 import { useRouter } from "next/navigation";
 import Button from "../shared/Button";
-import { saveCartItem, type StoredCartEntry } from "@/contexts/actionStorage";
+import { validateAndSaveProductVariant, type StoredCartEntry } from "@/contexts/actionStorage";
+import { useState } from "react";
+import { toast } from "sonner";
 
-export default function BuyNow({ item }: { item: StoredCartEntry }) {
+export default function BuyNow({ item, available }: { item: StoredCartEntry; available: boolean }) {
   const router = useRouter();
+  const [busy, setBusy] = useState(false);
 
-  const handleBuyNow = () => {
-    saveCartItem(item);
-    router.push("/cart");
+  const handleBuyNow = async () => {
+    if (!available || busy) return;
+    setBusy(true);
+    try {
+      await validateAndSaveProductVariant(item);
+      router.push("/cart");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not verify this product option.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
     <Button
       type="button"
-      onClick={handleBuyNow}
-      className="bg-amber-400 hover:bg-amber-300 text-black border border-amber-500 cursor-pointer"
+      onClick={() => void handleBuyNow()}
+      disabled={!available || busy}
+      className="bg-amber-400 text-black border border-amber-500 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-50"
     >
-      Buy Now with 1-Click
+      {!available ? "Unavailable" : busy ? "Checking stock…" : "Buy Now with 1-Click"}
     </Button>
   );
 }

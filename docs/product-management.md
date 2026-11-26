@@ -28,3 +28,11 @@ Do not use `migrate reset` or `db push --force-reset`. No migration has been app
 After migration, create a product in **Admin → Products**. Draft products stay out of the storefront. Publishing requires at least one image. The public product APIs read only `PUBLISHED` database products; the old mock module is no longer referenced by those APIs or storefront services.
 
 The current Prisma schema has no Order or OrderItem models. Product mutations therefore do not rewrite historical database order rows; a historical order snapshot system still needs to be designed before adding product-to-order relations.
+
+## Variant-specific product images
+
+The additive migration `20261126100000_variant_specific_product_images` adds nullable `variant_id` to `product_images`. Existing images keep `variant_id = NULL` and remain common product gallery images. The existing Cloudinary upload route is reused; the authenticated product create/update routes validate ownership before attaching a staged image to a product variant.
+
+Review this migration and apply it after the original product catalog migration through the normal deployment process. It has not been applied. Product detail selections then load that variant's ordered gallery, with the common gallery as fallback. Cart additions and quantity increases are revalidated against the published product, active variant, current database price, and stock through `/api/v1/cart/validate`.
+
+The cart remains browser-persisted and this route checks stock at add/update time; it does not reserve inventory. The project still has no checkout/order persistence, so checkout must revalidate price and inventory before accepting payment.

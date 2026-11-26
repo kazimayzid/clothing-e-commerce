@@ -86,8 +86,9 @@ export async function POST(request: Request) {
   }
   const categorySlug = slugifyProductName(input.categoryName);
   if (!categorySlug) return NextResponse.json({ error: "Category name must contain letters or numbers." }, { status: 400 });
-  const imageIds = [...new Set(input.images.map(({ id }) => id))];
-  if (imageIds.length !== input.images.length) return NextResponse.json({ error: "An image was selected more than once." }, { status: 400 });
+  const allImages = [...input.images, ...input.variants.flatMap(({ images }) => images ?? [])];
+  const imageIds = [...new Set(allImages.map(({ id }) => id))];
+  if (imageIds.length !== allImages.length) return NextResponse.json({ error: "An image cannot be assigned to more than one gallery." }, { status: 400 });
   const primaryImageId = input.primaryImageId ?? imageIds[0] ?? null;
 
   try {
@@ -119,7 +120,22 @@ export async function POST(request: Request) {
           isNew: input.isNew,
           bestsellerRank: input.bestsellerRank,
           createdById: authorization.context.userId,
-          variants: { create: input.variants.map((variant) => ({
+        },
+        select: { id: true, title: true, slug: true, status: true, price: true, currency: true },
+      });
+      for (const [sortOrder, image] of input.images.entries()) {
+        await tx.productImage.update({ where: { id: image.id }, data: {
+          productId: created.id,
+          variantId: null,
+          sortOrder,
+          isPrimary: image.id === primaryImageId,
+          altText: image.altText || input.title,
+        } });
+      }
+      for (const variant of input.variants) {
+        const createdVariant = await tx.productVariant.create({
+          data: {
+            productId: created.id,
             name: variant.name,
             sku: variant.sku?.trim().toUpperCase() || null,
             size: variant.size || null,
@@ -128,17 +144,18 @@ export async function POST(request: Request) {
             priceOverride: variant.priceOverride ? new Prisma.Decimal(variant.priceOverride) : null,
             stockQuantity: mayAdjustInventory ? variant.stockQuantity ?? 0 : 0,
             isActive: variant.isActive ?? true,
-          })) },
-        },
-        select: { id: true, title: true, slug: true, status: true, price: true, currency: true },
-      });
-      for (const [sortOrder, image] of input.images.entries()) {
-        await tx.productImage.update({ where: { id: image.id }, data: {
-          productId: created.id,
-          sortOrder,
-          isPrimary: image.id === primaryImageId,
-          altText: image.altText || input.title,
-        } });
+          },
+          select: { id: true },
+        });
+        for (const [sortOrder, image] of (variant.images ?? []).entries()) {
+          await tx.productImage.update({ where: { id: image.id }, data: {
+            productId: created.id,
+            variantId: createdVariant.id,
+            sortOrder,
+            isPrimary: image.id === (variant.primaryImageId ?? variant.images?.[0]?.id),
+            altText: image.altText || `${input.title} ${variant.colorName || variant.name}`,
+          } });
+        }
       }
       await appendAdminAuditLog(tx, {
         actor: authorization.context,

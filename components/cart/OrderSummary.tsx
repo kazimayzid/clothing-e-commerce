@@ -6,12 +6,19 @@ import { useState } from "react";
 
 export default function OrderSummary({items}: {items: CartItem[]}) {
      const [email, setEmail] = useState("");
-    const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+    const subtotals = new Map<string, number>();
+    for (const item of items) {
+      const currency = item.currency ?? "GBP";
+      subtotals.set(currency, (subtotals.get(currency) ?? 0) + item.price * item.quantity);
+    }
+    const subtotalLabel = [...subtotals].map(([currency, amount]) =>
+      new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(amount),
+    ).join(" + ") || new Intl.NumberFormat("en-GB", { style: "currency", currency: "GBP" }).format(0);
       const handleCheckoutSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
     // Route to checkout or trigger your payment flow
-    console.log("Proceeding to checkout with:", { email, items, subtotal });
+    console.log("Proceeding to checkout with:", { email, items, subtotal: subtotalLabel });
   };
     
     return (
@@ -22,7 +29,7 @@ export default function OrderSummary({items}: {items: CartItem[]}) {
           <div className="flex flex-col gap-3 text-sm text-neutral-800 border-b border-neutral-200 pb-6 mb-6">
             <div className="flex justify-between">
               <span className="text-neutral-500">Subtotal</span>
-              <span className="font-medium">${subtotal.toFixed(2)}</span>
+              <span className="font-medium">{subtotalLabel}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-neutral-500">Shipping</span>
@@ -39,7 +46,7 @@ export default function OrderSummary({items}: {items: CartItem[]}) {
               Total
             </span>
             <span className="font-serif text-2xl font-bold text-neutral-900">
-              ${subtotal.toFixed(2)}
+              {subtotalLabel}
             </span>
           </div>
 

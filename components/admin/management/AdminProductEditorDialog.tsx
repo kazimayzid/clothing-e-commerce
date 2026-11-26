@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ImagePlus, LoaderCircle, Plus, Star, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ImagePlus, LoaderCircle, Plus, Star, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import AdminDialog from "@/components/admin/management/AdminDialog";
 
@@ -24,6 +24,8 @@ export type ProductVariantDraft = {
   priceOverride: string | null;
   stockQuantity: number;
   isActive?: boolean;
+  images?: ProductImageDraft[];
+  primaryImageId?: string | null;
 };
 
 export type AdminProductDTO = {
@@ -84,6 +86,8 @@ const emptyVariant = (index: number): ProductVariantDraft => ({
   priceOverride: null,
   stockQuantity: 0,
   isActive: true,
+  images: [],
+  primaryImageId: null,
 });
 
 export default function AdminProductEditorDialog({ product, canAdjustInventory, onClose, onSave }: Props) {
@@ -124,10 +128,11 @@ export default function AdminProductEditorDialog({ product, canAdjustInventory, 
     setVariants((current) => current.map((variant, variantIndex) => variantIndex === index ? { ...variant, [key]: value } : variant));
   }
 
-  async function uploadFiles(files: FileList | null) {
+  async function uploadFiles(files: FileList | null, targetVariantIndex?: number) {
     if (!files?.length) return;
-    if (images.length + files.length > 12) {
-      toast.error("A product can have up to 12 images.");
+    const currentImageCount = targetVariantIndex === undefined ? images.length : variants[targetVariantIndex]?.images?.length ?? 0;
+    if (currentImageCount + files.length > 12) {
+      toast.error("A gallery can have up to 12 images.");
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
@@ -140,10 +145,19 @@ export default function AdminProductEditorDialog({ product, canAdjustInventory, 
         const response = await fetch("/api/v1/admin/products/images", { method: "POST", body: form });
         const data = await response.json();
         if (!response.ok) throw new Error(data.error || "Image upload failed.");
-        const uploaded: ProductImageDraft = { ...data.image, altText: title || null, sortOrder: images.length, isPrimary: images.length === 0 };
+        const targetImages = targetVariantIndex === undefined ? images : variants[targetVariantIndex]?.images ?? [];
+        const uploaded: ProductImageDraft = { ...data.image, altText: title || null, sortOrder: targetImages.length, isPrimary: targetImages.length === 0 };
         uploadedIds.current.push(uploaded.id);
-        setImages((current) => [...current, { ...uploaded, sortOrder: current.length, isPrimary: current.length === 0 }]);
-        setPrimaryImageId((current) => current ?? uploaded.id);
+        if (targetVariantIndex === undefined) {
+          setImages((current) => [...current, { ...uploaded, sortOrder: current.length, isPrimary: current.length === 0 }]);
+          setPrimaryImageId((current) => current ?? uploaded.id);
+        } else {
+          setVariants((current) => current.map((variant, index) => index === targetVariantIndex ? {
+            ...variant,
+            images: [...(variant.images ?? []), { ...uploaded, sortOrder: (variant.images ?? []).length, isPrimary: (variant.images ?? []).length === 0 }],
+            primaryImageId: variant.primaryImageId ?? uploaded.id,
+          } : variant));
+        }
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Image upload failed.";
@@ -155,7 +169,7 @@ export default function AdminProductEditorDialog({ product, canAdjustInventory, 
     }
   }
 
-  async function removeImage(image: ProductImageDraft) {
+  async function removeImage(image: ProductImageDraft, targetVariantIndex?: number) {
     if (uploadedIds.current.includes(image.id)) {
       const response = await fetch(`/api/v1/admin/products/images/${image.id}`, { method: "DELETE" });
       const data = await response.json();
@@ -165,9 +179,44 @@ export default function AdminProductEditorDialog({ product, canAdjustInventory, 
       }
       uploadedIds.current = uploadedIds.current.filter((id) => id !== image.id);
     }
-    const nextImages = images.filter(({ id }) => id !== image.id).map((entry, index) => ({ ...entry, sortOrder: index }));
-    setImages(nextImages);
-    if (primaryImageId === image.id) setPrimaryImageId(nextImages[0]?.id ?? null);
+    if (targetVariantIndex === undefined) {
+      const nextImages = images.filter(({ id }) => id !== image.id).map((entry, index) => ({ ...entry, sortOrder: index }));
+      setImages(nextImages);
+      if (primaryImageId === image.id) setPrimaryImageId(nextImages[0]?.id ?? null);
+    } else {
+      setVariants((current) => current.map((variant, index) => {
+        if (index !== targetVariantIndex) return variant;
+        const nextImages = (variant.images ?? []).filter(({ id }) => id !== image.id).map((entry, sortOrder) => ({ ...entry, sortOrder, isPrimary: sortOrder === 0 && variant.primaryImageId === image.id }));
+        const nextPrimaryImageId = variant.primaryImageId === image.id ? nextImages[0]?.id ?? null : variant.primaryImageId;
+        return { ...variant, images: nextImages.map((entry) => ({ ...entry, isPrimary: entry.id === nextPrimaryImageId })), primaryImageId: nextPrimaryImageId };
+      }));
+    }
+  }
+
+  async function removeVariant(index: number) {
+    const variant = variants[index];
+    const stagedIds = (variant?.images ?? []).map(({ id }) => id).filter((id) => uploadedIds.current.includes(id));
+    for (const id of stagedIds) {
+      const response = await fetch(`/api/v1/admin/products/images/${id}`, { method: "DELETE" });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null) as { error?: string } | null;
+        toast.error(data?.error ?? "Could not clean up this variant's staged image.");
+        return;
+      }
+    }
+    uploadedIds.current = uploadedIds.current.filter((id) => !stagedIds.includes(id));
+    setVariants((current) => current.filter((_, variantIndex) => variantIndex !== index));
+  }
+
+  function moveVariantImage(variantIndex: number, imageIndex: number, delta: -1 | 1) {
+    setVariants((current) => current.map((variant, index) => {
+      if (index !== variantIndex) return variant;
+      const next = [...(variant.images ?? [])];
+      const targetIndex = imageIndex + delta;
+      if (targetIndex < 0 || targetIndex >= next.length) return variant;
+      [next[imageIndex], next[targetIndex]] = [next[targetIndex], next[imageIndex]];
+      return { ...variant, images: next.map((image, sortOrder) => ({ ...image, sortOrder })) };
+    }));
   }
 
   function closeDialog() {
@@ -256,7 +305,7 @@ export default function AdminProductEditorDialog({ product, canAdjustInventory, 
 
         <section className="space-y-4 border-t border-stone-100 pt-5">
           <div className="flex items-center justify-between"><div><h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-stone-500">Variants & stock</h3><p className="mt-1 text-[11px] text-stone-400">Stock quantities require inventory:adjust permission.</p></div><button type="button" onClick={() => setVariants((current) => [...current, emptyVariant(current.length)])} className="inline-flex h-8 items-center gap-1.5 rounded-md border border-stone-200 px-2.5 text-[10px] font-medium text-stone-700"><Plus className="size-3.5" /> Add variant</button></div>
-          {variants.length === 0 ? <p className="rounded-md border border-dashed border-stone-200 p-4 text-center text-[11px] text-stone-400">No variants yet. Products without variants have zero available stock.</p> : <div className="space-y-3">{variants.map((variant, index) => <div key={variant.id ?? `new-${index}`} className="grid gap-2 rounded-md border border-stone-200 p-3 sm:grid-cols-2 xl:grid-cols-4"><Field label="Variant name"><input required value={variant.name} onChange={(event) => updateVariant(index, "name", event.target.value)} className={inputClass} /></Field><Field label="SKU"><input value={variant.sku ?? ""} onChange={(event) => updateVariant(index, "sku", event.target.value || null)} className={inputClass} /></Field><Field label="Size"><input value={variant.size ?? ""} onChange={(event) => updateVariant(index, "size", event.target.value || null)} className={inputClass} /></Field><Field label="Color"><input value={variant.colorName ?? ""} onChange={(event) => updateVariant(index, "colorName", event.target.value || null)} className={inputClass} /></Field><Field label="Color hex"><input type="color" value={variant.colorHex ?? "#808080"} onChange={(event) => updateVariant(index, "colorHex", event.target.value)} className={`${inputClass} p-1`} /></Field><Field label="Variant price (optional)"><input type="number" min="0" max="99999999.99" step="0.01" value={variant.priceOverride ?? ""} onChange={(event) => updateVariant(index, "priceOverride", event.target.value || null)} className={inputClass} /></Field><Field label="Stock quantity"><input type="number" min="0" max="1000000" step="1" disabled={!canAdjustInventory} value={variant.stockQuantity} onChange={(event) => updateVariant(index, "stockQuantity", Number(event.target.value))} className={inputClass} /></Field><label className="flex h-9 items-center gap-2 text-[10px] text-stone-600"><input type="checkbox" checked={variant.isActive ?? true} onChange={(event) => updateVariant(index, "isActive", event.target.checked)} className="size-3.5 accent-stone-900" /> Available</label><div className="flex items-end justify-end"><button type="button" onClick={() => setVariants((current) => current.filter((_, variantIndex) => variantIndex !== index))} className="inline-flex h-9 items-center gap-1.5 rounded-md px-2 text-[10px] text-red-700 hover:bg-red-50"><Trash2 className="size-3.5" /> Remove</button></div></div>)}</div>}
+          {variants.length === 0 ? <p className="rounded-md border border-dashed border-stone-200 p-4 text-center text-[11px] text-stone-400">No variants yet. Products without variants have zero available stock.</p> : <div className="space-y-3">{variants.map((variant, index) => <div key={variant.id ?? `new-${index}`} className="space-y-3 rounded-md border border-stone-200 p-3"><div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4"><Field label="Variant name"><input required value={variant.name} onChange={(event) => updateVariant(index, "name", event.target.value)} className={inputClass} /></Field><Field label="SKU"><input value={variant.sku ?? ""} onChange={(event) => updateVariant(index, "sku", event.target.value || null)} className={inputClass} /></Field><Field label="Size"><input value={variant.size ?? ""} onChange={(event) => updateVariant(index, "size", event.target.value || null)} className={inputClass} /></Field><Field label="Color"><input value={variant.colorName ?? ""} onChange={(event) => updateVariant(index, "colorName", event.target.value || null)} className={inputClass} /></Field><Field label="Color hex"><input type="color" value={variant.colorHex ?? "#808080"} onChange={(event) => updateVariant(index, "colorHex", event.target.value)} className={`${inputClass} p-1`} /></Field><Field label="Variant price (optional)"><input type="number" min="0" max="99999999.99" step="0.01" value={variant.priceOverride ?? ""} onChange={(event) => updateVariant(index, "priceOverride", event.target.value || null)} className={inputClass} /></Field><Field label="Stock quantity"><input type="number" min="0" max="1000000" step="1" disabled={!canAdjustInventory} value={variant.stockQuantity} onChange={(event) => updateVariant(index, "stockQuantity", Number(event.target.value))} className={inputClass} /></Field><label className="flex h-9 items-center gap-2 text-[10px] text-stone-600"><input type="checkbox" checked={variant.isActive ?? true} onChange={(event) => updateVariant(index, "isActive", event.target.checked)} className="size-3.5 accent-stone-900" /> Available</label></div><div className="flex items-center justify-between border-t border-stone-100 pt-3"><div><p className="text-[10px] font-medium text-stone-700">Variant gallery · {(variant.images ?? []).length}/12</p><p className="mt-0.5 text-[9px] text-stone-400">Images shown when this color/size is selected</p></div><label className="inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-md border border-stone-200 px-2.5 text-[10px] text-stone-700 hover:bg-stone-50"><ImagePlus className="size-3.5" /> Add images<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple className="sr-only" onChange={(event) => void uploadFiles(event.target.files, index)} /></label></div><div className="grid grid-cols-4 gap-2 sm:grid-cols-6">{(variant.images ?? []).map((image, imageIndex) => <div key={image.id} className="group relative aspect-[3/4] overflow-hidden rounded border border-stone-200 bg-stone-100"><Image src={image.secureUrl} alt={image.altText || `${variant.colorName || variant.name} image`} fill sizes="120px" className="object-cover" />{(variant.primaryImageId ?? variant.images?.find(({ isPrimary }) => isPrimary)?.id) === image.id && <span className="absolute left-1 top-1 rounded bg-white/95 px-1.5 py-0.5 text-[8px]">Primary</span>}<div className="absolute inset-x-1 bottom-1 flex justify-between gap-1"><button type="button" onClick={() => { setVariants((current) => current.map((entry, variantIndex) => variantIndex === index ? { ...entry, primaryImageId: image.id, images: entry.images?.map((item) => ({ ...item, isPrimary: item.id === image.id })) } : entry)); }} aria-label="Set variant primary image" className="rounded bg-white p-1 text-stone-700 shadow"><Star className={`size-3 ${image.id === (variant.primaryImageId ?? variant.images?.find(({ isPrimary }) => isPrimary)?.id) ? "fill-amber-400 text-amber-500" : ""}`} /></button><div className="flex gap-1"><button type="button" disabled={imageIndex === 0} onClick={() => moveVariantImage(index, imageIndex, -1)} aria-label="Move image earlier" className="rounded bg-white p-1 text-stone-700 shadow disabled:opacity-40"><ArrowUp className="size-3" /></button><button type="button" disabled={imageIndex === (variant.images?.length ?? 0) - 1} onClick={() => moveVariantImage(index, imageIndex, 1)} aria-label="Move image later" className="rounded bg-white p-1 text-stone-700 shadow disabled:opacity-40"><ArrowDown className="size-3" /></button><button type="button" onClick={() => void removeImage(image, index)} aria-label="Remove variant image" className="rounded bg-white p-1 text-red-700 shadow"><Trash2 className="size-3" /></button></div></div></div>)}</div><div className="flex justify-end"><button type="button" onClick={() => void removeVariant(index)} className="inline-flex h-8 items-center gap-1.5 rounded-md px-2 text-[10px] text-red-700 hover:bg-red-50"><Trash2 className="size-3.5" /> Remove variant</button></div></div>)}</div>}
         </section>
 
         <section className="grid gap-3 border-t border-stone-100 pt-5 sm:grid-cols-2">

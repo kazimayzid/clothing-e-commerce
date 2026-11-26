@@ -3,6 +3,12 @@ import { z } from "zod";
 const moneySchema = z.string().trim().regex(/^\d{1,8}(?:\.\d{1,2})?$/, "Enter a valid amount with up to two decimal places.");
 const slugSchema = z.string().trim().min(2).max(220).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Use lowercase letters, numbers, and hyphens for the slug.");
 
+export const productImageInputSchema = z.object({
+  id: z.string().uuid(),
+  altText: z.string().trim().max(250).optional().nullable(),
+  isPrimary: z.boolean().optional(),
+});
+
 export const productVariantSchema = z.object({
   id: z.string().uuid().optional(),
   name: z.string().trim().min(1).max(120),
@@ -13,11 +19,8 @@ export const productVariantSchema = z.object({
   priceOverride: moneySchema.optional().nullable(),
   stockQuantity: z.number().int().min(0).max(1_000_000).optional(),
   isActive: z.boolean().optional(),
-});
-
-export const productImageInputSchema = z.object({
-  id: z.string().uuid(),
-  altText: z.string().trim().max(250).optional().nullable(),
+  images: z.array(productImageInputSchema).max(12).optional(),
+  primaryImageId: z.string().uuid().nullable().optional(),
 });
 
 const productFields = {
@@ -50,12 +53,24 @@ export const createProductSchema = productObjectSchema.superRefine((value, conte
   if (value.multibuyPrice && amountInMinorUnits(value.multibuyPrice) >= amountInMinorUnits(value.price)) {
     context.addIssue({ code: "custom", path: ["multibuyPrice"], message: "Multibuy price must be lower than the regular price." });
   }
-  if (value.status === "PUBLISHED" && value.images.length === 0) {
+  if (value.status === "PUBLISHED" && value.images.length === 0 && value.variants.every(({ images }) => !images?.length)) {
     context.addIssue({ code: "custom", path: ["images"], message: "Add at least one product image before publishing." });
   }
   if (value.primaryImageId && !value.images.some(({ id }) => id === value.primaryImageId)) {
     context.addIssue({ code: "custom", path: ["primaryImageId"], message: "Primary image must be included in the product images." });
   }
+  const imageIds = [
+    ...value.images.map(({ id }) => id),
+    ...value.variants.flatMap(({ images }) => images?.map(({ id }) => id) ?? []),
+  ];
+  if (new Set(imageIds).size !== imageIds.length) {
+    context.addIssue({ code: "custom", path: ["variants"], message: "Each uploaded image can belong to only one gallery." });
+  }
+  value.variants.forEach((variant, index) => {
+    if (variant.primaryImageId && !variant.images?.some(({ id }) => id === variant.primaryImageId)) {
+      context.addIssue({ code: "custom", path: ["variants", index, "primaryImageId"], message: "Variant primary image must be included in that variant's images." });
+    }
+  });
 });
 
 export const updateProductSchema = productObjectSchema.partial().superRefine((value, context) => {
@@ -68,6 +83,20 @@ export const updateProductSchema = productObjectSchema.partial().superRefine((va
   if (value.primaryImageId !== undefined && value.images === undefined) {
     context.addIssue({ code: "custom", path: ["images"], message: "Send the product image list when changing its primary image." });
   }
+  if (value.variants && value.images) {
+    const imageIds = [
+      ...value.images.map(({ id }) => id),
+      ...value.variants.flatMap(({ images }) => images?.map(({ id }) => id) ?? []),
+    ];
+    if (new Set(imageIds).size !== imageIds.length) {
+      context.addIssue({ code: "custom", path: ["variants"], message: "Each uploaded image can belong to only one gallery." });
+    }
+  }
+  value.variants?.forEach((variant, index) => {
+    if (variant.primaryImageId && (!variant.images || !variant.images.some(({ id }) => id === variant.primaryImageId))) {
+      context.addIssue({ code: "custom", path: ["variants", index, "primaryImageId"], message: "Variant primary image must be included in that variant's images." });
+    }
+  });
 });
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
@@ -81,6 +110,10 @@ export function slugifyProductName(value: string) {
 
 export function hasAvailableStock(variants: readonly { isActive: boolean; stockQuantity: number }[]) {
   return variants.some((variant) => variant.isActive && variant.stockQuantity > 0);
+}
+
+export function canAddVariantQuantity(isActive: boolean, stockQuantity: number, requestedQuantity: number) {
+  return isActive && Number.isInteger(requestedQuantity) && requestedQuantity > 0 && requestedQuantity <= stockQuantity;
 }
 
 export function canSetVariantStock(

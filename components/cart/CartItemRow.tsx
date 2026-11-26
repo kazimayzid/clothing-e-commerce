@@ -44,9 +44,10 @@ export default function CartItemRow({
             <p className="text-xs md:text-sm text-neutral-500 mt-0.5">
               {item.variant}
             </p>
+            {item.sku && <p className="mt-1 font-mono text-[10px] text-neutral-400">SKU {item.sku}</p>}
           </div>
           <span className="text-sm md:text-base font-semibold text-neutral-900">
-            ${(item.price * item.quantity).toFixed(2)}
+            {new Intl.NumberFormat("en-GB", { style: "currency", currency: item.currency ?? "GBP" }).format(item.price * item.quantity)}
           </span>
         </div>
 

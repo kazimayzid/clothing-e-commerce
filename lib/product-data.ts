@@ -2,17 +2,24 @@ import "server-only";
 
 import { Prisma } from "@/generated/prisma/client";
 import type { Product, ProductCardDTO } from "@/types/product";
+import { getVariantUnitPrice } from "@/lib/product-selection";
 
 export const adminProductInclude = {
   category: { select: { id: true, name: true, slug: true } },
   images: {
     where: { deletedAt: null },
-    orderBy: [{ isPrimary: "desc" }, { sortOrder: "asc" }, { createdAt: "asc" }],
-    select: { id: true, secureUrl: true, altText: true, sortOrder: true, isPrimary: true },
+    orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+    select: { id: true, secureUrl: true, altText: true, sortOrder: true, isPrimary: true, variantId: true },
   },
   variants: {
     orderBy: [{ name: "asc" }],
-    select: { id: true, name: true, sku: true, size: true, colorName: true, colorHex: true, priceOverride: true, stockQuantity: true, isActive: true },
+    include: {
+      images: {
+        where: { deletedAt: null },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+        select: { id: true, secureUrl: true, altText: true, sortOrder: true, isPrimary: true, variantId: true },
+      },
+    },
   },
 } satisfies Prisma.ProductInclude;
 
@@ -35,9 +42,10 @@ export function toAdminProductDTO(product: AdminProductRecord) {
     isNew: product.isNew,
     bestsellerRank: product.bestsellerRank,
     stockCount: product.variants.filter(({ isActive }) => isActive).reduce((total, variant) => total + variant.stockQuantity, 0),
-    images: product.images,
+    images: product.images.filter(({ variantId }) => variantId === null),
     variants: product.variants.map((variant) => ({
       ...variant,
+      images: variant.images,
       priceOverride: variant.priceOverride?.toFixed(2) ?? null,
     })),
     createdAt: product.createdAt.toISOString(),
@@ -56,8 +64,11 @@ export function toStorefrontProduct(product: AdminProductRecord): Product {
     hexCode: variant.colorHex ?? "#808080",
   }])).values()];
   const sizes = [...new Set(product.variants.filter(({ isActive, size }) => isActive && size).map(({ size }) => size!))];
-  const images = product.images.map(({ secureUrl }) => secureUrl);
+  const commonImages = product.images.filter(({ variantId }) => variantId === null);
   const firstVariant = product.variants.find(({ isActive }) => isActive);
+  const initialGallery = firstVariant?.images.length ? firstVariant.images : commonImages;
+  const images = initialGallery.map(({ secureUrl }) => secureUrl);
+  const primaryImage = initialGallery.find(({ isPrimary }) => isPrimary) ?? initialGallery[0];
   return {
     id: product.id,
     title: product.title,
@@ -69,8 +80,10 @@ export function toStorefrontProduct(product: AdminProductRecord): Product {
     categoryId: product.categoryId,
     categoryName: product.category.name,
     tags: product.tags,
-    imageSrc: images[0] ?? "",
+    imageSrc: primaryImage?.secureUrl ?? "",
     images,
+    commonImages: commonImages.map(({ secureUrl }) => secureUrl),
+    commonPrimaryImageSrc: commonImages.find(({ isPrimary }) => isPrimary)?.secureUrl ?? commonImages[0]?.secureUrl,
     colorName: firstVariant?.colorName ?? "",
     colors,
     sizes,
@@ -79,6 +92,19 @@ export function toStorefrontProduct(product: AdminProductRecord): Product {
     stockCount: product.variants.filter(({ isActive }) => isActive).reduce((total, variant) => total + variant.stockQuantity, 0),
     isNew: product.isNew,
     bestsellerRank: product.bestsellerRank ?? undefined,
+    variants: product.variants.filter(({ isActive }) => isActive).map((variant) => ({
+      id: variant.id,
+      name: variant.name,
+      sku: variant.sku,
+      size: variant.size,
+      colorName: variant.colorName,
+      colorHex: variant.colorHex,
+      price: getVariantUnitPrice(product.price.toFixed(2), variant.priceOverride?.toFixed(2) ?? null),
+      stockQuantity: variant.stockQuantity,
+      isActive: variant.isActive,
+      images: variant.images.map(({ secureUrl }) => secureUrl),
+      primaryImageSrc: variant.images.find(({ isPrimary }) => isPrimary)?.secureUrl ?? variant.images[0]?.secureUrl,
+    })),
   };
 }
 

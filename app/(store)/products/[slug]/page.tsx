@@ -1,8 +1,7 @@
 
 import Container from "@/components/layout/Container";
-import ProductDetails from "@/components/localUI/ProductDetails";
+import ProductDetailExperience from "@/components/product/ProductDetailExperience";
 import RelatedProducts from "@/components/localUI/RelatedProducts";
-import ProductGallery from "@/components/shared/ProductGallery";
 import { getProductDetails } from "@/services/productDetails.service";
 import type { ProductDetailDTO } from "@/types/productDetails";
 import { notFound } from "next/navigation";
@@ -29,25 +28,7 @@ export default async function ProductDetailPage({
   return (
     <Container>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 py-8">
-        <ProductGallery
-          images={product.images}
-          title={product.title}
-        />
-
-        <ProductDetails
-          id={product.id}
-          slug={product.slug}
-          imageSrc={product.images[0] ?? ""}
-          variant={product.colorName}
-          title={product.title}
-          price={product.price}
-          currency={product.currency}
-          rating={product.rating}
-          reviewCount={product.reviewCount}
-          description={product.description}
-          colors={product.colors}
-          sizes={product.sizes}
-        />
+        <ProductDetailExperience product={product} />
       </div>
 
       <hr className="text-foreground/20"/>

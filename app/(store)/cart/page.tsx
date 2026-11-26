@@ -5,11 +5,14 @@ import type { CartItem } from "@/types/cart";
 import YourBag from "@/components/cart/YourBag";
 import OrderSummary from "@/components/cart/OrderSummary";
 import {
+  getValidatedProductVariantCartEntry,
   getCartItems,
+  replaceCartItem,
   removeCartItem,
   subscribeToActionChanges,
   updateCartItemQuantity,
 } from "@/contexts/actionStorage";
+import { toast } from "sonner";
 
 export default function CartPage() {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -25,7 +28,19 @@ export default function CartPage() {
     return subscribeToActionChanges(syncCart);
   }, []);
 
-  const handleUpdateQuantity = (id: string, delta: number) => {
+  const handleUpdateQuantity = async (id: string, delta: number) => {
+    const item = items.find((entry) => entry.id === id);
+    if (!item) return;
+    const nextQuantity = item.quantity + delta;
+    if (delta > 0 && item.variantId && item.productId) {
+      try {
+        const refreshed = await getValidatedProductVariantCartEntry(item, nextQuantity);
+        replaceCartItem(refreshed);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not verify available stock.");
+      }
+      return;
+    }
     updateCartItemQuantity(id, delta);
   };
 

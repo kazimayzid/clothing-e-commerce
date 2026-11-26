@@ -1,4 +1,5 @@
 import type { CartItem } from "@/types/cart";
+import { getVariantCartLineId } from "@/lib/product-selection";
 
 export type StoredCartEntry = Omit<CartItem, "variant" | "imageSrc"> &
   Partial<Pick<CartItem, "variant" | "imageSrc">>;
@@ -75,6 +76,41 @@ export function saveCartItem(item: StoredCartEntry) {
     ),
   );
   publishChange();
+}
+
+export function replaceCartItem(item: StoredCartEntry) {
+  localStorage.setItem(CART_KEY, JSON.stringify(getCartItems().map((entry) => entry.id === item.id ? item : entry)));
+  publishChange();
+}
+
+export async function getValidatedProductVariantCartEntry(item: StoredCartEntry, quantity = item.quantity) {
+  const productId = item.productId ?? item.id;
+  const response = await fetch("/api/v1/cart/validate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ productId, ...(item.variantId ? { variantId: item.variantId } : {}), quantity }),
+  });
+  const result = await response.json().catch(() => null) as {
+    error?: string;
+    item?: { productId: string; variantId: string; sku: string | null; price: string; currency: string; variant: string; selectedOptions: { color?: string; size?: string }; stockQuantity: number };
+  } | null;
+  if (!response.ok || !result?.item) throw new Error(result?.error ?? "Could not verify this product option.");
+  return {
+    ...item,
+    id: getVariantCartLineId(result.item.productId, result.item.variantId),
+    productId: result.item.productId,
+    variantId: result.item.variantId,
+    sku: result.item.sku ?? undefined,
+    currency: result.item.currency,
+    price: Number(result.item.price),
+    variant: result.item.variant,
+    selectedOptions: result.item.selectedOptions,
+    quantity,
+  } satisfies StoredCartEntry;
+}
+
+export async function validateAndSaveProductVariant(item: StoredCartEntry) {
+  saveCartItem(await getValidatedProductVariantCartEntry(item));
 }
 
 export function updateCartItemQuantity(id: string, delta: number) {

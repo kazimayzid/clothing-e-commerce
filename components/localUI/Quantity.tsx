@@ -3,11 +3,15 @@
 interface QuantityProps {
   quantity: number;
   setQuantity: React.Dispatch<React.SetStateAction<number>>;
+  max?: number;
+  available?: boolean;
 }
 
 export default function Quantity({
   quantity,
   setQuantity,
+  max = Number.MAX_SAFE_INTEGER,
+  available = true,
 }: QuantityProps) {
   return (
     <div className="flex items-center gap-3">
@@ -34,18 +38,17 @@ export default function Quantity({
 
         <button
           type="button"
+          disabled={!available || quantity >= max}
           onClick={() =>
             setQuantity((currentQuantity) => currentQuantity + 1)
           }
-          className="px-3 py-1 text-neutral-600 hover:text-black font-bold"
+          className="px-3 py-1 text-neutral-600 hover:text-black font-bold disabled:cursor-not-allowed disabled:opacity-40"
         >
           +
         </button>
       </div>
 
-      <span className="text-[11px] text-emerald-700 font-medium">
-        In Stock &amp; Ready to Ship
-      </span>
+      {!available && <span className="text-[11px] font-medium text-red-700">Unavailable</span>}
     </div>
   );
 }

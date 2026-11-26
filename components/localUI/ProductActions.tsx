@@ -14,6 +14,12 @@ interface ProductActionsProps {
   title: string;
   imageSrc: string;
   variant: string;
+  variantId?: string;
+  sku?: string;
+  selectedOptions: { color?: string; size?: string };
+  stockQuantity: number;
+  currency: string;
+  available: boolean;
 }
 
 export default function ProductActions({
@@ -23,6 +29,12 @@ export default function ProductActions({
   title,
   imageSrc,
   variant,
+  variantId,
+  sku,
+  selectedOptions,
+  stockQuantity,
+  currency,
+  available,
 }: ProductActionsProps) {
   const [quantity, setQuantity] = useState(1);
   const cartItem = {
@@ -33,19 +45,29 @@ export default function ProductActions({
     quantity,
     imageSrc,
     variant,
+    productId: id,
+    variantId,
+    sku,
+    selectedOptions,
   };
 
   return (
     <div className="flex flex-col gap-2.5">
-      <Quantity quantity={quantity} setQuantity={setQuantity} />
+      <Quantity quantity={quantity} setQuantity={setQuantity} max={stockQuantity} available={available} />
 
       <AddToBag
         {...cartItem}
         numericPrice={numericPrice}
         quantity={quantity}
+        variantId={variantId}
+        sku={sku}
+        selectedOptions={selectedOptions}
+        stockQuantity={stockQuantity}
+        currency={currency}
+        available={available}
       />
 
-      <BuyNow item={cartItem} />
+      <BuyNow item={{ ...cartItem, price: numericPrice }} available={available && quantity <= stockQuantity} />
 
       <Wishlist item={{ id, slug, title, price: numericPrice, imageSrc }} />
     </div>

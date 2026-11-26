@@ -1,16 +1,14 @@
 "use client";
 
-import { useState } from "react";
 import type { ColorOption } from "@/types/product";
 
 interface ColorPickerProps {
   colors: ColorOption[];
+  selectedColorName?: string;
+  onSelect?: (color: ColorOption) => void;
 }
 
-export default function ColorPicker({ colors }: ColorPickerProps) {
-  const [selectedColor, setSelectedColor] = useState<ColorOption | undefined>(
-    colors[0]
-  );
+export default function ColorPicker({ colors, selectedColorName, onSelect }: ColorPickerProps) {
 
   if (colors.length === 0) {
     return null;
@@ -21,7 +19,7 @@ export default function ColorPicker({ colors }: ColorPickerProps) {
       <p className="text-xs uppercase tracking-wider font-semibold text-black mb-2">
         Color:{" "}
         <span className="text-neutral-500 font-normal">
-          {selectedColor?.name ?? "Not selected"}
+          {selectedColorName ?? "Not selected"}
         </span>
       </p>
 
@@ -30,11 +28,11 @@ export default function ColorPicker({ colors }: ColorPickerProps) {
           <button
             key={color.hexCode}
             type="button"
-            onClick={() => setSelectedColor(color)}
+            onClick={() => onSelect?.(color)}
             style={{ backgroundColor: color.hexCode }}
             aria-label={`Select ${color.name}`}
             className={`w-8 h-8 rounded-full border transition-all ${
-              selectedColor?.hexCode === color.hexCode
+              selectedColorName === color.name
                 ? "ring-2 ring-offset-2 ring-black"
                 : "border-neutral-300 opacity-75 hover:opacity-100"
             }`}

@@ -14,7 +14,7 @@ import {
   subscribeToWishlistFeedback,
   removeWishlistItem,
   saveWishlistItems,
-  saveCartItem,
+  validateAndSaveProductVariant,
   subscribeToActionChanges,
   type StoredWishlistEntry,
 } from "@/contexts/actionStorage";
@@ -179,17 +179,25 @@ export default function FavoriteButton() {
     [],
   );
 
-  function addItemToBag(item: StoredWishlistEntry) {
-    saveCartItem({
-      id: item.id,
-      title: item.title,
-      slug: item.slug,
-      price: item.price ?? 0,
-      quantity: 1,
-      imageSrc: item.imageSrc,
-      variant: "Standard",
-    });
-    removeWishlistItem(item.id);
+  async function addItemToBag(item: StoredWishlistEntry): Promise<boolean> {
+    try {
+      await validateAndSaveProductVariant({
+        id: item.id,
+        productId: item.id,
+        title: item.title,
+        slug: item.slug,
+        price: item.price ?? 0,
+        quantity: 1,
+        imageSrc: item.imageSrc,
+        variant: "",
+      });
+      removeWishlistItem(item.id);
+      toast.success("Added to your bag");
+      return true;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "No available variant could be added.");
+      return false;
+    }
   }
 
   function handleRemoveWishlistItem(id: string) {
@@ -198,9 +206,12 @@ export default function FavoriteButton() {
   }
 
   function moveItemToBag(item: StoredWishlistEntry) {
-    addItemToBag(item);
-    closeDrawer();
-    router.push("/cart");
+    void addItemToBag(item).then((added) => {
+      if (added) {
+        closeDrawer();
+        router.push("/cart");
+      }
+    });
   }
 
   function moveAllToBag() {

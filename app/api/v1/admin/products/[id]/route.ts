@@ -35,7 +35,6 @@ export async function PATCH(request: Request, { params }: Context) {
       const before = await tx.product.findUnique({ where: { id }, include: adminProductInclude });
       if (!before) throw new Error("PRODUCT_NOT_FOUND");
       if (before.status === "ARCHIVED" && input.status !== undefined) throw new Error("ARCHIVED_PRODUCT_REQUIRES_RESTORE");
-      if (input.status === "PUBLISHED" && (input.images?.length ?? before.images.length) === 0) throw new Error("PUBLISHED_PRODUCT_REQUIRES_IMAGE");
       const effectivePrice = input.price !== undefined ? new Prisma.Decimal(input.price) : before.price;
       const effectiveMultibuy = input.multibuyPrice !== undefined
         ? (input.multibuyPrice ? new Prisma.Decimal(input.multibuyPrice) : null)
@@ -64,10 +63,11 @@ export async function PATCH(request: Request, { params }: Context) {
       if (input.isNew !== undefined) data.isNew = input.isNew;
       if (input.bestsellerRank !== undefined) data.bestsellerRank = input.bestsellerRank;
 
+      const existingById = new Map(before.variants.map((variant) => [variant.id, variant]));
+      const resolvedVariantIds = new Map<number, string>();
       if (input.variants !== undefined) {
         const submittedIds = input.variants.flatMap((variant) => variant.id ? [variant.id] : []);
         if (new Set(submittedIds).size !== submittedIds.length) throw new Error("DUPLICATE_VARIANT_ID");
-        const existingById = new Map(before.variants.map((variant) => [variant.id, variant]));
         const submittedExisting = input.variants.filter((variant) => variant.id);
         if (submittedExisting.some((variant) => !existingById.has(variant.id!))) throw new Error("VARIANT_OWNERSHIP_INVALID");
         if (input.variants.some((variant) => {
@@ -75,7 +75,7 @@ export async function PATCH(request: Request, { params }: Context) {
           return !canSetVariantStock(mayAdjustInventory, variant.stockQuantity, existing?.stockQuantity);
         })) throw new Error("INVENTORY_PERMISSION_REQUIRED");
 
-        for (const variant of input.variants) {
+        for (const [variantIndex, variant] of input.variants.entries()) {
           const old = variant.id ? existingById.get(variant.id) : undefined;
           const stockQuantity = mayAdjustInventory
             ? variant.stockQuantity ?? old?.stockQuantity ?? 0
@@ -90,8 +90,10 @@ export async function PATCH(request: Request, { params }: Context) {
             stockQuantity,
             isActive: variant.isActive ?? old?.isActive ?? true,
           };
-          if (old) await tx.productVariant.update({ where: { id: old.id }, data: variantData });
-          else await tx.productVariant.create({ data: { ...variantData, productId: id } });
+          const saved = old
+            ? await tx.productVariant.update({ where: { id: old.id }, data: variantData, select: { id: true } })
+            : await tx.productVariant.create({ data: { ...variantData, productId: id }, select: { id: true } });
+          resolvedVariantIds.set(variantIndex, saved.id);
         }
         await tx.productVariant.updateMany({
           where: { productId: id, ...(submittedIds.length ? { id: { notIn: submittedIds } } : {}) },
@@ -99,8 +101,34 @@ export async function PATCH(request: Request, { params }: Context) {
         });
       }
 
-      if (input.images !== undefined) {
-        const submittedImageIds = input.images.map(({ id: imageId }) => imageId);
+      const imagesAreChanging = input.images !== undefined || input.variants?.some(({ images }) => images !== undefined);
+      if (input.status === "PUBLISHED" && !imagesAreChanging && before.images.length === 0) throw new Error("PUBLISHED_PRODUCT_REQUIRES_IMAGE");
+      if (imagesAreChanging) {
+        type ImageAssignment = { id: string; variantId: string | null; sortOrder: number; isPrimary: boolean; altText?: string | null };
+        const assignments: ImageAssignment[] = [];
+        const commonImages = input.images ?? before.images.filter(({ variantId }) => variantId === null).map(({ id: imageId, altText, sortOrder, isPrimary }) => ({ id: imageId, altText, sortOrder, isPrimary }));
+        const commonPrimaryId = input.primaryImageId ?? commonImages.find((image) => image.isPrimary)?.id ?? commonImages[0]?.id;
+        commonImages.forEach((image, sortOrder) => assignments.push({ id: image.id, variantId: null, sortOrder, isPrimary: image.id === commonPrimaryId, altText: image.altText }));
+
+        if (input.variants === undefined) {
+          before.variants.forEach((variant) => variant.images.forEach((image) => assignments.push({ id: image.id, variantId: variant.id, sortOrder: image.sortOrder, isPrimary: image.isPrimary, altText: image.altText })));
+        } else {
+          const submittedVariantIds = new Set(input.variants.flatMap(({ id: variantId }) => variantId ? [variantId] : []));
+          before.variants.filter(({ id: variantId }) => !submittedVariantIds.has(variantId)).forEach((variant) => variant.images.forEach((image) => assignments.push({ id: image.id, variantId: variant.id, sortOrder: image.sortOrder, isPrimary: image.isPrimary, altText: image.altText })));
+          input.variants.forEach((variant, variantIndex) => {
+            const old = variant.id ? existingById.get(variant.id) : undefined;
+            const variantImages = variant.images ?? old?.images.map(({ id: imageId, altText, sortOrder, isPrimary }) => ({ id: imageId, altText, sortOrder, isPrimary })) ?? [];
+            const primaryId = variant.primaryImageId ?? variantImages.find((image) => image.isPrimary)?.id ?? variantImages[0]?.id;
+            variantImages.forEach((image, sortOrder) => assignments.push({
+              id: image.id,
+              variantId: resolvedVariantIds.get(variantIndex)!,
+              sortOrder,
+              isPrimary: image.id === primaryId,
+              altText: image.altText,
+            }));
+          });
+        }
+        const submittedImageIds = assignments.map(({ id: imageId }) => imageId);
         if (new Set(submittedImageIds).size !== submittedImageIds.length) throw new Error("DUPLICATE_IMAGE_ID");
         const currentIds = new Set(before.images.map(({ id: imageId }) => imageId));
         const existingSubmitted = submittedImageIds.filter((imageId) => currentIds.has(imageId));
@@ -117,13 +145,13 @@ export async function PATCH(request: Request, { params }: Context) {
         const removed = before.images.filter(({ id: imageId }) => !submittedImageIds.includes(imageId));
         removedImageIds = removed.map(({ id: imageId }) => imageId);
         if (removedImageIds.length) await tx.productImage.updateMany({ where: { id: { in: removedImageIds } }, data: { deletedAt: new Date(), isPrimary: false } });
-        const primaryImageId = input.primaryImageId ?? submittedImageIds[0] ?? null;
-        for (const [sortOrder, image] of input.images.entries()) {
+        for (const image of assignments) {
           await tx.productImage.update({ where: { id: image.id }, data: {
             productId: id,
-            altText: image.altText || input.title || before.title,
-            sortOrder,
-            isPrimary: image.id === primaryImageId,
+            variantId: image.variantId,
+            altText: image.altText || (image.variantId ? before.variants.find(({ id: variantId }) => variantId === image.variantId)?.colorName : null) || input.title || before.title,
+            sortOrder: image.sortOrder,
+            isPrimary: image.isPrimary,
           } });
         }
       }
@@ -179,7 +207,7 @@ function auditState(product: {
   multibuyPrice: Prisma.Decimal | null; currency: string; status: string; tags: string[];
   isNew: boolean; bestsellerRank: number | null; category: { name: string };
   images: { id: string; secureUrl: string; isPrimary: boolean; sortOrder: number }[];
-  variants: { id: string; sku: string | null; size: string | null; colorName: string | null; priceOverride: Prisma.Decimal | null; stockQuantity: number; isActive: boolean }[];
+  variants: { id: string; sku: string | null; size: string | null; colorName: string | null; priceOverride: Prisma.Decimal | null; stockQuantity: number; isActive: boolean; images: { id: string; variantId: string | null; sortOrder: number; isPrimary: boolean }[] }[];
 }) {
   return {
     title: product.title, slug: product.slug, description: product.description, detailsAndCare: product.detailsAndCare, gender: product.gender,
@@ -187,6 +215,6 @@ function auditState(product: {
     currency: product.currency.trim(), status: product.status, tags: product.tags, isNew: product.isNew,
     bestsellerRank: product.bestsellerRank, category: product.category.name,
     images: product.images.map(({ id, secureUrl, isPrimary, sortOrder }) => ({ id, secureUrl, isPrimary, sortOrder })),
-    variants: product.variants.map(({ id, sku, size, colorName, priceOverride, stockQuantity, isActive }) => ({ id, sku, size, colorName, priceOverride: priceOverride?.toFixed(2) ?? null, stockQuantity, isActive })),
+    variants: product.variants.map(({ id, sku, size, colorName, priceOverride, stockQuantity, isActive, images }) => ({ id, sku, size, colorName, priceOverride: priceOverride?.toFixed(2) ?? null, stockQuantity, isActive, images: images.map(({ id: imageId, variantId, sortOrder, isPrimary }) => ({ id: imageId, variantId, sortOrder, isPrimary })) })),
   };
 }

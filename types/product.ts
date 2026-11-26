@@ -6,6 +6,20 @@ export interface ColorOption {
   imageSrc?: string;
 }
 
+export interface ProductVariantOption {
+  id: string;
+  name: string;
+  sku: string | null;
+  size: string | null;
+  colorName: string | null;
+  colorHex: string | null;
+  price: string;
+  stockQuantity: number;
+  isActive: boolean;
+  images: string[];
+  primaryImageSrc?: string;
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -24,10 +38,13 @@ export interface Product {
   // Gallery & Variants
   imageSrc: string;        // Main featured thumbnail
   images: string[];        // Product gallery carousel
+  commonImages?: string[];
+  commonPrimaryImageSrc?: string;
   colorName: string;
   colorCount?: number;
   colors?: ColorOption[];
   sizes?: string[];
+  variants?: ProductVariantOption[];
 
   // Rich Details
   description: string;
