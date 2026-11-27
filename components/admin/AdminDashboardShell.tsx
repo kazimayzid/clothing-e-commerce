@@ -13,6 +13,7 @@ import AdminUsersManagement from "@/components/admin/management/AdminUsersManage
 import RolesPermissionsManagement from "@/components/admin/management/RolesPermissionsManagement";
 import AdminAuditLogs from "@/components/admin/management/AdminAuditLogs";
 import AdminProductsManagement from "@/components/admin/management/AdminProductsManagement";
+import AdminProductCategoriesManagement from "@/components/admin/management/AdminProductCategoriesManagement";
 import type { AdminAccessRemovalSummary, AdminInvitationSummary, AdminPermission, AdminRoleSummary, ManagedAdminUser } from "@/components/admin/management/management-types";
 import { getAdminPage, isAdminPageKey, type AdminPageKey } from "@/components/admin/admin-navigation";
 import { getAdminInitials } from "@/components/admin/admin-utils";
@@ -243,6 +244,12 @@ export default function AdminDashboardShell({
               canUpdate={isSuperAdmin || permissionKeys.includes("products:update")}
               canArchive={isSuperAdmin || permissionKeys.includes("products:archive")}
               canAdjustInventory={isSuperAdmin || permissionKeys.includes("inventory:adjust")}
+            />
+          ) : activeView === "categories" ? (
+            <AdminProductCategoriesManagement
+              canCreate={isSuperAdmin || permissionKeys.includes("products:create")}
+              canUpdate={isSuperAdmin || permissionKeys.includes("products:update")}
+              canArchive={isSuperAdmin || permissionKeys.includes("products:archive")}
             />
           ) : (
             <AdminModulePlaceholder pageKey={activeView} />

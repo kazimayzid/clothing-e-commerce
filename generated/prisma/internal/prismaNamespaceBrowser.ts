@@ -278,6 +278,7 @@ export const ProductCategoryScalarFieldEnum = {
   description: 'description',
   parentId: 'parentId',
   archivedAt: 'archivedAt',
+  sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

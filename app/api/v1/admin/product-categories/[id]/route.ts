@@ -5,6 +5,7 @@ import { requireAdminApiPermission } from "@/lib/admin-access";
 import { appendAdminAuditLog } from "@/lib/admin-audit";
 import { isActiveCategoryPath, wouldCreateCategoryCycle } from "@/lib/category-tree";
 import { updateProductCategorySchema } from "@/lib/product-validation";
+import { revalidatePublicCategoryData } from "@/lib/product-category-service";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -25,9 +26,11 @@ export async function PATCH(request: Request, { params }: Context) {
       if (wouldCreateCategoryCycle(id, parentId, records)) throw new Error("CYCLE");
       if (parentId && !isActiveCategoryPath(parentId, records)) throw new Error("PARENT_INVALID");
       const updated = await tx.productCategory.update({ where: { id }, data: parsed.data });
-      await appendAdminAuditLog(tx, { actor: authorization.context, action: "product_categories.updated", category: "PRODUCT", riskLevel: "MEDIUM", description: `Updated product category ${updated.name}.`, targetType: "PRODUCT_CATEGORY", targetId: id, targetName: updated.name, beforeState: before, afterState: updated, changedFields: Object.keys(parsed.data), request });
+      const moved = parsed.data.parentId !== undefined && parsed.data.parentId !== before.parentId;
+      await appendAdminAuditLog(tx, { actor: authorization.context, action: moved ? "product_categories.moved" : "product_categories.updated", category: "PRODUCT", riskLevel: "MEDIUM", description: `${moved ? "Moved" : "Updated"} product category ${updated.name}.`, targetType: "PRODUCT_CATEGORY", targetId: id, targetName: updated.name, beforeState: before, afterState: updated, changedFields: Object.keys(parsed.data), request });
       return updated;
     });
+    revalidatePublicCategoryData();
     return NextResponse.json({ category });
   } catch (error) {
     if (error instanceof Error && error.message === "NOT_FOUND") return NextResponse.json({ error: "Category not found." }, { status: 404 });

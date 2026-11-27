@@ -31,6 +31,7 @@ export const adminNavigation = [
     items: [
       { id: "orders", label: "Orders", icon: ShoppingBag, description: "Review and organize customer orders.", requiredPermission: "orders:read" },
       { id: "products", label: "Products", icon: Package, description: "Manage the products in your storefront.", requiredPermission: "products:read" },
+      { id: "categories", label: "Categories", icon: Package, description: "Manage the storefront category hierarchy.", requiredPermission: "products:read" },
       { id: "inventory", label: "Inventory", icon: Boxes, description: "Keep track of stock levels and availability.", requiredPermission: "inventory:read" },
       { id: "customers", label: "Customers", icon: UsersRound, description: "View customer profiles and activity.", requiredPermission: "users:read" },
       { id: "wishlist", label: "Wishlist", icon: Heart, description: "See products customers have saved.", requiredPermission: "users:read" },

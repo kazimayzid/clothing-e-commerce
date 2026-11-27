@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import AdminDialog from "@/components/admin/management/AdminDialog";
 import AdminModuleSkeleton from "@/components/admin/AdminModuleSkeleton";
 import AdminProductEditorDialog, { type AdminProductDTO, type ProductSaveInput } from "@/components/admin/management/AdminProductEditorDialog";
-import AdminProductCategoriesManagement from "@/components/admin/management/AdminProductCategoriesManagement";
 
 type Category = { id: string; name: string; slug: string; parentId: string | null; path: { name: string }[] };
 type CatalogResponse = {
@@ -27,7 +26,6 @@ type Props = {
 const money = (amount: string, currency: string) => new Intl.NumberFormat("en-GB", { style: "currency", currency }).format(Number(amount));
 
 export default function AdminProductsManagement({ canCreate, canUpdate, canArchive, canAdjustInventory }: Props) {
-  const [activeTab, setActiveTab] = useState<"products" | "categories">("products");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("ALL");
@@ -120,8 +118,6 @@ export default function AdminProductsManagement({ canCreate, canUpdate, canArchi
 
   return (
     <div className="space-y-5">
-      <div className="flex gap-2 border-b border-stone-200"><button type="button" onClick={() => setActiveTab("products")} className={`px-3 py-2 text-xs ${activeTab === "products" ? "border-b-2 border-stone-900 font-semibold text-stone-900" : "text-stone-500"}`}>Products</button><button type="button" onClick={() => setActiveTab("categories")} className={`px-3 py-2 text-xs ${activeTab === "categories" ? "border-b-2 border-stone-900 font-semibold text-stone-900" : "text-stone-500"}`}>Categories</button></div>
-      {activeTab === "categories" ? <AdminProductCategoriesManagement canCreate={canCreate} canUpdate={canUpdate} canArchive={canArchive} /> : <>
       <section aria-label="Product statistics" className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
         <Stat label="Total products" value={catalog?.stats.total ?? 0} />
         <Stat label="Published" value={catalog?.stats.active ?? 0} />
@@ -180,7 +176,6 @@ export default function AdminProductsManagement({ canCreate, canUpdate, canArchi
 
       {editingProduct !== undefined && <AdminProductEditorDialog product={editingProduct} categories={categoryOptions} canAdjustInventory={canAdjustInventory} onClose={() => setEditingProduct(undefined)} onSave={saveProduct} />}
       {detailsProduct && <ProductDetailsDialog product={detailsProduct} onClose={() => setDetailsProduct(null)} />}
-      </>}
     </div>
   );
 }

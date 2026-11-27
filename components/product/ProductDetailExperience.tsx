@@ -5,7 +5,7 @@ import ProductGallery from "@/components/shared/ProductGallery";
 import ProductDetails from "@/components/localUI/ProductDetails";
 import type { ColorOption, ProductVariantOption } from "@/types/product";
 import type { ProductDetailDTO } from "@/types/productDetails";
-import { getVariantGallery, selectColorVariant, selectSizeVariant } from "@/lib/product-selection";
+import { getInitialGalleryImage, getVariantGallery, getVariantGalleryFocus, selectColorVariant, selectSizeVariant } from "@/lib/product-selection";
 
 const EMPTY_VARIANTS: ProductVariantOption[] = [];
 
@@ -13,6 +13,11 @@ export default function ProductDetailExperience({ product }: { product: ProductD
   const [selectedVariantId, setSelectedVariantId] = useState(product.variants?.[0]?.id);
   const [selectedColorName, setSelectedColorName] = useState(product.variants?.[0]?.colorName ?? undefined);
   const [selectedSize, setSelectedSize] = useState(product.variants?.[0]?.size ?? undefined);
+  const [focusedImageSrc, setFocusedImageSrc] = useState(() => getInitialGalleryImage(
+    product.variants?.[0],
+    product.commonImages ?? product.images,
+    product.commonPrimaryImageSrc,
+  ));
   const variants = product.variants ?? EMPTY_VARIANTS;
   const selectedVariant = variants.find(({ id }) => id === selectedVariantId);
   const colors = useMemo(() => [...new Map(variants.filter(({ colorName }) => colorName).map((variant) => [variant.colorName!, {
@@ -24,27 +29,27 @@ export default function ProductDetailExperience({ product }: { product: ProductD
   ).map((variant) => variant.size!))], [variants, selectedColorName]);
   const commonImages = product.commonImages ?? product.images;
   const selectedImages = getVariantGallery(selectedVariant, commonImages);
-  const initialImageSrc = selectedVariant?.primaryImageSrc ?? selectedVariant?.images[0] ?? product.commonPrimaryImageSrc ?? selectedImages[0];
-
   function chooseColor(color: ColorOption) {
     setSelectedColorName(color.name);
     const next = selectColorVariant(variants, color.name, selectedSize);
     setSelectedVariantId(next?.id);
+    setFocusedImageSrc(getVariantGalleryFocus(next, commonImages, product.commonPrimaryImageSrc));
   }
 
   function chooseSize(size: string) {
     setSelectedSize(size);
     const next = selectSizeVariant(variants, size, selectedColorName);
     setSelectedVariantId(next?.id);
+    setFocusedImageSrc(getVariantGalleryFocus(next, commonImages, product.commonPrimaryImageSrc));
   }
 
   return (
     <>
-      <ProductGallery key={`${selectedImages.join("|")}:${initialImageSrc}`} images={selectedImages} title={product.title} initialImageSrc={initialImageSrc} />
+      <ProductGallery key={`${selectedImages.join("|")}:${focusedImageSrc}`} images={selectedImages} title={product.title} initialImageSrc={focusedImageSrc} />
       <ProductDetails
         id={product.id}
         slug={product.slug}
-        imageSrc={initialImageSrc ?? selectedImages[0] ?? ""}
+        imageSrc={focusedImageSrc}
         title={product.title}
         price={product.price}
         currency={product.currency}

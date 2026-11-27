@@ -61,7 +61,7 @@ export async function GET(request: Request) {
   const [products, total, categories, totalProducts, activeProducts, draftProducts, archivedProducts, outOfStockProducts] = await Promise.all([
     prisma.product.findMany({ where, include: adminProductInclude, orderBy, skip: (filters.page - 1) * filters.pageSize, take: filters.pageSize }),
     prisma.product.count({ where }),
-    prisma.productCategory.findMany({ select: { id: true, name: true, slug: true, description: true, parentId: true, archivedAt: true }, orderBy: { name: "asc" } }),
+    prisma.productCategory.findMany({ select: { id: true, name: true, slug: true, description: true, parentId: true, archivedAt: true, sortOrder: true }, orderBy: [{ parentId: "asc" }, { sortOrder: "asc" }, { name: "asc" }] }),
     prisma.product.count(),
     prisma.product.count({ where: { status: "PUBLISHED" } }),
     prisma.product.count({ where: { status: "DRAFT" } }),

@@ -625,14 +625,6 @@ export type ProductImageUncheckedUpdateManyWithoutProductNestedInput = {
   deleteMany?: Prisma.ProductImageScalarWhereInput | Prisma.ProductImageScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type ProductImageCreateNestedManyWithoutVariantInput = {
   create?: Prisma.XOR<Prisma.ProductImageCreateWithoutVariantInput, Prisma.ProductImageUncheckedCreateWithoutVariantInput> | Prisma.ProductImageCreateWithoutVariantInput[] | Prisma.ProductImageUncheckedCreateWithoutVariantInput[]
   connectOrCreate?: Prisma.ProductImageCreateOrConnectWithoutVariantInput | Prisma.ProductImageCreateOrConnectWithoutVariantInput[]

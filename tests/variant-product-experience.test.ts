@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { getVariantUnitPrice, getVariantCartLineId, getVariantGallery, selectColorVariant, selectSizeVariant } from "../lib/product-selection";
+import { getInitialGalleryImage, getVariantGalleryFocus, getVariantUnitPrice, getVariantCartLineId, getVariantGallery, selectColorVariant, selectSizeVariant } from "../lib/product-selection";
 import { canAddVariantQuantity, createProductSchema } from "../lib/product-validation";
 import type { ProductVariantOption } from "../types/product";
 
@@ -29,6 +29,16 @@ test("selecting a color resolves the matching size variant and its gallery, SKU,
 test("variant without images falls back to the common product gallery", () => {
   const variant = selectSizeVariant(variants, "M", "Blue");
   assert.deepEqual(getVariantGallery(variant, ["common-1.jpg", "common-2.jpg"]), ["common-1.jpg", "common-2.jpg"]);
+});
+
+test("initial gallery prefers the common primary; variant changes focus the exact variant image", () => {
+  const red = { ...variants[0], primaryImageSrc: "red-back.jpg" };
+  assert.equal(getInitialGalleryImage(red, ["common.jpg", "common-2.jpg"], "common.jpg"), "common.jpg");
+  assert.equal(getInitialGalleryImage(red, ["common.jpg"], undefined), "red-back.jpg");
+  assert.equal(getVariantGalleryFocus(red, ["common.jpg"], "common.jpg"), "red-back.jpg");
+  assert.equal(getVariantGalleryFocus(variants[2], ["common.jpg"], "common.jpg"), "common.jpg");
+  assert.equal(getInitialGalleryImage(undefined, [], undefined), "");
+  assert.deepEqual(getVariantGallery({ images: ["shared.jpg"] }, ["shared.jpg"]), ["shared.jpg"]);
 });
 
 test("variant selection never silently substitutes a different size or color", () => {

@@ -43,7 +43,7 @@ function NestedMenu({
       <div className="space-y-1">
         {items.map((item) => (
           <NestedMenuItem
-            key={item.label}
+            key={item.id ?? item.href ?? item.label}
             item={item}
             closeMenu={closeMenu}
             level={level}
@@ -212,6 +212,7 @@ export default function MobileMenu({ actions, items }: { actions?: ReactNode; it
       <aside
         aria-label="Mobile navigation"
         aria-hidden={!isOpen}
+        onKeyDown={(event) => { if (event.key === "Escape") closeMenu(); }}
         className={`fixed top-0 left-0 z-[999] flex h-[100dvh] w-[85%] max-w-sm flex-col bg-white text-black shadow-xl transition-transform duration-300 ease-in-out md:hidden ${
           isOpen
             ? "translate-x-0"
@@ -276,7 +277,7 @@ export default function MobileMenu({ actions, items }: { actions?: ReactNode; it
                */
 
               return (
-                <li key={item.label}>
+                <li key={item.id ?? item.href ?? item.label}>
                   <ParentMenuItem
                     item={item}
                     closeMenu={closeMenu}

@@ -5,12 +5,17 @@ export type CategoryRecord = {
   description: string | null;
   parentId: string | null;
   archivedAt: Date | string | null;
+  sortOrder?: number;
 };
 
 export type CategoryPathItem = Pick<CategoryRecord, "id" | "name" | "slug">;
 
 export type CategoryTreeNode = CategoryRecord & {
   children: CategoryTreeNode[];
+};
+
+export type PublicCategoryTreeNode = Pick<CategoryRecord, "id" | "name" | "slug" | "description" | "sortOrder"> & {
+  children: PublicCategoryTreeNode[];
 };
 
 export function resolveCategoryPath(categoryId: string, categories: readonly CategoryRecord[]): CategoryPathItem[] | null {
@@ -31,10 +36,32 @@ export function resolveCategoryPath(categoryId: string, categories: readonly Cat
 }
 
 export function isActiveCategoryPath(categoryId: string, categories: readonly CategoryRecord[]) {
-  const path = resolveCategoryPath(categoryId, categories);
-  if (!path) return false;
+  return getActiveCategoryIds(categories).has(categoryId);
+}
+
+export function getActiveCategoryIds(categories: readonly CategoryRecord[]) {
   const byId = new Map(categories.map((category) => [category.id, category]));
-  return path.every(({ id }) => !byId.get(id)?.archivedAt);
+  const activeById = new Map<string, boolean>();
+  for (const category of categories) {
+    if (activeById.has(category.id)) continue;
+    const path: string[] = [];
+    const visited = new Set<string>();
+    let currentId: string | null = category.id;
+    let active = false;
+    while (currentId) {
+      const cached = activeById.get(currentId);
+      if (cached !== undefined) { active = cached; break; }
+      if (visited.has(currentId)) { active = false; break; }
+      visited.add(currentId);
+      const current = byId.get(currentId);
+      if (!current || current.archivedAt) { active = false; break; }
+      path.push(currentId);
+      if (!current.parentId) { active = true; break; }
+      currentId = current.parentId;
+    }
+    for (let index = path.length - 1; index >= 0; index -= 1) activeById.set(path[index]!, active);
+  }
+  return new Set([...activeById].filter(([, active]) => active).map(([id]) => id));
 }
 
 export function getDescendantCategoryIds(categoryId: string, categories: readonly CategoryRecord[]) {
@@ -58,6 +85,17 @@ export function getDescendantCategoryIds(categoryId: string, categories: readonl
     }
   }
   return result;
+}
+
+/** Resolves both the hierarchical category identifiers and the legacy name search. */
+export function resolveProductCategoryIds(value: string, categories: readonly CategoryRecord[], activeIds: ReadonlySet<string>) {
+  const normalized = value.trim();
+  const direct = categories.find(({ id, slug }) => (id === normalized || slug === normalized) && activeIds.has(id))
+    ?? matchCategorySlugPath(normalized.split("/").filter(Boolean), categories)?.category;
+  const roots = direct
+    ? [direct.id]
+    : categories.filter(({ name, id }) => activeIds.has(id) && name.toLocaleLowerCase().includes(normalized.toLocaleLowerCase())).map(({ id }) => id);
+  return [...new Set(roots.flatMap((id) => getDescendantCategoryIds(id, categories).filter((childId) => activeIds.has(childId))))];
 }
 
 export function wouldCreateCategoryCycle(categoryId: string, parentId: string | null, categories: readonly CategoryRecord[]) {
@@ -86,13 +124,44 @@ export function buildCategoryTree(categories: readonly CategoryRecord[], include
     else if (!category.parentId) roots.push(node);
   }
   const sortNodes = (nodes: CategoryTreeNode[]) => {
-    nodes.sort((a, b) => a.name.localeCompare(b.name));
+    nodes.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.name.localeCompare(b.name));
     nodes.forEach(({ children }) => sortNodes(children));
   };
   sortNodes(roots);
   return roots;
 }
 
+export function buildPublicCategoryTree(categories: readonly CategoryRecord[]): PublicCategoryTreeNode[] {
+  const activeIds = getActiveCategoryIds(categories);
+  const active = categories.filter(({ id }) => activeIds.has(id));
+  const mapNode = (node: CategoryTreeNode): PublicCategoryTreeNode => ({
+    id: node.id,
+    name: node.name,
+    slug: node.slug,
+    description: node.description,
+    sortOrder: node.sortOrder ?? 0,
+    children: node.children.map(mapNode),
+  });
+  return buildCategoryTree(active).map(mapNode);
+}
+
 export function categoryPathHref(path: readonly Pick<CategoryPathItem, "slug">[]) {
   return `/categories/${path.map(({ slug }) => encodeURIComponent(slug)).join("/")}`;
+}
+
+export function matchCategorySlugPath(slugs: string[], categories: readonly CategoryRecord[]) {
+  if (!slugs.length) return null;
+  const byId = new Map(categories.map((category) => [category.id, category]));
+  const byParentAndSlug = new Map(categories.map((category) => [`${category.parentId ?? "root"}:${category.slug}`, category]));
+  let current = byParentAndSlug.get(`root:${slugs[0]}`);
+  if (current?.archivedAt) return null;
+  if (!current) return null;
+  for (const slug of slugs.slice(1)) {
+    current = byParentAndSlug.get(`${current.id}:${slug}`);
+    if (current?.archivedAt) return null;
+    if (!current) return null;
+  }
+  const path = resolveCategoryPath(current.id, categories);
+  if (!path || path.length !== slugs.length || path.some(({ id }) => byId.get(id)?.archivedAt)) return null;
+  return { category: current, path };
 }

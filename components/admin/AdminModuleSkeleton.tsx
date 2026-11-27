@@ -61,6 +61,10 @@ function ActivityLogsSkeleton() {
   return <section className="overflow-hidden rounded-xl border border-stone-200 bg-white"><div className="grid gap-3 border-b border-stone-100 p-4 sm:grid-cols-2 xl:grid-cols-4">{Array.from({ length: 8 }, (_, index) => <Block key={index} className="h-10" />)}</div><TableSkeleton rows={8} columns={6} /><div className="flex justify-between p-4"><Block className="h-3 w-32" /><Block className="h-8 w-24" /></div></section>;
 }
 
+function CategoriesSkeleton() {
+  return <section className="space-y-4 rounded-lg border border-stone-200 bg-white p-5"><div className="flex items-center justify-between"><Block className="h-5 w-44" /><Block className="h-9 w-28" /></div><div className="grid gap-2 sm:grid-cols-2"><Block className="h-9" /><Block className="h-9" /></div><div className="space-y-2">{Array.from({ length: 7 }, (_, index) => <Block key={index} className={`h-12 ${index % 3 === 2 ? "ml-8" : ""}`} />)}</div></section>;
+}
+
 function PlaceholderSkeleton() {
   return <section className="rounded-lg border border-dashed border-stone-300 bg-white px-5 py-12 sm:px-10 sm:py-16"><Block className="mx-auto size-12 rounded-full" /><Block className="mx-auto mt-4 h-6 w-48" /><Block className="mx-auto mt-3 h-3 w-full max-w-md" /><Block className="mx-auto mt-2 h-3 w-64 max-w-full" /><div className="mx-auto mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">{Array.from({ length: 3 }, (_, index) => <div key={index} className="rounded-md border border-stone-200 bg-stone-50/60 p-4"><Block className="h-3 w-20" /><Block className="mt-4 h-2 w-3/4" /><Block className="mt-2 h-2 w-1/2" /></div>)}</div></section>;
 }
@@ -73,7 +77,8 @@ export default function AdminModuleSkeleton({ pageKey }: { pageKey: AdminPageKey
       {pageKey === "dashboard" ? <DashboardSkeleton />
         : pageKey === "admin-users" ? <AdminUsersSkeleton />
           : pageKey === "roles-permissions" ? <RolesSkeleton />
-            : pageKey === "activity-logs" ? <ActivityLogsSkeleton />
+              : pageKey === "activity-logs" ? <ActivityLogsSkeleton />
+                : pageKey === "categories" ? <CategoriesSkeleton />
               : <PlaceholderSkeleton />}
     </div>
   );

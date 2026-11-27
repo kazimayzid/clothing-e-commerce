@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminApiPermission } from "@/lib/admin-access";
 import { appendAdminAuditLog } from "@/lib/admin-audit";
+import { revalidatePublicCategoryData } from "@/lib/product-category-service";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const authorization = await requireAdminApiPermission("products:archive");
@@ -21,6 +22,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       await appendAdminAuditLog(tx, { actor: authorization.context, action: "product_categories.archived", category: "PRODUCT", riskLevel: "MEDIUM", description: `Archived product category ${before.name}.`, targetType: "PRODUCT_CATEGORY", targetId: id, targetName: before.name, beforeState: before, afterState: updated, changedFields: ["archivedAt"], request });
       return updated;
     });
+    revalidatePublicCategoryData();
     return NextResponse.json({ category });
   } catch (error) {
     if (error instanceof Error && error.message === "NOT_FOUND") return NextResponse.json({ error: "Category not found." }, { status: 404 });

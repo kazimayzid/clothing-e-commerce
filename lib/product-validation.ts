@@ -9,6 +9,7 @@ export const createProductCategorySchema = z.object({
   slug: categorySlugSchema,
   description: z.string().trim().max(5000).nullable().optional(),
   parentId: z.string().uuid().nullable().optional(),
+  sortOrder: z.number().int().min(-100_000).max(100_000).optional(),
 });
 
 export const updateProductCategorySchema = createProductCategorySchema.partial();

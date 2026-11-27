@@ -3,4 +3,5 @@ import "./security/admin-module-policy.test";
 import "./role-view-model.test";
 import "./product-management.test";
 import "./category-hierarchy.test";
+import "./admin-api-response.test";
 import "./variant-product-experience.test";

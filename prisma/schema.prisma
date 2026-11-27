@@ -289,10 +289,11 @@ model ProductCategory {
   children    ProductCategory[] @relation("ProductCategoryTree")
   products    Product[]
   archivedAt  DateTime?         @map("archived_at")
-  createdAt   DateTime          @default(now()) @map("created_at")
-  updatedAt   DateTime          @updatedAt @map("updated_at")
+  sortOrder   Int               @default(0) @map("sort_order")
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  @@index([parentId, archivedAt, name])
+  @@index([parentId, archivedAt, sortOrder, name])
   @@index([name])
   @@map("product_categories")
 }

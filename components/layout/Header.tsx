@@ -8,14 +8,14 @@ import { getPublicCategoryNavigation } from "@/lib/product-category-service";
 import type { NavItem } from "@/Data/navItems";
 
 function toNavItem(node: Awaited<ReturnType<typeof getPublicCategoryNavigation>>[number]): NavItem {
-  return { label: node.label, href: node.href, children: node.children.map(toNavItem) };
+  return { id: node.id, label: node.label, href: node.href, children: node.children.map(toNavItem) };
 }
 
 export default async function Header() {
   const categories = await getPublicCategoryNavigation();
   const items = [
     { label: "Home", href: "/" },
-    { label: "Shop", href: "/shop", children: categories.map(toNavItem) },
+    { label: "Shop", href: "/shop", children: [{ label: "Shop all", href: "/shop" }, ...categories.map(toNavItem)] },
   ];
   return (
     <div className="sticky top-0 z-40 w-full border-b border-border/10 bg-background/80 backdrop-blur-md transition-all">
