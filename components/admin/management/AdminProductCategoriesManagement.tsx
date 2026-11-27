@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Archive, ChevronDown, ChevronRight, LoaderCircle, Pencil, Plus, RotateCcw, X } from "lucide-react";
+import { Archive, ChevronDown, ChevronRight, LoaderCircle, Pencil, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { apiResponseError, readApiResponse } from "@/lib/admin-api-response";
 
@@ -28,6 +28,8 @@ export default function AdminProductCategoriesManagement({ canCreate, canUpdate,
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [dialog, setDialog] = useState<CategoryDialogState | null>(null);
   const [archiveTarget, setArchiveTarget] = useState<Category | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [fields, setFields] = useState<CategoryFields>(emptyFields);
   const [fieldErrors, setFieldErrors] = useState<CategoryFieldErrors>({});
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
@@ -36,6 +38,7 @@ export default function AdminProductCategoriesManagement({ canCreate, canUpdate,
   const [busy, setBusy] = useState(false);
   const editorRef = useRef<HTMLDialogElement>(null);
   const archiveRef = useRef<HTMLDialogElement>(null);
+  const deleteRef = useRef<HTMLDialogElement>(null);
 
   const load = useCallback(async (signal?: AbortSignal) => {
     const response = await fetch("/api/v1/admin/product-categories", { cache: "no-store", signal });
@@ -76,6 +79,12 @@ export default function AdminProductCategoriesManagement({ canCreate, canUpdate,
     if (archiveTarget && element && !element.open) element.showModal();
     return () => { if (element?.open) element.close(); };
   }, [archiveTarget]);
+
+  useEffect(() => {
+    const element = deleteRef.current;
+    if (deleteTarget && element && !element.open) element.showModal();
+    return () => { if (element?.open) element.close(); };
+  }, [deleteTarget]);
 
   const excludedParentIds = useMemo(() => new Set(dialog?.mode === "edit" && dialog.category
     ? [dialog.category.id, ...categories.filter((category) => category.path.some(({ id }) => id === dialog.category?.id)).map(({ id }) => id)]
@@ -174,10 +183,29 @@ export default function AdminProductCategoriesManagement({ canCreate, canUpdate,
       const response = await fetch(`/api/v1/admin/product-categories/${category.id}/${action}`, { method: "POST" });
       const data = await readApiResponse(response);
       if (!response.ok) throw new Error(apiResponseError(data, `Could not ${action} category (HTTP ${response.status}).`));
+      setStatusFilter(action === "archive" ? "ARCHIVED" : "ACTIVE");
       toast.success(action === "archive" ? "Category archived" : "Category restored");
       await load();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : `Could not ${action} category.`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deletePermanently(category: Category) {
+    if (deleteConfirmation !== "DELETE") return;
+    setBusy(true);
+    try {
+      const response = await fetch(`/api/v1/admin/product-categories/${category.id}`, { method: "DELETE" });
+      const data = await readApiResponse(response);
+      if (!response.ok) throw new Error(apiResponseError(data, `Could not delete category (HTTP ${response.status}).`));
+      setDeleteTarget(null);
+      setDeleteConfirmation("");
+      toast.success(`“${category.name}” was permanently deleted.`);
+      await load();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not delete this category permanently.");
     } finally {
       setBusy(false);
     }
@@ -196,7 +224,7 @@ export default function AdminProductCategoriesManagement({ canCreate, canUpdate,
           <div className="flex shrink-0 items-center gap-1.5"><span className={`hidden rounded-full px-2 py-1 text-[9px] sm:inline-flex ${category.archivedAt ? "bg-stone-100 text-stone-500" : "bg-emerald-50 text-emerald-700"}`}>{category.archivedAt ? "Archived" : "Active"}</span><div className="flex gap-0.5">
             {canCreate && !category.archivedAt && <button type="button" aria-label={`Add child category under ${category.name}`} title="Add child category" disabled={busy} onClick={() => openCreate(category.id)} className="rounded p-2 text-stone-500 hover:bg-stone-100 disabled:opacity-40"><Plus className="size-3.5" /></button>}
             {canUpdate && !category.archivedAt && <button type="button" aria-label={`Edit ${category.name}`} title="Edit category" disabled={busy} onClick={() => openEdit(category)} className="rounded p-2 text-stone-500 hover:bg-stone-100 disabled:opacity-40"><Pencil className="size-3.5" /></button>}
-            {canArchive && (category.archivedAt ? <button type="button" aria-label={`Restore ${category.name}`} title="Restore category" disabled={busy} onClick={() => void setArchive(category, "restore")} className="rounded p-2 text-stone-500 hover:bg-stone-100 disabled:opacity-40"><RotateCcw className="size-3.5" /></button> : <button type="button" aria-label={`Archive ${category.name}`} title="Archive category" disabled={busy} onClick={() => setArchiveTarget(category)} className="rounded p-2 text-stone-500 hover:bg-stone-100 disabled:opacity-40"><Archive className="size-3.5" /></button>)}
+            {canArchive && (category.archivedAt ? <><button type="button" aria-label={`Restore ${category.name}`} title="Restore category" disabled={busy} onClick={() => void setArchive(category, "restore")} className="rounded p-2 text-stone-500 hover:bg-stone-100 disabled:opacity-40"><RotateCcw className="size-3.5" /></button>{statusFilter === "ARCHIVED" && <button type="button" aria-label={`Delete ${category.name} permanently`} title="Delete permanently" disabled={busy} onClick={() => { setDeleteConfirmation(""); setDeleteTarget(category); }} className="rounded p-2 text-stone-500 hover:bg-stone-100 disabled:opacity-40"><Trash2 className="size-3.5" /></button>}</> : <button type="button" aria-label={`Archive ${category.name}`} title="Archive category" disabled={busy} onClick={() => setArchiveTarget(category)} className="rounded p-2 text-stone-500 hover:bg-stone-100 disabled:opacity-40"><Archive className="size-3.5" /></button>)}
           </div></div>
         </div>
         {expanded && renderChildren(category.id, depth + 1)}
@@ -209,7 +237,11 @@ export default function AdminProductCategoriesManagement({ canCreate, canUpdate,
 
   return <section className="space-y-4 rounded-lg border border-stone-200 bg-white p-4 sm:p-5">
     <div className="flex items-start justify-between gap-4"><div><h2 className="font-serif text-lg text-stone-900">Category hierarchy</h2><p className="mt-1 text-[11px] text-stone-500">Create and move categories, control their order, and manage storefront visibility.</p></div>{canCreate && <button type="button" onClick={() => openCreate()} className="inline-flex h-9 shrink-0 items-center gap-2 rounded-md bg-stone-900 px-3 text-xs text-white transition hover:bg-stone-700"><Plus className="size-3.5" /><span className="hidden sm:inline">Add Category</span><span className="sm:hidden">Add</span></button>}</div>
-    <div className="grid gap-2 sm:grid-cols-[1fr_180px]"><input value={search} onChange={(event) => setSearch(event.target.value)} aria-label="Search categories" placeholder="Search name, slug, or path" className="h-9 min-w-0 rounded-md border border-stone-200 px-3 text-xs outline-none focus:border-stone-500" /><select aria-label="Filter category status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as StatusFilter)} className="h-9 rounded-md border border-stone-200 px-3 text-xs"><option value="ALL">All statuses</option><option value="ACTIVE">Active</option><option value="ARCHIVED">Archived</option></select></div>
+    <div className="grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center"><input value={search} onChange={(event) => setSearch(event.target.value)} aria-label="Search categories" placeholder="Search name, slug, or path" className="h-9 min-w-0 rounded-md border border-stone-200 px-3 text-xs outline-none focus:border-stone-500" /><div role="tablist" aria-label="Category lists" className="inline-flex w-full rounded-md border border-stone-200 p-1 sm:w-auto">{(["ACTIVE", "ARCHIVED", "ALL"] as const).map((filter) => {
+      const count = categories.filter(({ archivedAt }) => filter === "ALL" || (filter === "ACTIVE" ? !archivedAt : Boolean(archivedAt))).length;
+      const label = filter === "ALL" ? "All" : filter === "ACTIVE" ? "Active" : "Archived";
+      return <button key={filter} type="button" role="tab" aria-selected={statusFilter === filter} onClick={() => setStatusFilter(filter)} className={`flex-1 rounded px-3 py-1.5 text-xs transition sm:flex-none ${statusFilter === filter ? "bg-stone-900 text-white" : "text-stone-600 hover:bg-stone-100"}`}>{label}<span className={`ml-1.5 ${statusFilter === filter ? "text-stone-300" : "text-stone-400"}`}>{count}</span></button>;
+    })}</div></div>
     <div className="overflow-hidden rounded-md border border-stone-100">{renderChildren(null, 0)}{!visibleIds.size && <p className="p-6 text-center text-xs text-stone-500">No categories match these filters.</p>}</div>
 
     {dialog && <dialog ref={editorRef} aria-labelledby="category-dialog-title" onCancel={(event) => { event.preventDefault(); closeEditor(); }} onClick={(event) => { if (event.target === event.currentTarget) closeEditor(); }} className="fixed inset-0 m-auto max-h-[min(92dvh,760px)] w-[min(94vw,560px)] overflow-y-auto rounded-lg border border-stone-200 bg-white p-0 text-stone-900 shadow-2xl backdrop:bg-stone-950/40">
@@ -231,6 +263,14 @@ export default function AdminProductCategoriesManagement({ canCreate, canUpdate,
 
     {archiveTarget && <dialog ref={archiveRef} aria-labelledby="archive-dialog-title" onCancel={(event) => { event.preventDefault(); if (!busy) setArchiveTarget(null); }} onClick={(event) => { if (event.target === event.currentTarget && !busy) setArchiveTarget(null); }} className="fixed inset-0 m-auto w-[min(92vw,440px)] rounded-lg border border-stone-200 bg-white p-0 text-stone-900 shadow-2xl backdrop:bg-stone-950/40">
       <div className="p-5 sm:p-6"><div className="flex items-start gap-3"><span className="rounded-full bg-stone-100 p-2 text-stone-700"><Archive className="size-4" /></span><div><h3 id="archive-dialog-title" className="font-serif text-lg">Archive category?</h3><p className="mt-2 text-sm leading-6 text-stone-600"><span className="font-medium text-stone-800">{archiveTarget.name}</span> will be hidden from the storefront. It will remain in the database and can be restored later.</p><p className="mt-2 text-xs text-stone-500">Categories with assigned products or active child categories cannot be archived.</p></div></div><div className="mt-6 flex justify-end gap-2"><button type="button" disabled={busy} onClick={() => setArchiveTarget(null)} className="h-9 rounded-md border border-stone-200 px-3 text-xs text-stone-700 hover:bg-stone-50">Cancel</button><button type="button" disabled={busy} onClick={() => void setArchive(archiveTarget, "archive")} className="inline-flex h-9 items-center gap-2 rounded-md bg-stone-900 px-3 text-xs text-white hover:bg-stone-700 disabled:opacity-50">{busy && <LoaderCircle className="size-3.5 animate-spin" />}Archive Category</button></div></div>
+    </dialog>}
+
+    {deleteTarget && <dialog ref={deleteRef} role="alertdialog" aria-labelledby="delete-dialog-title" aria-describedby="delete-dialog-description" onCancel={(event) => { event.preventDefault(); if (!busy) setDeleteTarget(null); }} onClick={(event) => { if (event.target === event.currentTarget && !busy) setDeleteTarget(null); }} className="fixed inset-0 m-auto w-[min(92vw,480px)] rounded-lg border border-stone-200 bg-white p-0 text-stone-900 shadow-2xl backdrop:bg-stone-950/40">
+      <div className="p-5 sm:p-6"><div className="flex items-start gap-3"><span className="rounded-full bg-stone-100 p-2 text-stone-700"><Trash2 className="size-4" /></span><div className="min-w-0"><h3 id="delete-dialog-title" className="font-serif text-lg">Delete permanently?</h3><p id="delete-dialog-description" className="mt-2 text-sm leading-6 text-stone-600">This action cannot be undone. The category will be permanently removed from the database.</p></div></div>
+        <dl className="mt-5 grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-md border border-stone-100 bg-stone-50 p-3 text-xs"><dt className="text-stone-500">Name</dt><dd className="min-w-0 break-words font-medium text-stone-800">{deleteTarget.name}</dd><dt className="text-stone-500">Slug</dt><dd className="min-w-0 break-all font-mono text-stone-700">{deleteTarget.slug}</dd><dt className="text-stone-500">Associated products</dt><dd className="text-stone-800">{deleteTarget.productCount}</dd><dt className="text-stone-500">Child categories</dt><dd className="text-stone-800">{deleteTarget.childCount}</dd></dl>
+        <label htmlFor="delete-category-confirmation" className="mt-5 block text-xs font-medium text-stone-700">Type <span className="font-mono">DELETE</span> to confirm<input id="delete-category-confirmation" autoFocus value={deleteConfirmation} onChange={(event) => setDeleteConfirmation(event.target.value)} disabled={busy} className={fieldClass} autoComplete="off" /></label>
+        <div className="mt-6 flex justify-end gap-2"><button type="button" disabled={busy} onClick={() => setDeleteTarget(null)} className="h-9 rounded-md border border-stone-200 px-3 text-xs text-stone-700 hover:bg-stone-50 disabled:opacity-40">Cancel</button><button type="button" disabled={busy || deleteConfirmation !== "DELETE"} onClick={() => void deletePermanently(deleteTarget)} className="inline-flex h-9 items-center gap-2 rounded-md bg-stone-900 px-3 text-xs text-white hover:bg-stone-700 disabled:cursor-not-allowed disabled:opacity-40">{busy && <LoaderCircle className="size-3.5 animate-spin" />}Delete permanently</button></div>
+      </div>
     </dialog>}
   </section>;
 }

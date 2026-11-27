@@ -21,7 +21,7 @@ export async function GET() {
       ...category,
       path: resolveCategoryPath(category.id, records) ?? [],
       productCount: countById.get(category.id) ?? 0,
-      childCount: records.filter(({ parentId, archivedAt }) => parentId === category.id && !archivedAt).length,
+      childCount: records.filter(({ parentId }) => parentId === category.id).length,
     })) }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     logCategoryDatabaseError("list", error);
