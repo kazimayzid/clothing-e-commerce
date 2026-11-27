@@ -39,5 +39,5 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 }
 
 export async function DELETE() {
-  return NextResponse.json({ error: "Products cannot be permanently deleted." }, { status: 405, headers: { Allow: "POST" } });
+  return NextResponse.json({ error: "Use DELETE /api/v1/admin/products/[id] to permanently delete an eligible archived product." }, { status: 405, headers: { Allow: "POST" } });
 }

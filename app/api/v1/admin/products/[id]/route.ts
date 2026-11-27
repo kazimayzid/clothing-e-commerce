@@ -7,6 +7,7 @@ import { adminProductInclude, toAdminProductDTO } from "@/lib/product-data";
 import { canSetVariantStock, updateProductSchema } from "@/lib/product-validation";
 import { destroyProductImage } from "@/lib/cloudinary";
 import { isActiveCategoryPath } from "@/lib/category-tree";
+import { executePermanentProductDelete, isProductDeleteForeignKeyError, ProductDeletionBlockedError } from "@/lib/product-delete-policy";
 
 type Context = { params: Promise<{ id: string }> };
 
@@ -195,6 +196,82 @@ export async function PATCH(request: Request, { params }: Context) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return NextResponse.json({ error: "A product with this slug or SKU already exists." }, { status: 409 });
     console.error("Product update failed", error);
     return NextResponse.json({ error: "Could not update the product." }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, { params }: Context) {
+  const authorization = await requireAdminApiPermission("products:archive");
+  if ("response" in authorization) return authorization.response;
+  const { id } = await params;
+
+  try {
+    const deleted = await prisma.$transaction(async (tx) => {
+      const before = await tx.product.findUnique({ where: { id }, include: adminProductInclude });
+      if (!before) throw new Error("PRODUCT_NOT_FOUND");
+
+      const variantIds = before.variants.map(({ id: variantId }) => variantId);
+      const imageRows = await tx.productImage.findMany({
+        where: { OR: [{ productId: id }, ...(variantIds.length ? [{ variantId: { in: variantIds } }] : [])] },
+        select: { id: true, publicId: true, productId: true, variantId: true },
+      });
+      const variantIdSet = new Set(variantIds);
+      const hasMismatchedImageOwnership = imageRows.some(({ productId, variantId }) =>
+        (productId !== null && productId !== id) || (variantId !== null && !variantIdSet.has(variantId)),
+      );
+      if (hasMismatchedImageOwnership) throw new ProductDeletionBlockedError("PRODUCT_IMAGE_RELATION_MISMATCH");
+
+      const deletedAt = new Date();
+      await executePermanentProductDelete({ status: before.status, archivedAt: before.archivedAt }, {
+        writeAudit: () => appendAdminAuditLog(tx, {
+          actor: authorization.context,
+          action: "products.deleted_permanently",
+          category: "PRODUCT",
+          riskLevel: "HIGH",
+          description: `Permanently deleted archived product ${before.title}.`,
+          targetType: "PRODUCT",
+          targetId: before.id,
+          targetName: before.title,
+          beforeState: {
+            ...auditState(before),
+            archivedAt: before.archivedAt?.toISOString() ?? null,
+            createdAt: before.createdAt.toISOString(),
+            updatedAt: before.updatedAt.toISOString(),
+            imageAssets: imageRows.map(({ id: imageId, publicId }) => ({ id: imageId, publicId })),
+          },
+          afterState: { deleted: true, deletedAt: deletedAt.toISOString() },
+          changedFields: ["deleted"],
+          request,
+        }),
+        deleteImages: () => imageRows.length
+          ? tx.productImage.deleteMany({ where: { id: { in: imageRows.map(({ id: imageId }) => imageId) } } })
+          : Promise.resolve(),
+        deleteVariants: () => variantIds.length
+          ? tx.productVariant.deleteMany({ where: { id: { in: variantIds }, productId: id } })
+          : Promise.resolve(),
+        deleteProduct: () => tx.product.delete({ where: { id }, select: { id: true, title: true, slug: true } }),
+      });
+
+      return { product: { id: before.id, title: before.title, slug: before.slug }, publicIds: imageRows.map(({ publicId }) => publicId) };
+    });
+
+    const cleanupResults = await Promise.allSettled(deleted.publicIds.map((publicId) => destroyProductImage(publicId)));
+    const imageCleanupPending = cleanupResults.some((result) => result.status === "rejected");
+    if (imageCleanupPending) console.error("Product was deleted but one or more Cloudinary assets could not be removed", { productId: id });
+    return NextResponse.json({ success: true, product: deleted.product, imageCleanupPending });
+  } catch (error) {
+    if (error instanceof Error && error.message === "PRODUCT_NOT_FOUND") return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    if (error instanceof ProductDeletionBlockedError && error.block === "PRODUCT_NOT_ARCHIVED") {
+      return NextResponse.json({ error: "Archive this product before deleting it permanently." }, { status: 409 });
+    }
+    if (error instanceof ProductDeletionBlockedError && error.block === "PRODUCT_IMAGE_RELATION_MISMATCH") {
+      return NextResponse.json({ error: "This product has inconsistent image or variant references. Correct those records before deleting it." }, { status: 409 });
+    }
+    if (isProductDeleteForeignKeyError(error)) {
+      return NextResponse.json({ error: "This product is referenced by protected business or historical records. Reassign or retain those records before deleting the product." }, { status: 409 });
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") return NextResponse.json({ error: "Product not found." }, { status: 404 });
+    console.error("Permanent product deletion failed", error);
+    return NextResponse.json({ error: "Could not delete this product permanently." }, { status: 500 });
   }
 }
 

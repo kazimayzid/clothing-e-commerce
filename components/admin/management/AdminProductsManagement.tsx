@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Archive, Copy, Eye, LoaderCircle, Package, Pencil, Plus, RotateCcw, Search } from "lucide-react";
+import { Archive, Copy, Eye, LoaderCircle, Package, Pencil, Plus, RotateCcw, Search, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import AdminDialog from "@/components/admin/management/AdminDialog";
 import AdminModuleSkeleton from "@/components/admin/AdminModuleSkeleton";
 import AdminProductEditorDialog, { type AdminProductDTO, type ProductSaveInput } from "@/components/admin/management/AdminProductEditorDialog";
+import { apiResponseError, readApiResponse } from "@/lib/admin-api-response";
 
 type Category = { id: string; name: string; slug: string; parentId: string | null; path: { name: string }[] };
 type CatalogResponse = {
@@ -40,6 +41,8 @@ export default function AdminProductsManagement({ canCreate, canUpdate, canArchi
   const [error, setError] = useState("");
   const [editingProduct, setEditingProduct] = useState<AdminProductDTO | null | undefined>(undefined);
   const [detailsProduct, setDetailsProduct] = useState<AdminProductDTO | null>(null);
+  const [deletingProduct, setDeletingProduct] = useState<AdminProductDTO | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [pendingAction, setPendingAction] = useState<string | null>(null);
 
   const query = useMemo(() => {
@@ -95,10 +98,30 @@ export default function AdminProductsManagement({ canCreate, canUpdate, canArchi
       const response = await fetch(`/api/v1/admin/products/${product.id}/${action}`, { method: "POST" });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || `Could not ${action} product.`);
+      setStatus(action === "archive" ? "ARCHIVED" : "ALL");
+      setPage(1);
       toast.success(action === "archive" ? "Product archived" : "Product restored");
-      await loadProducts();
     } catch (cause) {
       toast.error(cause instanceof Error ? cause.message : `Could not ${action} product.`);
+    } finally {
+      setPendingAction(null);
+    }
+  }
+
+  async function deletePermanently(product: AdminProductDTO) {
+    if (deleteConfirmation !== "DELETE") return;
+    setPendingAction(`delete:${product.id}`);
+    try {
+      const response = await fetch(`/api/v1/admin/products/${product.id}`, { method: "DELETE" });
+      const data = await readApiResponse(response);
+      if (!response.ok) throw new Error(apiResponseError(data, `Could not delete product (HTTP ${response.status}).`));
+      setDeletingProduct(null);
+      setDeleteConfirmation("");
+      if (data.imageCleanupPending === true) toast.warning(`“${product.title}” was deleted, but some stored images could not be removed.`);
+      else toast.success(`“${product.title}” was permanently deleted.`);
+      await loadProducts();
+    } catch (cause) {
+      toast.error(cause instanceof Error ? cause.message : "Could not delete this product permanently.");
     } finally {
       setPendingAction(null);
     }
@@ -164,7 +187,7 @@ export default function AdminProductsManagement({ canCreate, canUpdate, canArchi
                   <td className="px-4 py-3"><span className={stock > 0 ? "text-emerald-700" : "text-amber-700"}>{stock > 0 ? `${stock} units` : "Out of stock"}</span></td>
                   <td className="px-4 py-3"><Status status={product.status} /></td>
                   <td className="whitespace-nowrap px-4 py-3 text-[10px] text-stone-500">{new Intl.DateTimeFormat("en-GB", { dateStyle: "medium" }).format(new Date(product.createdAt))}</td>
-                  <td className="px-4 py-3"><div className="flex items-center justify-end gap-1"><IconButton label="View details" onClick={() => setDetailsProduct(product)}><Eye className="size-3.5" /></IconButton>{canUpdate && product.status !== "ARCHIVED" && <IconButton label="Edit product" onClick={() => setEditingProduct(product)}><Pencil className="size-3.5" /></IconButton>}<IconButton label="Copy product link" onClick={() => void copyProductLink(product)}><Copy className="size-3.5" /></IconButton>{canArchive && (product.status === "ARCHIVED" ? <IconButton label="Restore product" disabled={working} onClick={() => void changeArchiveState(product, "restore")}>{working ? <LoaderCircle className="size-3.5 animate-spin" /> : <RotateCcw className="size-3.5" />}</IconButton> : <IconButton label="Archive product" disabled={working} onClick={() => void changeArchiveState(product, "archive")}>{working ? <LoaderCircle className="size-3.5 animate-spin" /> : <Archive className="size-3.5" />}</IconButton>)}</div></td>
+                  <td className="px-4 py-3"><div className="flex items-center justify-end gap-1"><IconButton label="View details" onClick={() => setDetailsProduct(product)}><Eye className="size-3.5" /></IconButton>{canUpdate && product.status !== "ARCHIVED" && <IconButton label="Edit product" onClick={() => setEditingProduct(product)}><Pencil className="size-3.5" /></IconButton>}<IconButton label="Copy product link" onClick={() => void copyProductLink(product)}><Copy className="size-3.5" /></IconButton>{canArchive && (product.status === "ARCHIVED" ? <><IconButton label="Restore product" disabled={working} onClick={() => void changeArchiveState(product, "restore")}>{working ? <LoaderCircle className="size-3.5 animate-spin" /> : <RotateCcw className="size-3.5" />}</IconButton>{status === "ARCHIVED" && <IconButton label="Delete product permanently" disabled={working} onClick={() => { setDeleteConfirmation(""); setDeletingProduct(product); }}><Trash2 className="size-3.5" /></IconButton>}</> : <IconButton label="Archive product" disabled={working} onClick={() => void changeArchiveState(product, "archive")}>{working ? <LoaderCircle className="size-3.5 animate-spin" /> : <Archive className="size-3.5" />}</IconButton>)}</div></td>
                 </tr>;
               })}
               {!loading && catalog?.products.length === 0 && <tr><td colSpan={8} className="px-5 py-12 text-center"><Package className="mx-auto size-7 text-stone-300" /><p className="mt-3 text-sm font-medium text-stone-700">No products found</p><p className="mt-1 text-xs text-stone-500">Create a product or change the search filters.</p></td></tr>}
@@ -176,6 +199,9 @@ export default function AdminProductsManagement({ canCreate, canUpdate, canArchi
 
       {editingProduct !== undefined && <AdminProductEditorDialog product={editingProduct} categories={categoryOptions} canAdjustInventory={canAdjustInventory} onClose={() => setEditingProduct(undefined)} onSave={saveProduct} />}
       {detailsProduct && <ProductDetailsDialog product={detailsProduct} onClose={() => setDetailsProduct(null)} />}
+      {deletingProduct && <AdminDialog title="Delete product permanently?" description="This action cannot be undone. Product variants, inventory rows, and product images will be removed with the product. Historical business records are protected." onClose={() => { if (pendingAction !== `delete:${deletingProduct.id}`) setDeletingProduct(null); }}>
+        <div className="space-y-4 p-5 sm:p-6"><dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-md border border-stone-100 bg-stone-50 p-3 text-xs"><dt className="text-stone-500">Product</dt><dd className="min-w-0 break-words font-medium text-stone-800">{deletingProduct.title}</dd><dt className="text-stone-500">Slug</dt><dd className="min-w-0 break-all font-mono text-stone-700">{deletingProduct.slug}</dd><dt className="text-stone-500">Category</dt><dd className="text-stone-800">{deletingProduct.category.name}</dd><dt className="text-stone-500">Variants / stock</dt><dd className="text-stone-800">{deletingProduct.variants.length} variants · {deletingProduct.stockCount} units</dd><dt className="text-stone-500">Images</dt><dd className="text-stone-800">{deletingProduct.images.length + deletingProduct.variants.reduce((total, variant) => total + (variant.images?.length ?? 0), 0)}</dd></dl><label htmlFor="delete-product-confirmation" className="block text-xs font-medium text-stone-700">Type <span className="font-mono">DELETE</span> to confirm<input id="delete-product-confirmation" autoFocus value={deleteConfirmation} onChange={(event) => setDeleteConfirmation(event.target.value)} disabled={pendingAction === `delete:${deletingProduct.id}`} autoComplete="off" className="mt-1 h-10 w-full rounded-md border border-stone-200 px-3 text-sm outline-none focus:border-stone-500" /></label><div className="flex justify-end gap-2"><button type="button" disabled={pendingAction === `delete:${deletingProduct.id}`} onClick={() => setDeletingProduct(null)} className="h-9 rounded-md border border-stone-200 px-3 text-xs text-stone-700 disabled:opacity-40">Cancel</button><button type="button" disabled={deleteConfirmation !== "DELETE" || pendingAction === `delete:${deletingProduct.id}`} onClick={() => void deletePermanently(deletingProduct)} className="inline-flex h-9 items-center gap-2 rounded-md bg-stone-900 px-3 text-xs text-white disabled:cursor-not-allowed disabled:opacity-40">{pendingAction === `delete:${deletingProduct.id}` && <LoaderCircle className="size-3.5 animate-spin" />}Delete permanently</button></div></div>
+      </AdminDialog>}
     </div>
   );
 }

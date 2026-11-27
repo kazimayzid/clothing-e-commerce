@@ -5,4 +5,5 @@ import "./product-management.test";
 import "./category-hierarchy.test";
 import "./admin-api-response.test";
 import "./category-delete-policy.test";
+import "./product-delete-policy.test";
 import "./variant-product-experience.test";
